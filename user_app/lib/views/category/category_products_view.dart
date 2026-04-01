@@ -83,8 +83,9 @@ class _CategoryProductsViewState extends State<CategoryProductsView> {
                         const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text("₹${product.price}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Colors.black)),
+                            Text("₹${product.price}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.black)),
                             AddToCartButton(product: product),
                           ],
                         ),

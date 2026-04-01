@@ -81,17 +81,24 @@ class CartView extends StatelessWidget {
                               const SizedBox(height: 12),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text("₹${item.product.price}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primaryColor)),
-                                  Row(
-                                    children: [
-                                      _buildQuantityButton(Icons.remove, () => controller.removeFromCart(item.product)),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                                        child: Text("${item.quantity}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                      ),
-                                      _buildQuantityButton(Icons.add, () => controller.addToCart(item.product)),
-                                    ],
+                                  Text("₹${item.product.price}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Colors.black)),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: AppColors.primaryColor.withOpacity(0.2)),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        _buildQuantityButton(Icons.remove, () => controller.removeFromCart(item.product)),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                                          child: Text("${item.quantity}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                        ),
+                                        _buildQuantityButton(Icons.add, () => controller.addToCart(item.product)),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),

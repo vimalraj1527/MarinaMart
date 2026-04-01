@@ -27,8 +27,10 @@ class StickyCartBar extends StatelessWidget {
           onTap: () => Get.toNamed('/cart'),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
                     padding: const EdgeInsets.all(8),
@@ -42,19 +44,20 @@ class StickyCartBar extends StatelessWidget {
                     children: [
                       Text(
                         "${cartController.totalItems} items in basket",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
                       ),
                       Text(
                         "Total: ₹${cartController.totalAmount}",
-                        style: const TextStyle(color: Colors.white70, fontSize: 11),
+                        style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                 ],
               ),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text("PROCEED", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
+                  const Text("PROCEED TO CART", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13)),
                   const SizedBox(width: 4),
                   const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
                 ],

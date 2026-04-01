@@ -30,26 +30,53 @@ class _MainShellViewState extends State<MainShellView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
+      body: Stack(
+        children: [
+          IndexedStack(
+            index: _selectedIndex,
+            children: _pages,
+          ),
+          Positioned(
+            left: 0, right: 0, bottom: 10,
+            child: const StickyCartBar(),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Get.toNamed('/cart'),
         backgroundColor: AppColors.primaryColor,
-        elevation: 8,
+        elevation: 10,
         shape: const CircleBorder(),
         child: Obx(() => Stack(
-          alignment: Alignment.center,
+          clipBehavior: Clip.none,
           children: [
-            Lottie.network('https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json', width: 30, height: 30, errorBuilder: (c,e,s) => const Icon(Icons.shopping_basket_rounded, color: Colors.white)),
+            Center(
+              child: Lottie.network(
+                'https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json',
+                width: 32,
+                height: 32,
+                errorBuilder: (c, e, s) => const Icon(Icons.shopping_basket_rounded, color: Colors.white),
+              ),
+            ),
             if (_cartController.cartItems.isNotEmpty)
               Positioned(
-                right: -4, top: -4,
+                right: 2,
+                top: 2,
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                  child: Text("${_cartController.totalItems}", style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  child: Text(
+                    "${_cartController.totalItems}",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ),
               ),
           ],
@@ -57,29 +84,24 @@ class _MainShellViewState extends State<MainShellView> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
-        height: 80,
         color: Colors.white,
+        elevation: 10,
         shape: const CircularNotchedRectangle(),
         notchMargin: 10,
+        height: 70,
         padding: EdgeInsets.zero,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const StickyCartBar(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavItem(0, Icons.home_rounded, "Home"),
-                  _buildNavItem(1, Icons.grid_view_rounded, "Categories"),
-                  const SizedBox(width: 40), // SPACE FOR FAB
-                  _buildNavItem(2, Icons.search_rounded, "Search"),
-                  _buildNavItem(3, Icons.person_rounded, "Profile"),
-                ],
-              ),
-            ),
-          ],
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(0, Icons.home_rounded, "Home"),
+              _buildNavItem(1, Icons.grid_view_rounded, "Categories"),
+              const SizedBox(width: 40), // SPACE FOR FAB
+              _buildNavItem(2, Icons.search_rounded, "Search"),
+              _buildNavItem(3, Icons.person_rounded, "Profile"),
+            ],
+          ),
         ),
       ),
     );

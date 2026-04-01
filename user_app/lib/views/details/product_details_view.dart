@@ -26,6 +26,7 @@ class ProductDetailsView extends StatelessWidget {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Expanded(
                         child: Text(
@@ -33,9 +34,10 @@ class ProductDetailsView extends StatelessWidget {
                           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                         ),
                       ),
+                      const SizedBox(width: 10),
                       Text(
                         "₹${product.price}",
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.primaryColor),
                       ),
                     ],
                   ),
@@ -106,6 +108,7 @@ class ProductDetailsView extends StatelessWidget {
       ),
       child: SafeArea(
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
               height: 56,

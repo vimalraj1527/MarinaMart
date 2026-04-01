@@ -135,8 +135,9 @@ class SearchView extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text("₹${product.price}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryColor)),
+                    Text("₹${product.price}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.black)),
                     AddToCartButton(product: product),
                   ],
                 ),
