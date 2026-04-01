@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../controllers/cart_controller.dart';
 import '../models/product_model.dart';
 import '../utils/app_colors.dart';
+import 'package:flutter/services.dart';
 
 class AddToCartButton extends StatelessWidget {
   final Product? product;
@@ -27,6 +28,7 @@ class AddToCartButton extends StatelessWidget {
             ? GestureDetector(
                 key: const ValueKey('add_button'),
                 onTap: () {
+                  HapticFeedback.selectionClick();
                   if (product != null) controller.addToCart(product!);
                 },
                 child: Container(
@@ -84,7 +86,10 @@ class AddToCartButton extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     GestureDetector(
-                      onTap: () => controller.removeFromCart(product!),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        controller.removeFromCart(product!);
+                      },
                       behavior: HitTestBehavior.opaque,
                       child: const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8),
@@ -100,7 +105,10 @@ class AddToCartButton extends StatelessWidget {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => controller.addToCart(product!),
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        controller.addToCart(product!);
+                      },
                       behavior: HitTestBehavior.opaque,
                       child: const Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8),

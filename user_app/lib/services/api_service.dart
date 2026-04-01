@@ -24,8 +24,10 @@ class ApiService extends GetxService {
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
       return response;
-    } catch (e) {
-      return http.Response(jsonEncode({'message': 'No internet connection or timeout'}), 503);
+    } catch (e, stack) {
+      print("API_GET_ERROR: $e at $uri");
+      print(stack);
+      return http.Response(jsonEncode({'message': 'Error: $e'}), 503);
     }
   }
 
@@ -38,8 +40,10 @@ class ApiService extends GetxService {
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
       return response;
-    } catch (e) {
-      return http.Response(jsonEncode({'message': 'No internet connection or timeout'}), 503);
+    } catch (e, stack) {
+      print("API_POST_ERROR: $e at $uri");
+      print(stack);
+      return http.Response(jsonEncode({'message': 'Error: $e'}), 503);
     }
   }
 
@@ -52,8 +56,10 @@ class ApiService extends GetxService {
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
       return response;
-    } catch (e) {
-      return http.Response(jsonEncode({'message': 'No internet connection or timeout'}), 503);
+    } catch (e, stack) {
+      print("API_ERROR: $e at $uri");
+      print(stack);
+      return http.Response(jsonEncode({'message': 'Error: $e'}), 503);
     }
   }
 
@@ -65,8 +71,10 @@ class ApiService extends GetxService {
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
       return response;
-    } catch (e) {
-      return http.Response(jsonEncode({'message': 'No internet connection or timeout'}), 503);
+    } catch (e, stack) {
+      print("API_ERROR: $e at $uri");
+      print(stack);
+      return http.Response(jsonEncode({'message': 'Error: $e'}), 503);
     }
   }
 }

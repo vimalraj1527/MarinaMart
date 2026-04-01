@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../controllers/cart_controller.dart';
 import '../../utils/app_colors.dart';
@@ -120,7 +121,10 @@ class CartView extends StatelessWidget {
 
   Widget _buildQuantityButton(IconData icon, VoidCallback onTap) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
