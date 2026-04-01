@@ -39,21 +39,17 @@ export class OrdersService {
   }
 
   async findAll(user: any) {
-    console.log(`[ORDERS] Finding orders for User: ${user.userId} (Role: ${user.role})`);
+    console.log(`[ORDERS] Finding private orders for Account: ${user.userId}`);
     
     const query = this.orderRepository.createQueryBuilder('order')
       .leftJoinAndSelect('order.assignedRider', 'rider')
       .orderBy('order.createdAt', 'DESC');
 
-    if (user.role === 'Admin' || user.role === 'SuperAdmin') {
-       console.log('[ORDERS] Admin access: Showing all orders');
-    } else {
-       console.log(`[ORDERS] Customer access: Filtering by customerId: ${user.userId}`);
-       query.where('order.customerId = :userId', { userId: user.userId });
-    }
+    // EVERYONE is treated as a customer for account isolation!
+    query.where('order.customerId = :userId', { userId: user.userId });
 
     const orders = await query.getMany();
-    console.log(`[ORDERS] Database returned ${orders.length} orders for this session`);
+    console.log(`[ORDERS] Database found ${orders.length} private orders for this account`);
 
     // POPULATE PRODUCT NAMES for existing orders dynamically!
     // 1. Gather all product IDs from all orders

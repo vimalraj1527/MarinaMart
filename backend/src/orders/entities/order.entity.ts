@@ -23,7 +23,7 @@ export class Order {
   @ManyToOne(() => User, { nullable: true })
   customer: User;
 
-  @Column({ nullable: true })
+  @Column({ name: 'customerId', nullable: true })
   customerId: string;
 
   @Column()
