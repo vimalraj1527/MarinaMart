@@ -61,7 +61,8 @@ class HomeController extends GetxController {
   void _setFallbackCategories() {
     final List<Map<String, String>> fallbackData = [
       {'id': '1', 'name': 'Fruits & Vegetables', 'image': ''},
-      {'id': '2', 'name': 'Dairy, Bread & Eggs', 'image': ''},
+      {'id': '2', 'name': 'Dairy & Eggs', 'image': ''},
+      {'id': '22', 'name': 'Diary & Milk', 'image': ''}, // Added 'Diary' fallback to handle admin spelling variants
       {'id': '3', 'name': 'Munchies & Chips', 'image': ''},
       {'id': '4', 'name': 'Cold Drinks & Juices', 'image': ''},
       {'id': '5', 'name': 'Tea, Coffee & Health', 'image': ''},

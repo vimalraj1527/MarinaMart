@@ -4,17 +4,38 @@ import '../../models/product_model.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../widgets/add_to_cart_button.dart';
+import '../../controllers/product_list_controller.dart';
 
-class ProductListView extends StatelessWidget {
+class ProductListView extends StatefulWidget {
   final String title;
   final List<Product>? products;
 
   const ProductListView({super.key, required this.title, this.products});
 
   @override
+  State<ProductListView> createState() => _ProductListViewState();
+}
+
+class _ProductListViewState extends State<ProductListView> {
+  late ProductListController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = Get.put(ProductListController());
+    
+    // If we don't have products passed from home, or we just want to be sure it's fresh
+    if (widget.products == null || widget.products!.isEmpty) {
+      final categoryTitle = Get.parameters['title'] ?? widget.title;
+      _controller.fetchProductsByCategory(categoryTitle);
+    } else {
+      _controller.categoryProducts.assignAll(widget.products!);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final String displayTitle = Get.parameters['title'] ?? title;
-    final List<Product> displayProducts = products ?? (Get.arguments is List<Product> ? Get.arguments : []);
+    final String displayTitle = Get.parameters['title'] ?? widget.title;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -27,22 +48,39 @@ class ProductListView extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
       ),
-      body: displayProducts.isEmpty 
-        ? const Center(child: Text("No products found.", style: TextStyle(color: AppColors.grey)))
-        : GridView.builder(
-            padding: const EdgeInsets.all(AppConstants.defaultPadding),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.7,
-              crossAxisSpacing: 15,
-              mainAxisSpacing: 15,
+      body: Obx(() {
+        if (_controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        
+        if (_controller.categoryProducts.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.grey.shade300),
+                const SizedBox(height: 16),
+                const Text("No products found in this category.", style: TextStyle(color: AppColors.grey)),
+              ],
             ),
-            itemCount: displayProducts.length,
-            itemBuilder: (context, index) {
-              final product = displayProducts[index];
-              return _buildProductCard(product);
-            },
+          );
+        }
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(AppConstants.defaultPadding),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.7,
+            crossAxisSpacing: 15,
+            mainAxisSpacing: 15,
           ),
+          itemCount: _controller.categoryProducts.length,
+          itemBuilder: (context, index) {
+            final product = _controller.categoryProducts[index];
+            return _buildProductCard(product);
+          },
+        );
+      }),
     );
   }
 

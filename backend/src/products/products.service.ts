@@ -12,7 +12,9 @@ export class ProductsService {
 
   async findAll(category?: string, search?: string, trending?: boolean) {
     const where: any = { isAvailable: true };
-    if (category) where.category = category;
+    if (category) {
+      where.category = ILike(`%${category}%`);
+    }
     if (trending) where.isTrending = true;
     if (search) {
       where.name = ILike(`%${search}%`);

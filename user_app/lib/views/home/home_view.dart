@@ -254,7 +254,16 @@ class _HomeViewState extends State<HomeView> {
                 final cat = controller.categories[index];
                 final color = _getCategoryColor(cat.name);
                 return GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    final catName = cat.name.toLowerCase();
+                    final catProducts = controller.products.where((p) {
+                      final pCat = p.category.toLowerCase();
+                      // Expanded match to handle 'Dairy' vs 'Diary' or 'Fruits' vs 'Fruit & Veg'
+                      bool isDairyMatch = (catName.contains("dairy") || catName.contains("diary")) && (pCat.contains("dairy") || pCat.contains("diary"));
+                      return isDairyMatch || pCat.contains(catName) || catName.contains(pCat);
+                    }).toList();
+                    Get.toNamed('/product-list', arguments: catProducts, parameters: {'title': cat.name});
+                  },
                   child: Column(
                     children: [
                       Container(
