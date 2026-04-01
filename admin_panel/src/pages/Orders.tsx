@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   ShoppingBag, 
   MapPin, 
   Truck,
   ChevronRight,
-  Loader2
+  Loader2,
+  Eye
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Modal } from '../components/ui/LayoutComponents';
@@ -12,6 +14,7 @@ import api from '../services/api';
 
 
 export default function OrdersPage() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState<any[]>([]);
   const [riders, setRiders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,12 +91,18 @@ export default function OrdersPage() {
                </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {orders.map((order, idx) => (
-                <motion.tr key={order.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hover:bg-slate-50/50 transition-all">
+              {orders.map((order) => (
+                <motion.tr 
+                  key={order.id} 
+                  initial={{ opacity: 0 }} 
+                  animate={{ opacity: 1 }} 
+                  onClick={() => navigate(`/orders/${order.id}`)}
+                  className="hover:bg-slate-50/50 transition-all cursor-pointer relative group"
+                >
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-4">
-                       <div className="p-3 bg-emerald-50 rounded-xl">
-                         <ShoppingBag className="w-5 h-5 text-emerald-600" />
+                       <div className="p-3 bg-emerald-50 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                         <ShoppingBag className="w-5 h-5 text-emerald-600 group-hover:text-white" />
                        </div>
                        <div>
                          <p className="font-bold text-slate-900">{order.orderNumber}</p>
@@ -116,8 +125,14 @@ export default function OrdersPage() {
                        {order.status}
                     </span>
                   </td>
-                  <td className="px-8 py-6">
+                  <td className="px-8 py-6" onClick={(e) => e.stopPropagation()}>
                     <div className="flex flex-col gap-3 w-40">
+                        <button 
+                          onClick={() => navigate(`/orders/${order.id}`)}
+                          className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 rounded-xl text-[10px] font-bold text-slate-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                        >
+                           <Eye className="w-3.5 h-3.5" /> View Consignment
+                        </button>
                         <select 
                           className="w-full px-3 py-2 bg-slate-50 border-none rounded-xl text-[10px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500"
                           value={order.status}
@@ -133,7 +148,7 @@ export default function OrdersPage() {
                         {order.status === 'Pending' && !order.assignedRider && (
                            <button 
                              onClick={() => { setSelectedOrder(order); setIsAssignModalOpen(true); }}
-                             className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-bold rounded-xl shadow-lg shadow-emerald-50 w-full"
+                             className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-bold rounded-xl shadow-lg shadow-emerald-50 w-full hover:bg-emerald-700 transition-all"
                            >
                               Assign Rider
                            </button>

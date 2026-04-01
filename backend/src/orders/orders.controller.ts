@@ -29,6 +29,12 @@ export class OrdersController {
     return this.ordersService.findAll(req.user);
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get detailed order information' })
+  findOne(@Param('id') id: string) {
+    return this.ordersService.findOne(id);
+  }
+
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update order delivery status' })
   updateStatus(@Param('id') id: string, @Body('status') status: OrderStatus) {

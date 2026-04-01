@@ -79,6 +79,27 @@ export class OrdersService {
     });
   }
 
+  async findOne(id: string) {
+    const order = await this.orderRepository.findOne({ 
+      where: { id },
+      relations: ['assignedRider']
+    });
+    if (!order) throw new NotFoundException('Order not found');
+
+    const productIds = order.items.map((i: any) => i.productId);
+    const products = await this.productRepository.find({ where: { id: In(productIds) } });
+
+    order.items = order.items.map((item: any) => {
+      const prod = products.find(p => p.id === item.productId);
+      return {
+        ...item,
+        productName: item.productName || (prod ? prod.name : 'Unknown Product')
+      };
+    });
+
+    return order;
+  }
+
   async updateStatus(id: string, status: OrderStatus) {
     const order = await this.orderRepository.findOne({ where: { id } });
     if (!order) throw new NotFoundException('Order not found');

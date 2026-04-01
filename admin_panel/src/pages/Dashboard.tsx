@@ -86,7 +86,7 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Revenue" value={`₹${stats.totalSales.toLocaleString()}`} icon={TrendingUp} trend="+100%" onClick={() => navigate('/orders')} />
+        <StatCard title="Total Revenue" value={`₹${stats.totalSales.toLocaleString()}`} icon={TrendingUp} trend="+100%" onClick={() => navigate('/revenue')} />
         <StatCard title="All Time Orders" value={stats.totalOrders} icon={ShoppingBag} trend="+New" onClick={() => navigate('/orders')} />
         <StatCard title="Active Customers" value={stats.activeUsers} icon={Users} trend="+3.1%" onClick={() => navigate('/customers')} />
         <StatCard title="In Logistics" value={stats.pendingDeliveries} icon={Package} trend="-2.4%" onClick={() => navigate('/orders')} />

@@ -9,7 +9,8 @@ import {
   Settings, 
   Bell, 
   LogOut,
-  Layers
+  Layers,
+  TrendingUp
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -62,6 +63,7 @@ export default function DashboardLayout() {
 
         <nav className="flex-1 mt-6">
           <SidebarItem icon={LayoutDashboard} label="Dashboard" path="/" />
+          <SidebarItem icon={TrendingUp} label="Revenue" path="/revenue" />
           <SidebarItem icon={Package} label="Products" path="/products" />
           <SidebarItem icon={Layers} label="Categories" path="/categories" />
           <SidebarItem icon={ShoppingBag} label="Orders" path="/orders" />

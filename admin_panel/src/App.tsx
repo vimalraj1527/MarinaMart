@@ -5,9 +5,11 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Categories from './pages/Categories';
 import Orders from './pages/Orders';
+import OrderDetails from './pages/OrderDetails';
 import Customers from './pages/Customers';
 import Riders from './pages/Riders';
 import Settings from './pages/Settings';
+import Revenue from './pages/Revenue';
 import Login from './pages/Login';
 
 // --- Protective Auth Wrapper ---
@@ -41,8 +43,10 @@ export default function App() {
           <Route path="products" element={<Products />} />
           <Route path="categories" element={<Categories />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="orders/:id" element={<OrderDetails />} />
           <Route path="customers" element={<Customers />} />
           <Route path="riders" element={<Riders />} />
+          <Route path="revenue" element={<Revenue />} />
           <Route path="settings" element={<Settings />} />
         </Route>
 
