@@ -67,7 +67,7 @@ class _MainShellViewState extends State<MainShellView> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildNavItem(0, Icons.home_rounded, "Home"),
-              _buildNavItem(1, Icons.grid_view_rounded, "Store"),
+              _buildNavItem(1, Icons.grid_view_rounded, "Categories"),
               const SizedBox(width: 40), // SPACE FOR FAB
               _buildNavItem(2, Icons.search_rounded, "Search"),
               _buildNavItem(3, Icons.person_rounded, "Profile"),

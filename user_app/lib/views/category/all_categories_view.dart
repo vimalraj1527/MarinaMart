@@ -39,7 +39,7 @@ class AllCategoriesView extends StatelessWidget {
           itemBuilder: (context, index) {
             final cat = controller.categories[index];
             return GestureDetector(
-              onTap: () => Get.toNamed('/category-products', arguments: cat),
+              onTap: () => Get.toNamed('/product-list', parameters: {'title': cat.name}),
               child: Column(
                 children: [
                   Container(
