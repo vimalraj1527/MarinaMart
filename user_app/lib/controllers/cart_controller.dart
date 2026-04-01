@@ -47,7 +47,7 @@ class CartController extends GetxController {
     }
   }
 
-  Future<void> placeOrder(double targetTotal) async {
+  Future<void> placeOrder(double targetTotal, String customerName, String customerPhone) async {
     if (cartItems.isEmpty) return;
 
     try {
@@ -56,10 +56,13 @@ class CartController extends GetxController {
       final orderData = {
         'items': cartItems.map((item) => {
           'productId': item.product.id,
+          'productName': item.product.name,
           'quantity': item.quantity,
           'price': item.product.price,
         }).toList(),
         'totalAmount': targetTotal,
+        'customerName': customerName,
+        'customerPhone': customerPhone,
         'deliveryAddress': _locationController.currentAddress.value,
         'paymentMethod': 'Cash on Delivery',
         'status': 'Pending',

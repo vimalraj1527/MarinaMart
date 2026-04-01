@@ -99,11 +99,37 @@ class OrdersView extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Item (ID: ${item.productId.substring(0, 5)}...)", style: const TextStyle(fontSize: 12)),
+                      Text(item.productName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                       Text("Qty: ${item.quantity} x ₹${item.price}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                     ],
                   ),
                 )).toList(),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                       const Text("DELIVERY DETAILS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.grey)),
+                       const SizedBox(height: 4),
+                       Row(
+                         children: [
+                            const Icon(Icons.person_outline, size: 14, color: Colors.black),
+                            const SizedBox(width: 4),
+                            Text(order.customerName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                         ],
+                       ),
+                       const SizedBox(height: 4),
+                       Row(
+                         children: [
+                            const Icon(Icons.phone_outlined, size: 14, color: Colors.black),
+                            const SizedBox(width: 4),
+                            Text(order.customerPhone, style: const TextStyle(fontSize: 12)),
+                         ],
+                       ),
+                    ],
+                  ),
+                ),
                 const Divider(),
               ],
             ),

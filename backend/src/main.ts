@@ -31,8 +31,8 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   const port = process.env.PORT || 5001;
-  await app.listen(port);
-  console.log(`Backend is running on: http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`Backend is running on: http://localhost:${port} (and reachable via your local IP)`);
   console.log(`API Documentation available at: http://localhost:${port}/docs`);
 }
 bootstrap();

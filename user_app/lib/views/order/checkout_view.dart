@@ -153,10 +153,10 @@ class _CheckoutViewState extends State<CheckoutView> {
           ),
           child: _cartController.isLoading.value 
             ? const CircularProgressIndicator(color: Colors.white)
-            : Row(
+              : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("ORDER FOR ₹${total.toStringAsFixed(0)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text("Place Order for ₹${total.toStringAsFixed(0)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
                   const SizedBox(width: 10),
                   const Icon(Icons.check_circle_rounded),
                 ],
@@ -192,6 +192,6 @@ class _CheckoutViewState extends State<CheckoutView> {
        return;
      }
 
-     _cartController.placeOrder(total);
+     _cartController.placeOrder(total, _nameController.text, _phoneController.text);
   }
 }

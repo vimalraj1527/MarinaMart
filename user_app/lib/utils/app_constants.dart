@@ -1,7 +1,7 @@
 class AppConstants {
   static const String appName = 'Bloomarina Instamart';
   static const String appVersion = '1.0.0';
-  static const String baseUrl = 'http://localhost:5001'; // Forwarded via ADB reverse
+  static const String baseUrl = 'http://192.168.1.2:5001'; // Replace with your machine's local IP for physical devices
 
   // API Endpoints
   static const String loginUrl = '/auth/login';

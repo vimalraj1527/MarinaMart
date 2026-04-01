@@ -170,9 +170,9 @@ class CartView extends StatelessWidget {
               : const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Place Order (COD)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text("Proceed to Payment", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
                     SizedBox(width: 10),
-                    Icon(Icons.check_circle_outline),
+                    Icon(Icons.arrow_forward_rounded, size: 20),
                   ],
                 ),
           ),
