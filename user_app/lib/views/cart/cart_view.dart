@@ -150,7 +150,7 @@ class CartView extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () => Get.toNamed('/checkout'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryColor,
               foregroundColor: Colors.white,
@@ -158,14 +158,16 @@ class CartView extends StatelessWidget {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
               elevation: 0,
             ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Go to Checkout", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                SizedBox(width: 10),
-                Icon(Icons.arrow_forward),
-              ],
-            ),
+            child: controller.isLoading.value
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Place Order (COD)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    SizedBox(width: 10),
+                    Icon(Icons.check_circle_outline),
+                  ],
+                ),
           ),
           const SizedBox(height: 8),
         ],

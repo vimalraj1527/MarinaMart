@@ -53,11 +53,16 @@ export default function OrdersPage() {
   };
 
   const updateOrderStatus = async (id: string, status: string) => {
+    // Optimistic Update
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+    
     try {
       await axios.patch(`${API_BASE_URL}/orders/${id}/status`, { status });
+      // Final sync to match backend structure
       fetchData();
     } catch (err) {
       console.error('Error updating status:', err);
+      fetchData(); // Rollback on error
     }
   };
 
@@ -116,20 +121,34 @@ export default function OrdersPage() {
                     </span>
                   </td>
                   <td className="px-8 py-6">
-                    <div className="flex justify-center gap-3">
-                       {order.status === 'Pending' ? (
-                          <button 
-                            onClick={() => { setSelectedOrder(order); setIsAssignModalOpen(true); }}
-                            className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-bold rounded-xl shadow-lg shadow-emerald-50"
-                          >
-                             Assign Rider
-                          </button>
-                       ) : (
-                          <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                             <Truck className="w-3.5 h-3.5 text-emerald-500" />
-                             {order.assignedRider?.name || 'Assigned'}
-                          </div>
-                       )}
+                    <div className="flex flex-col gap-3 w-40">
+                        <select 
+                          className="w-full px-3 py-2 bg-slate-50 border-none rounded-xl text-[10px] font-bold text-slate-600 outline-none focus:ring-2 focus:ring-emerald-500"
+                          value={order.status}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Processing">Processing</option>
+                          <option value="Out for Delivery">Out for Delivery</option>
+                          <option value="Delivered">Delivered</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+
+                        {order.status === 'Pending' && !order.assignedRider && (
+                           <button 
+                             onClick={() => { setSelectedOrder(order); setIsAssignModalOpen(true); }}
+                             className="px-4 py-2 bg-emerald-600 text-white text-[10px] font-bold rounded-xl shadow-lg shadow-emerald-50 w-full"
+                           >
+                              Assign Rider
+                           </button>
+                        )}
+                        
+                        {order.assignedRider && (
+                           <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-slate-400">
+                              <Truck className="w-3 h-3 text-emerald-500" />
+                              {order.assignedRider.name}
+                           </div>
+                        )}
                     </div>
                   </td>
                 </motion.tr>

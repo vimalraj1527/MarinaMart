@@ -31,19 +31,21 @@ class _PickLocationViewState extends State<PickLocationView> {
         _locationController.currentPosition.value!.latitude,
         _locationController.currentPosition.value!.longitude,
       );
+      _decodeAddress(_center);
     } else {
-      _locationController.getCurrentLocation();
+      _locationController.getCurrentLocation().then((_) {
+         if (_locationController.currentPosition.value != null) {
+           setState(() {
+             _center = LatLng(
+                _locationController.currentPosition.value!.latitude,
+                _locationController.currentPosition.value!.longitude,
+             );
+           });
+           _mapController.move(_center, 15);
+           _decodeAddress(_center);
+         }
+      });
     }
-    
-    // Listen for updates and move camera
-    ever(_locationController.currentPosition, (Position? pos) {
-      if (pos != null && mounted) {
-        _mapController.move(LatLng(pos.latitude, pos.longitude), 15);
-        _decodeAddress(LatLng(pos.latitude, pos.longitude));
-      }
-    });
-
-    _decodeAddress(_center);
   }
 
   Future<void> _decodeAddress(LatLng pos) async {
@@ -81,15 +83,15 @@ class _PickLocationViewState extends State<PickLocationView> {
               initialCenter: _center,
               initialZoom: 15,
               onPositionChanged: (pos, hasGesture) {
-                if (hasGesture && pos.center != null) {
-                  _center = pos.center!;
+                if (hasGesture) {
+                  _center = pos.center;
                   _decodeAddress(_center);
                 }
               },
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 userAgentPackageName: 'com.bloomarina.instamart.user_app',
               ),
             ],

@@ -12,7 +12,17 @@ export class OrdersService {
 
   async create(createOrderDto: any) {
     const orderNum = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
-    const order = this.orderRepository.create({ ...createOrderDto, orderNumber: orderNum });
+    
+    // Ensure required fields for the database
+    const orderData = {
+      customerName: 'Bloomarina Customer',
+      customerPhone: '+91 9999999999',
+      paymentStatus: 'Pending',
+      ...createOrderDto,
+      orderNumber: orderNum,
+    };
+
+    const order = this.orderRepository.create(orderData);
     return await this.orderRepository.save(order);
   }
 

@@ -7,7 +7,6 @@ import 'bindings/initial_binding.dart';
 import 'services/storage_service.dart';
 import 'views/splash/splash_view.dart';
 import 'views/auth/login_view.dart';
-import 'views/home/home_view.dart';
 import 'views/user_info/profile_view.dart';
 import 'views/order/orders_view.dart';
 import 'views/address/address_list_view.dart';
@@ -23,6 +22,9 @@ import 'views/category/all_categories_view.dart';
 import 'views/category/category_products_view.dart';
 import 'views/product/product_list_view.dart';
 import 'views/main_shell_view.dart';
+import 'views/order/checkout_view.dart';
+import 'views/order/track_order_view.dart';
+import 'views/order/order_success_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +83,9 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/all-categories', page: () => const AllCategoriesView()),
         GetPage(name: '/category-products', page: () => const CategoryProductsView()),
         GetPage(name: '/product-list', page: () => const ProductListView(title: "Products")),
+        GetPage(name: '/checkout', page: () => const CheckoutView()),
+        GetPage(name: '/track-order', page: () => const TrackOrderView()),
+        GetPage(name: '/order-success', page: () => const OrderSuccessView()),
       ],
     );
   }

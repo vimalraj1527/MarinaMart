@@ -13,8 +13,8 @@ class InitialBinding extends Bindings {
     Get.lazyPut(() => ApiService());
     
     // Controllers setup
-    Get.put(CartController(), permanent: true);
     Get.put(LocationController(), permanent: true);
+    Get.put(CartController(), permanent: true);
     Get.put(AuthController(), permanent: true);
   }
 }
