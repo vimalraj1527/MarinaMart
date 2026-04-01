@@ -9,6 +9,8 @@ export enum OrderStatus {
   CANCELLED = 'Cancelled',
 }
 
+import { User } from '../../users/entities/user.entity';
+
 @Entity('orders')
 export class Order {
   @PrimaryGeneratedColumn('uuid')
@@ -17,6 +19,12 @@ export class Order {
   @Column()
   @Index()
   orderNumber: string; // Readable ID e.g. ORD-1001
+
+  @ManyToOne(() => User, { nullable: true })
+  customer: User;
+
+  @Column({ nullable: true })
+  customerId: string;
 
   @Column()
   customerName: string;

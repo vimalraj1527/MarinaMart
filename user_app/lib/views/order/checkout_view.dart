@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/cart_controller.dart';
 import '../../controllers/location_controller.dart';
+import '../../services/storage_service.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 
@@ -15,10 +17,41 @@ class CheckoutView extends StatefulWidget {
 class _CheckoutViewState extends State<CheckoutView> {
   final CartController _cartController = Get.find<CartController>();
   final LocationController _locationController = Get.find<LocationController>();
+  final StorageService _storage = Get.find<StorageService>();
   
-  final _nameController = TextEditingController(text: "Bloomarina Customer");
-  final _phoneController = TextEditingController(text: "+91 9999999999");
+  late TextEditingController _nameController;
+  late TextEditingController _phoneController;
   String _paymentMethod = "Cash on Delivery";
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize with user profile data
+    String? userStr = _storage.getUser();
+    String name = "Bloomarina Customer";
+    String phone = "+91 9999999999";
+    
+    if (userStr != null) {
+      try {
+        final userData = jsonDecode(userStr);
+        name = userData['name'] ?? name;
+        phone = userData['phone'] ?? phone;
+      } catch (e) {
+        debugPrint("Error decoding user for checkout: $e");
+      }
+    }
+    
+    _nameController = TextEditingController(text: name);
+    _phoneController = TextEditingController(text: phone);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

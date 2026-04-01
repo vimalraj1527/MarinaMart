@@ -17,6 +17,12 @@ export class AuthController {
     return this.authService.login(user);
   }
 
+  @Post('register')
+  @ApiOperation({ summary: 'Register a new customer' })
+  async register(@Body() registerDto: any) {
+    return this.authService.register(registerDto);
+  }
+
   @Get('profile')
   @ApiOperation({ summary: 'Get current user profile' })
   getProfile(@Request() req: any) {

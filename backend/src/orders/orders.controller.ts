@@ -1,23 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Request } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrderStatus } from './entities/order.entity';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Orders')
+@ApiBearerAuth()
 @Controller('orders')
+@UseGuards(JwtAuthGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new customer order' })
-  create(@Body() createOrderDto: any) {
+  create(@Body() createOrderDto: any, @Request() req: any) {
+    // Automatically link the order to the logged-in user
+    createOrderDto.customerId = req.user.userId;
     return this.ordersService.create(createOrderDto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all live orders' })
-  findAll() {
-    return this.ordersService.findAll();
+  @ApiOperation({ summary: 'Get live orders for the current user' })
+  findAll(@Request() req: any) {
+    console.log(`[ORDERS_CONTROLLER] req.user: ${JSON.stringify(req.user)}`);
+    if (!req.user || !req.user.userId) {
+       console.error('[ORDERS_CONTROLLER] Error: userId is missing from token!');
+    }
+    return this.ordersService.findAll(req.user);
   }
 
   @Patch(':id/status')

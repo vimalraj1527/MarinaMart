@@ -25,6 +25,7 @@ import 'views/main_shell_view.dart';
 import 'views/order/checkout_view.dart';
 import 'views/order/track_order_view.dart';
 import 'views/order/order_success_view.dart';
+import 'views/auth/signup_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,6 +69,7 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/', page: () => const SplashView()),
         GetPage(name: '/login', page: () => const LoginView()),
+        GetPage(name: '/signup', page: () => const SignupView()),
         GetPage(name: '/home', page: () => const MainShellView()),
         GetPage(name: '/profile', page: () => const ProfileView()),
         GetPage(name: '/orders', page: () => const OrdersView()),

@@ -38,16 +38,29 @@ export class OrdersService {
     return await this.orderRepository.save(order);
   }
 
-  async findAll() {
-    const orders = await this.orderRepository.find({ 
-      relations: ['assignedRider'],
-      order: { createdAt: 'DESC' } 
-    });
+  async findAll(user: any) {
+    console.log(`[ORDERS] Finding orders for User: ${user.userId} (Role: ${user.role})`);
+    
+    const query = this.orderRepository.createQueryBuilder('order')
+      .leftJoinAndSelect('order.assignedRider', 'rider')
+      .orderBy('order.createdAt', 'DESC');
+
+    if (user.role === 'Admin' || user.role === 'SuperAdmin') {
+       console.log('[ORDERS] Admin access: Showing all orders');
+    } else {
+       console.log(`[ORDERS] Customer access: Filtering by customerId: ${user.userId}`);
+       query.where('order.customerId = :userId', { userId: user.userId });
+    }
+
+    const orders = await query.getMany();
+    console.log(`[ORDERS] Database returned ${orders.length} orders for this session`);
 
     // POPULATE PRODUCT NAMES for existing orders dynamically!
     // 1. Gather all product IDs from all orders
     const allProdIds = [...new Set(orders.flatMap((o: any) => o.items.map((i: any) => i.productId)))];
     
+    if (allProdIds.length === 0) return orders;
+
     // 2. Fetch those products
     const products = await this.productRepository.find({ where: { id: In(allProdIds) } });
 

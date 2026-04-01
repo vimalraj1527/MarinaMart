@@ -42,4 +42,16 @@ export class AuthService {
       },
     };
   }
+  async register(registerDto: any) {
+    const existingUser = await (this.usersService as any).userRepository.findOne({ 
+      where: { email: registerDto.email } 
+    });
+    
+    if (existingUser) {
+      throw new UnauthorizedException('User with this email already exists');
+    }
+
+    const user = await this.usersService.create(registerDto);
+    return this.login(user);
+  }
 }

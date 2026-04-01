@@ -4,6 +4,8 @@ import '../../controllers/auth_controller.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 
+import 'package:flutter/services.dart';
+
 class LoginView extends StatelessWidget {
   const LoginView({super.key});
 
@@ -139,7 +141,10 @@ class LoginView extends StatelessWidget {
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
-                        onPressed: controller.isLoading.value ? null : () => controller.login(),
+                        onPressed: controller.isLoading.value ? null : () {
+                          HapticFeedback.selectionClick();
+                          controller.login();
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryColor,
                           foregroundColor: Colors.white,
@@ -164,7 +169,10 @@ class LoginView extends StatelessWidget {
                       children: [
                         const Text("Don't have an account? "),
                         GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                             HapticFeedback.selectionClick();
+                             Get.toNamed('/signup');
+                          },
                           child: const Text(
                             "Sign Up",
                             style: TextStyle(
