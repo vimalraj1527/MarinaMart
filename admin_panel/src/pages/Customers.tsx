@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const API_BASE_URL = 'http://localhost:5001';
+import api from '../services/api';
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -21,7 +21,7 @@ export default function CustomersPage() {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/users?role=Customer`);
+      const response = await api.get('/users?role=Customer');
       setCustomers(response.data);
     } catch (err) {
       console.error('Error fetching customers:', err);

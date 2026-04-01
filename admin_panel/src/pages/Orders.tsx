@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { 
   ShoppingBag, 
   MapPin, 
   Truck,
-  CheckCircle2,
-  Clock,
   ChevronRight,
-  ShieldCheck,
   Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Modal } from '../components/ui/LayoutComponents';
+import api from '../services/api';
 
-const API_BASE_URL = 'http://localhost:5001';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -26,8 +22,8 @@ export default function OrdersPage() {
     try {
       setLoading(true);
       const [ordRes, ridRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/orders`),
-        axios.get(`${API_BASE_URL}/riders?status=Available`)
+        api.get('/orders'),
+        api.get('/riders?status=Available')
       ]);
       setOrders(ordRes.data);
       setRiders(ridRes.data);
@@ -44,7 +40,7 @@ export default function OrdersPage() {
 
   const handleAssignRider = async (riderId: string) => {
     try {
-      await axios.patch(`${API_BASE_URL}/orders/${selectedOrder.id}/assign/${riderId}`);
+      await api.patch(`/orders/${selectedOrder.id}/assign/${riderId}`);
       setIsAssignModalOpen(false);
       fetchData();
     } catch (err) {
@@ -57,7 +53,7 @@ export default function OrdersPage() {
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
     
     try {
-      await axios.patch(`${API_BASE_URL}/orders/${id}/status`, { status });
+      await api.patch(`/orders/${id}/status`, { status });
       // Final sync to match backend structure
       fetchData();
     } catch (err) {

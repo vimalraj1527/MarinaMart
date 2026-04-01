@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import { 
   Plus, 
   Trash2, 
@@ -12,32 +11,26 @@ import {
 import { motion } from 'framer-motion';
 import { Modal, Input, Select } from '../components/ui/LayoutComponents';
 
-const API_BASE_URL = 'http://localhost:5001';
+import { useSearchParams } from 'react-router-dom';
+
+import api from '../services/api';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   
-  // Form State
-  const [newProduct, setNewProduct] = useState({
-    name: '',
-    description: '',
-    price: 0,
-    category: '',
-    unit: '1 kg',
-    stock: 100,
-    images: ['https://placehold.co/400']
-  });
+  const categoryFilter = searchParams.get('category');
 
   // Fetch Products & Categories from Backend
   const fetchData = async () => {
     try {
       setLoading(true);
       const [prodRes, catRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/products`),
-        axios.get(`${API_BASE_URL}/categories`)
+        api.get('/products'),
+        api.get('/categories')
       ]);
       setProducts(prodRes.data);
       setCategories(catRes.data);
@@ -50,6 +43,21 @@ export default function ProductsPage() {
       setLoading(false);
     }
   };
+
+  const filteredProducts = categoryFilter 
+    ? products.filter(p => p.category === categoryFilter)
+    : products;
+
+  // Form State
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    description: '',
+    price: 0,
+    category: '',
+    unit: '1 kg',
+    stock: 100,
+    images: ['https://placehold.co/400']
+  });
 
   useEffect(() => {
     fetchData();
@@ -64,7 +72,7 @@ export default function ProductsPage() {
         stock: Number(newProduct.stock)
       };
       
-      await axios.post(`${API_BASE_URL}/products`, payload);
+      await api.post('/products', payload);
       setIsAddModalOpen(false);
       fetchData(); // Refresh List
       
@@ -73,7 +81,7 @@ export default function ProductsPage() {
         name: '',
         description: '',
         price: 0,
-        category: 'Fruits',
+        category: categories.length > 0 ? categories[0].name : '',
         unit: '1 kg',
         stock: 100,
         images: ['https://placehold.co/400']
@@ -88,7 +96,7 @@ export default function ProductsPage() {
   const handleDeleteProduct = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/products/${id}`);
+      await api.delete(`/products/${id}`);
       fetchData();
     } catch (err) {
       console.error('Error deleting product:', err);
@@ -100,16 +108,36 @@ export default function ProductsPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-           <h1 className="text-3xl font-bold text-slate-900 font-outfit">Products Catalog</h1>
+           <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-slate-900 font-outfit">Products Catalog</h1>
+              {categoryFilter && (
+                <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100 text-xs font-bold">
+                   <span>Category: {categoryFilter}</span>
+                   <button onClick={() => setSearchParams({})} className="hover:text-emerald-800 transition-colors">
+                      <Trash2 className="w-3 h-3" />
+                   </button>
+                </div>
+              )}
+           </div>
            <p className="text-slate-500 mt-2">Manage your inventory in real-time connected to the cloud.</p>
         </div>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all hover:-translate-y-1"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add New Product</span>
-        </button>
+        <div className="flex gap-4">
+           {categoryFilter && (
+             <button 
+                onClick={() => setSearchParams({})}
+                className="px-6 py-4 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition-all font-outfit"
+             >
+                Show All Products
+             </button>
+           )}
+           <button 
+             onClick={() => setIsAddModalOpen(true)}
+             className="flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all hover:-translate-y-1 font-outfit"
+           >
+             <Plus className="w-5 h-5" />
+             <span>Add New Product</span>
+           </button>
+        </div>
       </div>
 
       {/* Table Section */}
@@ -130,7 +158,7 @@ export default function ProductsPage() {
                </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <motion.tr 
                   key={product.id}
                   initial={{ opacity: 0 }}

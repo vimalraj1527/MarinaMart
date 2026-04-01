@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { Product } from '../products/entities/product.entity';
+import { UserRole } from '../users/entities/user.entity';
 import { In } from 'typeorm';
 
 @Injectable()
@@ -45,8 +46,13 @@ export class OrdersService {
       .leftJoinAndSelect('order.assignedRider', 'rider')
       .orderBy('order.createdAt', 'DESC');
 
-    // EVERYONE is treated as a customer for account isolation!
-    query.where('order.customerId = :userId', { userId: user.userId });
+    // Admins and SuperAdmins see ALL orders. Customers only see their own.
+    if (user.role === UserRole.CUSTOMER) {
+       console.log(`[ORDERS] Restricting to customer: ${user.userId}`);
+       query.where('order.customerId = :userId', { userId: user.userId });
+    } else {
+       console.log(`[ORDERS] Role: ${user.role} - Showing all platform orders!`);
+    }
 
     const orders = await query.getMany();
     console.log(`[ORDERS] Database found ${orders.length} private orders for this account`);

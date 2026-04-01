@@ -28,6 +28,12 @@ export class CategoriesService {
     return await this.categoryRepository.save(category);
   }
 
+  async update(id: string, updateCategoryDto: any) {
+    const category = await this.findOne(id);
+    Object.assign(category, updateCategoryDto);
+    return await this.categoryRepository.save(category);
+  }
+
   async remove(id: string) {
     const category = await this.findOne(id);
     return await this.categoryRepository.remove(category);

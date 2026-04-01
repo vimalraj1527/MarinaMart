@@ -14,7 +14,7 @@ import {
 import { motion } from 'framer-motion';
 import { Modal, Input, Select } from '../components/ui/LayoutComponents';
 
-const API_BASE_URL = 'http://localhost:5001';
+import api from '../services/api';
 
 export default function RidersPage() {
   const [riders, setRiders] = useState<any[]>([]);
@@ -33,7 +33,7 @@ export default function RidersPage() {
   const fetchRiders = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/riders`);
+      const response = await api.get('/riders');
       setRiders(response.data);
     } catch (err) {
       console.error('Error fetching riders:', err);
@@ -48,7 +48,7 @@ export default function RidersPage() {
 
   const handleAddRider = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/riders`, newRider);
+      await api.post('/riders', newRider);
       setIsAddModalOpen(false);
       fetchRiders();
     } catch (err) {

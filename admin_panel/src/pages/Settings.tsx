@@ -23,7 +23,7 @@ import { Input, Select } from '../components/ui/LayoutComponents';
 
 type TabType = 'store' | 'delivery' | 'security' | 'notifications' | 'admins';
 
-const API_BASE_URL = 'http://localhost:5001';
+import api from '../services/api';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('store');
@@ -42,7 +42,7 @@ export default function SettingsPage() {
   const handleCreateAdmin = async () => {
     try {
       setIsSaving(true);
-      await axios.post(`${API_BASE_URL}/users`, newAdmin);
+      await api.post('/users', newAdmin);
       setShowSuccess(true);
       setNewAdmin({ name: '', email: '', password: '', role: 'Admin' });
       setTimeout(() => setShowSuccess(false), 3000);

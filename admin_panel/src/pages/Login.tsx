@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ShieldCheck, Loader2, PlayCircle, LogIn } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const API_BASE_URL = 'http://localhost:5001';
+import api from '../services/api';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, { email, password });
+      const response = await api.post('/auth/login', { email, password });
       
       const { access_token, user } = response.data;
       
