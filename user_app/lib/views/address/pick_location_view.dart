@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import '../../utils/app_colors.dart';
 import '../../controllers/location_controller.dart';
@@ -13,7 +15,7 @@ class PickLocationView extends StatefulWidget {
 }
 
 class _PickLocationViewState extends State<PickLocationView> {
-  GoogleMapController? _mapController;
+  final MapController _mapController = MapController();
   LatLng _center = const LatLng(12.9716, 77.5946); // Default Bangalore
   String _address = "Fetching address...";
   bool _isFetching = false;
@@ -23,12 +25,24 @@ class _PickLocationViewState extends State<PickLocationView> {
   @override
   void initState() {
     super.initState();
+    // Start with current known location if available
     if (_locationController.currentPosition.value != null) {
       _center = LatLng(
         _locationController.currentPosition.value!.latitude,
         _locationController.currentPosition.value!.longitude,
       );
+    } else {
+      _locationController.getCurrentLocation();
     }
+    
+    // Listen for updates and move camera
+    ever(_locationController.currentPosition, (Position? pos) {
+      if (pos != null && mounted) {
+        _mapController.move(LatLng(pos.latitude, pos.longitude), 15);
+        _decodeAddress(LatLng(pos.latitude, pos.longitude));
+      }
+    });
+
     _decodeAddress(_center);
   }
 
@@ -53,24 +67,32 @@ class _PickLocationViewState extends State<PickLocationView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Pin Location"),
+        title: const Text("Pin Location (FREE)"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
       ),
       body: Stack(
         children: [
-          // Google Map
-          GoogleMap(
-            initialCameraPosition: CameraPosition(target: _center, zoom: 15),
-            onMapCreated: (controller) => _mapController = controller,
-            onCameraMove: (position) {
-              _center = position.target;
-            },
-            onCameraIdle: () => _decodeAddress(_center),
-            myLocationEnabled: true,
-            myLocationButtonEnabled: false,
-            zoomControlsEnabled: false,
+          // OpenStreetMap
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: _center,
+              initialZoom: 15,
+              onPositionChanged: (pos, hasGesture) {
+                if (hasGesture && pos.center != null) {
+                  _center = pos.center!;
+                  _decodeAddress(_center);
+                }
+              },
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.bloomarina.instamart.user_app',
+              ),
+            ],
           ),
           
           // Fixed Center Pin
@@ -147,7 +169,7 @@ class _PickLocationViewState extends State<PickLocationView> {
                       _locationController.currentPosition.value!.latitude,
                       _locationController.currentPosition.value!.longitude
                     );
-                    _mapController?.animateCamera(CameraUpdate.newLatLng(pos));
+                    _mapController.move(pos, 15);
                   }
                 });
               },
@@ -174,7 +196,9 @@ class _PickLocationViewState extends State<PickLocationView> {
           ElevatedButton(
             onPressed: () {
               if (titleController.text.isNotEmpty) {
-                _locationController.addAddress(titleController.text, _address);
+                final String id = DateTime.now().toString();
+                _locationController.savedAddresses.add({'id': id, 'title': titleController.text, 'address': _address});
+                _locationController.setActiveAddress(id, _address);
                 Get.back(); // close dialog
                 Get.back(); // return from location picker
                 Get.snackbar("Success", "Address saved!", backgroundColor: Colors.green, colorText: Colors.white);

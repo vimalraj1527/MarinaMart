@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 class LocationController extends GetxController {
   final RxString currentAddress = "Locating...".obs;
   final RxString shortAddress = "Locating...".obs;
+  final RxString selectedAddressId = "current".obs;
   final RxList<Map<String, String>> savedAddresses = <Map<String, String>>[].obs;
   final Rx<Position?> currentPosition = Rx<Position?>(null);
   final RxBool isLoading = false.obs;
@@ -16,7 +17,12 @@ class LocationController extends GetxController {
   }
 
   void addAddress(String title, String address) {
-    savedAddresses.add({'title': title, 'address': address});
+    savedAddresses.add({'id': DateTime.now().toString(), 'title': title, 'address': address});
+  }
+
+  void setActiveAddress(String id, String address) {
+    selectedAddressId.value = id;
+    updateAddressManual(address);
   }
 
   Future<void> getCurrentLocation() async {

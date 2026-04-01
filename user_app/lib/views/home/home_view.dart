@@ -383,7 +383,7 @@ class _HomeViewState extends State<HomeView> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: const BorderRadius.vertical(top: Radius.circular(15))),
-                child: Hero(tag: product.id, child: Image.network(product.image, fit: BoxFit.contain)),
+                child: Image.network(product.image, fit: BoxFit.contain, errorBuilder: (c,e,s) => const Icon(Icons.shopping_bag_outlined)),
               ),
             ),
             Padding(
@@ -436,6 +436,62 @@ class _HomeViewState extends State<HomeView> {
   }
 
   void _showLocationDialog(LocationController controller) {
-    Get.dialog(AlertDialog(title: const Text("Delivery Address"), content: Obx(() => Text(controller.currentAddress.value))));
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Select Delivery Location", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                IconButton(icon: const Icon(Icons.close), onPressed: () => Get.back()),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _buildBottomSheetItem(
+              Icons.my_location, "Current Location", controller.currentAddress.value, 
+              () { controller.setActiveAddress("current", controller.currentAddress.value); Get.back(); }
+            ),
+            const Divider(),
+            ...controller.savedAddresses.map((addr) => _buildBottomSheetItem(
+              Icons.home_outlined, addr['title']!, addr['address']!,
+              () { controller.setActiveAddress(addr['id']!, addr['address']!); Get.back(); }
+            )).toList(),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () { Get.back(); Get.toNamed('/addresses'); },
+                icon: const Icon(Icons.add),
+                label: const Text("Manage Addresses"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
+  }
+
+  Widget _buildBottomSheetItem(IconData icon, String title, String subtitle, VoidCallback onTap) {
+    return ListTile(
+      leading: Icon(icon, color: AppColors.primaryColor),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12)),
+      onTap: onTap,
+    );
   }
 }

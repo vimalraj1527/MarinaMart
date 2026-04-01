@@ -53,6 +53,8 @@ dependencies:
   flutter_typeahead: ^5.2.0
   dots_indicator: ^4.0.1
   lottie: ^3.3.2
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:

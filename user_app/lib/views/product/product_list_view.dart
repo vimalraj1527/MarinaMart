@@ -72,7 +72,7 @@ class ProductListView extends StatelessWidget {
                   color: Colors.grey.shade50,
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                 ),
-                child: Hero(tag: "plist_${product.id}", child: Image.network(product.image, fit: BoxFit.contain, errorBuilder: (c, e, s) => const Icon(Icons.image))),
+                child: Image.network(product.image, fit: BoxFit.contain, errorBuilder: (c, e, s) => const Icon(Icons.image)),
               ),
             ),
             Padding(

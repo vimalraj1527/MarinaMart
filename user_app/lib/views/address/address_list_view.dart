@@ -15,12 +15,18 @@ class AddressListView extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Obx(() => _buildAddressCard("Current Location", location.currentAddress.value, true)),
+            Obx(() => GestureDetector(
+              onTap: () => location.setActiveAddress("current", location.currentAddress.value),
+              child: _buildAddressCard("Current Location", location.currentAddress.value, location.selectedAddressId.value == "current")
+            )),
             
             // Dynamic saved addresses
             Obx(() => Column(
               children: location.savedAddresses.map((addr) => 
-                _buildAddressCard(addr['title'] ?? "", addr['address'] ?? "", false)
+                GestureDetector(
+                  onTap: () => location.setActiveAddress(addr['id']!, addr['address']!),
+                  child: _buildAddressCard(addr['title'] ?? "", addr['address'] ?? "", location.selectedAddressId.value == addr['id'])
+                )
               ).toList(),
             )),
             
