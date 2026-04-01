@@ -4,6 +4,7 @@ import '../../models/product_model.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../widgets/add_to_cart_button.dart';
+import '../../widgets/sticky_cart_bar.dart';
 import '../../controllers/product_list_controller.dart';
 
 class ProductListView extends StatefulWidget {
@@ -48,6 +49,7 @@ class _ProductListViewState extends State<ProductListView> {
           onPressed: () => Get.back(),
         ),
       ),
+      bottomNavigationBar: const StickyCartBar(),
       body: Obx(() {
         if (_controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator());

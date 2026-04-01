@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import '../controllers/cart_controller.dart';
 import '../utils/app_colors.dart';
+import '../widgets/sticky_cart_bar.dart';
 import 'home/home_view.dart';
 import 'category/all_categories_view.dart';
 import 'search/search_view.dart';
@@ -61,18 +62,24 @@ class _MainShellViewState extends State<MainShellView> {
         shape: const CircularNotchedRectangle(),
         notchMargin: 10,
         padding: EdgeInsets.zero,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(0, Icons.home_rounded, "Home"),
-              _buildNavItem(1, Icons.grid_view_rounded, "Categories"),
-              const SizedBox(width: 40), // SPACE FOR FAB
-              _buildNavItem(2, Icons.search_rounded, "Search"),
-              _buildNavItem(3, Icons.person_rounded, "Profile"),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const StickyCartBar(),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(0, Icons.home_rounded, "Home"),
+                  _buildNavItem(1, Icons.grid_view_rounded, "Categories"),
+                  const SizedBox(width: 40), // SPACE FOR FAB
+                  _buildNavItem(2, Icons.search_rounded, "Search"),
+                  _buildNavItem(3, Icons.person_rounded, "Profile"),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
