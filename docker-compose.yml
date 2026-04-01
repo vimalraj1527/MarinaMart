@@ -20,7 +20,14 @@ services:
     ports:
       - "5001:5001"
     environment:
-      DATABASE_URL: postgres://grocery_user:grocery_password@db:5432/grocery_delivery
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: grocery_user
+      DB_PASSWORD: grocery_password
+      DB_NAME: grocery_delivery
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
     depends_on:
       - db
 

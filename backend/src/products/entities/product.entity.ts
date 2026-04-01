@@ -1,5 +1,14 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
 
+export class ColumnNumericTransformer {
+  to(data: number): number {
+    return data;
+  }
+  from(data: string): number {
+    return parseFloat(data);
+  }
+}
+
 @Entity('products')
 export class Product {
   @PrimaryGeneratedColumn('uuid')
@@ -12,10 +21,10 @@ export class Product {
   @Column('text')
   description: string;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2, transformer: new ColumnNumericTransformer() })
   price: number;
 
-  @Column('decimal', { precision: 10, scale: 2, nullable: true })
+  @Column('decimal', { precision: 10, scale: 2, nullable: true, transformer: new ColumnNumericTransformer() })
   originalPrice: number;
 
   @Column('text', { array: true })
@@ -40,7 +49,7 @@ export class Product {
   @Column({ default: false })
   isTrending: boolean;
 
-  @Column('decimal', { precision: 2, scale: 1, default: 4.5 })
+  @Column('decimal', { precision: 2, scale: 1, default: 4.5, transformer: new ColumnNumericTransformer() })
   ratings: number;
 
   @Column('int', { default: 0 })

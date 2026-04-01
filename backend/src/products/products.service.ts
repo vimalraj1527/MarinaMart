@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { Product } from './entities/product.entity';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class ProductsService {
     if (category) where.category = category;
     if (trending) where.isTrending = true;
     if (search) {
-      where.name = Like(`%${search}%`);
+      where.name = ILike(`%${search}%`);
     }
 
     return await this.productRepository.find({

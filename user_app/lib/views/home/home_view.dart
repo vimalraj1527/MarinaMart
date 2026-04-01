@@ -1,439 +1,85 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
+import 'package:shimmer/shimmer.dart';
+
 import '../../controllers/home_controller.dart';
 import '../../controllers/location_controller.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../models/product_model.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
+import '../../widgets/add_to_cart_button.dart';
 
-class HomeView extends StatelessWidget {
+class HomeView extends StatefulWidget {
   const HomeView({super.key});
+
+  @override
+  State<HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<HomeView> {
+  final PageController _bannerController = PageController();
+  int _currentBanner = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_bannerController.hasClients) {
+        _currentBanner++;
+        if (_currentBanner > 2) _currentBanner = 0;
+        _bannerController.animateToPage(
+          _currentBanner, 
+          duration: const Duration(milliseconds: 600), 
+          curve: Curves.easeInOut
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _bannerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final HomeController controller = Get.put(HomeController());
+    final LocationController locationController = Get.find<LocationController>();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Top Section (Address)
-            _buildAppBar(),
-            
-            // Search Bar (Sticky-like)
-            _buildSearchBar(),
-
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: () => controller.fetchHomeData(),
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Banner/Carousel
-                      _buildBanners(controller),
-
-                      // Browse by Category
-                      _buildCategories(controller),
-
-                      // Popular Products
-                      _buildPopularProducts(controller),
-                      
-                      const SizedBox(height: 20),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: _buildBottomNav(),
-    );
-  }
-
-  Widget _buildAppBar() {
-    final LocationController locationController = Get.find<LocationController>();
-    
-    return Padding(
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
-      child: GestureDetector(
-        onTap: () => _showLocationDialog(locationController),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.location_on, color: AppColors.primaryColor),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Delivery at",
-                    style: TextStyle(fontSize: 12, color: AppColors.grey),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Obx(() => Text(
-                          locationController.shortAddress.value,
-                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis,
-                        )),
-                      ),
-                      const Icon(Icons.keyboard_arrow_down, size: 20),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            GestureDetector(
-              onTap: () => Get.toNamed('/profile'),
-              child: CircleAvatar(
-                backgroundColor: AppColors.primaryColor.withOpacity(0.1),
-                child: const Icon(Icons.person_outline, color: AppColors.primaryColor),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showLocationDialog(LocationController controller) {
-    final TextEditingController textController = TextEditingController(text: controller.currentAddress.value);
-    
-    Get.dialog(
-      AlertDialog(
-        title: const Text("Change Delivery Address"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: textController,
-              decoration: const InputDecoration(
-                hintText: "Enter your address",
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () {
-                Get.back();
-                controller.getCurrentLocation();
-              },
-              icon: const Icon(Icons.my_location),
-              label: const Text("Use Current Location"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryColor,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () {
-              controller.updateAddressManual(textController.text);
-              Get.back();
-            },
-            child: const Text("Update"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
-      child: Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            )
-          ],
-        ),
-        child: const TextField(
-          decoration: InputDecoration(
-            hintText: "Search for eggs, milk, meat...",
-            prefixIcon: Icon(Icons.search, color: AppColors.grey),
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(vertical: 14),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBanners(HomeController controller) {
-    return Obx(() {
-      if (controller.isLoading.value && controller.banners.isEmpty) {
-        return Container(
-          height: 180,
-          margin: const EdgeInsets.all(AppConstants.defaultPadding),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: const Center(child: CircularProgressIndicator()),
-        );
-      }
-      
-      // If no banners, show a placeholder greeting
-      if (controller.banners.isEmpty) {
-        return Container(
-          height: 180,
-          width: double.infinity,
-          margin: const EdgeInsets.all(AppConstants.defaultPadding),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.orange.shade300, Colors.orange.shade700],
-            ),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                right: -20, bottom: -20,
-                child: Icon(Icons.flash_on, size: 150, color: Colors.white.withOpacity(0.2)),
-              ),
-              const Padding(
-                padding: EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Flash Sale!", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                    Text("Get up to 50% off on fresh items", style: TextStyle(color: Colors.white, fontSize: 14)),
-                  ],
-                ),
-              )
-            ],
-          ),
-        );
-      }
-      
-      // Real banners implementation would go here with PageView
-      return const SizedBox();
-    });
-  }
-
-  Widget _buildCategories(HomeController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
-          child: Text(
-            "Shop by Category",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 110,
-          child: Obx(() => ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            itemCount: controller.categories.isEmpty ? 6 : controller.categories.length,
-            itemBuilder: (context, index) {
-              final cat = controller.categories.isEmpty ? null : controller.categories[index];
-              return Container(
-                width: 80,
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                child: Column(
-                  children: [
-                    Container(
-                      height: 70,
-                      width: 70,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 5,
-                            offset: const Offset(0, 2),
-                          )
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                _buildTicker(),
+                _buildAppBar(locationController),
+                _buildSearchBar(),
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () => controller.fetchHomeData(),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildBanners(controller),
+                          _buildCategories(controller),
+                          _buildSectionHeader("Trending Near You", onSeeAll: () => Get.toNamed('/product-list', arguments: controller.products, parameters: {'title': 'Trending Near You'})),
+                          _buildHorizontalProducts(controller),
+                          _buildSectionHeader("Popular Items", onSeeAll: () => Get.toNamed('/product-list', arguments: controller.products, parameters: {'title': 'Popular Items'})),
+                          _buildProductGrid(controller),
+                          const SizedBox(height: 120),
                         ],
                       ),
-                      child: cat != null && cat.image.isNotEmpty 
-                        ? Image.network(cat.image, fit: BoxFit.cover)
-                        : _getCategoryIcon(cat?.name),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      cat?.name ?? "Loading...",
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              );
-            },
-          )),
-        ),
-      ],
-    );
-  }
-
-  Widget _getCategoryIcon(String? name) {
-    IconData iconData = Icons.shopping_bag_outlined;
-    Color color = AppColors.primaryColor;
-
-    if (name == null) return Icon(iconData, color: color);
-
-    final n = name.toLowerCase();
-    if (n.contains("fruit") || n.contains("veg")) {
-      iconData = Icons.apple;
-      color = Colors.green;
-    } else if (n.contains("dairy") || n.contains("bread") || n.contains("egg")) {
-      iconData = Icons.egg_outlined;
-      color = Colors.orange;
-    } else if (n.contains("munch") || n.contains("chips")) {
-      iconData = Icons.fastfood_outlined;
-      color = Colors.redAccent;
-    } else if (n.contains("drink") || n.contains("juice")) {
-      iconData = Icons.local_drink_outlined;
-      color = Colors.blue;
-    } else if (n.contains("tea") || n.contains("coffee")) {
-      iconData = Icons.coffee_outlined;
-      color = Colors.brown;
-    } else if (n.contains("atta") || n.contains("rice") || n.contains("dal")) {
-      iconData = Icons.eco_outlined;
-      color = Colors.amber;
-    } else if (n.contains("chicken") || n.contains("meat") || n.contains("fish")) {
-      iconData = Icons.restaurant_outlined;
-      color = Colors.red;
-    } else if (n.contains("clean")) {
-      iconData = Icons.cleaning_services_outlined;
-      color = Colors.cyan;
-    } else if (n.contains("personal")) {
-      iconData = Icons.face_retouching_natural_outlined;
-      color = Colors.pinkAccent;
-    } else if (n.contains("baby")) {
-      iconData = Icons.child_care_outlined;
-      color = Colors.deepPurpleAccent;
-    } else if (n.contains("pet")) {
-      iconData = Icons.pets_outlined;
-      color = Colors.brown.shade300;
-    }
-
-    return Icon(iconData, color: color, size: 30);
-  }
-
-  Widget _buildPopularProducts(HomeController controller) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(AppConstants.defaultPadding, 24, AppConstants.defaultPadding, 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Popular Items",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "See all",
-                style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ),
-        Obx(() => GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.7,
-            crossAxisSpacing: 15,
-            mainAxisSpacing: 15,
-          ),
-          itemCount: controller.products.isEmpty ? 4 : controller.products.length,
-          itemBuilder: (context, index) {
-            final product = controller.products.isEmpty ? null : controller.products[index];
-            return _buildProductCard(product);
-          },
-        )),
-      ],
-    );
-  }
-
-  Widget _buildProductCard(Product? product) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-              ),
-              child: product != null && product.image.isNotEmpty
-                  ? Image.network(product.image, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Icon(Icons.image, size: 50, color: AppColors.greyLight))
-                  : const Icon(Icons.image, size: 50, color: AppColors.greyLight),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product?.name ?? "Fresh Product", 
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(product?.unit ?? "500g", style: const TextStyle(color: AppColors.grey, fontSize: 11)),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "₹${product?.price.toStringAsFixed(0) ?? '0'}", 
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primaryColor)
-                    ),
-                    const AddToCartButton(),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -443,64 +89,353 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildTicker() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          )
-        ],
-      ),
-      child: GNav(
-        rippleColor: AppColors.primaryColor.withOpacity(0.1),
-        hoverColor: AppColors.primaryColor.withOpacity(0.1),
-        gap: 8,
-        activeColor: AppColors.primaryColor,
-        iconSize: 24,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        duration: const Duration(milliseconds: 400),
-        tabBackgroundColor: AppColors.primaryColor.withOpacity(0.1),
-        color: AppColors.grey,
-        tabs: const [
-          GButton(icon: Icons.home_filled, text: 'Home'),
-          GButton(icon: Icons.category_outlined, text: 'Categories'),
-          GButton(icon: Icons.shopping_cart_outlined, text: 'Cart'),
-          GButton(icon: Icons.person_outline, text: 'Account'),
-        ],
-        selectedIndex: 0,
-        onTabChange: (index) {
-          // Handle tab change
-        },
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      color: Colors.yellow.shade700,
+      child: const Center(
+        child: Text(
+          "🚚 FREE DELIVERY ON ALL ORDERS ABOVE ₹499!",
+          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+        ),
       ),
     );
   }
-}
 
-class AddToCartButton extends StatelessWidget {
-  const AddToCartButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        border: Border.all(color: AppColors.primaryColor, width: 1),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildAppBar(LocationController locationController) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding, vertical: 10),
+      child: Row(
         children: [
-          Text("ADD", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold, fontSize: 10)),
-          SizedBox(width: 2),
-          Icon(Icons.add, color: AppColors.primaryColor, size: 14),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _showLocationDialog(locationController),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Delivery in 12 Mins", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Colors.black)),
+                  Row(
+                    children: [
+                      Obx(() => Text(
+                        locationController.shortAddress.value,
+                        style: const TextStyle(fontSize: 12, color: AppColors.grey),
+                        overflow: TextOverflow.ellipsis,
+                      )),
+                      const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.grey),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Get.toNamed('/profile'),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade200)),
+              child: const Icon(Icons.person_outline_rounded, color: Colors.black),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding, vertical: 5),
+      child: GestureDetector(
+        onTap: () => Get.toNamed('/search'),
+        child: Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.search_rounded, color: AppColors.primaryColor),
+              SizedBox(width: 12),
+              Text("Search \"milk\", \"eggs\", \"bread\"", style: TextStyle(color: AppColors.grey, fontSize: 13)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBanners(HomeController controller) {
+    return Obx(() {
+      if (controller.isLoading.value && controller.banners.isEmpty) {
+        return _buildShimmer(height: 180, width: double.infinity);
+      }
+      return SizedBox(
+        height: 180,
+        child: PageView(
+          controller: _bannerController,
+          onPageChanged: (idx) => _currentBanner = idx,
+          children: [
+            _buildSingleBanner(
+              const Color(0xFF00B894), 
+              "Fresh Delivery\nEVERYDAY", 
+              "https://assets9.lottiefiles.com/packages/lf20_76m8m1.json"
+            ),
+            _buildSingleBanner(
+              const Color(0xFF6C5CE7), 
+              "MEGA SAVINGS\non Snacking", 
+              "https://assets4.lottiefiles.com/packages/lf20_m6cuL6.json"
+            ),
+            _buildSingleBanner(
+              const Color(0xFFE17055), 
+              "Summer Fruits\nUp to 30% OFF", 
+              "https://assets10.lottiefiles.com/packages/lf20_rc63p8u1.json"
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildSingleBanner(Color color, String title, String lottieUrl) {
+    return Container(
+      margin: const EdgeInsets.all(AppConstants.defaultPadding),
+      padding: const EdgeInsets.all(25.0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        gradient: LinearGradient(colors: [color, color.withOpacity(0.8)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -10, bottom: -10, top: -10,
+            child: Lottie.network(lottieUrl, width: 120, errorBuilder: (c, e, s) => const Icon(Icons.flash_on, size: 50, color: Colors.white)),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900, height: 1.1)),
+              const SizedBox(height: 10),
+              const Text("Limited Time Offer", style: TextStyle(color: Colors.white, fontSize: 12)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategories(HomeController controller) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader("Shop by Category", onSeeAll: () => Get.toNamed('/all-categories')),
+        Obx(() {
+          if (controller.isLoading.value && controller.categories.isEmpty) {
+            return _buildCategoryGridShimmer();
+          }
+          
+          return SizedBox(
+            height: 220, // Height to fit 2 rows of items
+            child: GridView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2, // 2 ROWS
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10,
+                childAspectRatio: 1.15,
+              ),
+              itemCount: controller.categories.length,
+              itemBuilder: (context, index) {
+                final cat = controller.categories[index];
+                final color = _getCategoryColor(cat.name);
+                return GestureDetector(
+                  onTap: () {},
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 75, width: 75,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(color: color.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
+                          ],
+                          border: Border.all(color: color.withOpacity(0.05), width: 1),
+                        ),
+                        child: cat.image.isNotEmpty 
+                          ? Image.network(cat.image, fit: BoxFit.contain, errorBuilder: (c,e,s) => _getCategoryIcon(cat.name))
+                          : _getCategoryIcon(cat.name),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        cat.name,
+                        style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black87),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _getCategoryIcon(String name) {
+    IconData icon = Icons.shopping_bag_outlined;
+    final n = name.toLowerCase();
+    if (n.contains("fruit") || n.contains("veg")) icon = Icons.apple_rounded;
+    else if (n.contains("milk") || n.contains("dairy")) icon = Icons.egg_rounded;
+    else if (n.contains("drink") || n.contains("juice")) icon = Icons.local_drink_rounded;
+    else if (n.contains("snack") || n.contains("munch")) icon = Icons.fastfood_rounded;
+    
+    return Icon(icon, size: 30, color: _getCategoryColor(name));
+  }
+
+  Color _getCategoryColor(String name) {
+    final n = name.toLowerCase();
+    if (n.contains("fruit") || n.contains("veg")) return Colors.green;
+    if (n.contains("milk") || n.contains("dairy")) return Colors.blue;
+    if (n.contains("drink") || n.contains("juice")) return Colors.orange;
+    if (n.contains("snack") || n.contains("munch")) return Colors.red;
+    if (n.contains("clean")) return Colors.cyan;
+    return AppColors.primaryColor;
+  }
+
+  Widget _buildCategoryGridShimmer() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[200]!,
+      highlightColor: Colors.grey[100]!,
+      child: SizedBox(
+        height: 220,
+        child: GridView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: 1.15,
+          ),
+          itemCount: 8,
+          itemBuilder: (context, index) => Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22))),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHorizontalProducts(HomeController controller) {
+    return SizedBox(
+      height: 230,
+      child: Obx(() {
+        if (controller.isLoading.value && controller.products.isEmpty) return const SizedBox();
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
+          itemCount: controller.products.length,
+          itemBuilder: (context, index) => Container(
+            width: 160,
+            margin: const EdgeInsets.only(right: 15),
+            child: _buildProductCard(controller.products[index]),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildProductGrid(HomeController controller) {
+    return Obx(() {
+      if (controller.isLoading.value && controller.products.isEmpty) return const SizedBox();
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, childAspectRatio: 0.7, crossAxisSpacing: 15, mainAxisSpacing: 15,
+        ),
+        itemCount: controller.products.length,
+        itemBuilder: (context, index) => _buildProductCard(controller.products[index]),
+      );
+    });
+  }
+
+  Widget _buildProductCard(Product product) {
+    return GestureDetector(
+      onTap: () => Get.toNamed('/product-details', arguments: product),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: const BorderRadius.vertical(top: Radius.circular(15))),
+                child: Hero(tag: product.id, child: Image.network(product.image, fit: BoxFit.contain)),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(product.unit, style: const TextStyle(color: AppColors.grey, fontSize: 11)),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("₹${product.price}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Colors.black)),
+                      AddToCartButton(product: product),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, {VoidCallback? onSeeAll}) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(AppConstants.defaultPadding, 24, AppConstants.defaultPadding, 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+          if (onSeeAll != null)
+            GestureDetector(
+              onTap: onSeeAll,
+              child: const Text("See all", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold)),
+            ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildShimmer({required double height, required double width}) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[200]!, highlightColor: Colors.grey[100]!,
+      child: Container(height: height, width: width, margin: const EdgeInsets.all(15), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15))),
+    );
+  }
+
+  void _showLocationDialog(LocationController controller) {
+    Get.dialog(AlertDialog(title: const Text("Delivery Address"), content: Obx(() => Text(controller.currentAddress.value))));
   }
 }

@@ -1,8 +1,7 @@
 class AppConstants {
   static const String appName = 'Bloomarina Instamart';
   static const String appVersion = '1.0.0';
-  static const String baseUrl = 'http://10.0.2.2:5001'; // For emulator access
-  // For Real device use your PC's IP address: static const String baseUrl = 'http://192.168.x.x:5001';
+  static const String baseUrl = 'http://localhost:5001'; // Forwarded via ADB reverse
 
   // API Endpoints
   static const String loginUrl = '/auth/login';

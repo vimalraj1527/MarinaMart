@@ -34,8 +34,7 @@ class AuthController extends GetxController {
 
         await _storage.setToken(mockToken);
         await _storage.setUser(jsonEncode(mockUser));
-
-        Get.offAll(() => const HomeView());
+        Get.offAllNamed('/home');
         Get.snackbar('Success', 'Logged in as Developer', 
             backgroundColor: Colors.green, colorText: Colors.white);
       } else {

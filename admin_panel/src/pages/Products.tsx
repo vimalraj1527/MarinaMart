@@ -1,17 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  ShoppingBag, 
   Plus, 
-  Search, 
-  Filter, 
-  Edit2, 
   Trash2, 
   Type,
   DollarSign,
   Layers,
   Archive,
-  Image as ImageIcon,
   Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -21,6 +16,7 @@ const API_BASE_URL = 'http://localhost:5001';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   
@@ -29,27 +25,34 @@ export default function ProductsPage() {
     name: '',
     description: '',
     price: 0,
-    category: 'Fruits',
+    category: '',
     unit: '1 kg',
     stock: 100,
     images: ['https://placehold.co/400']
   });
 
-  // Fetch Products from Backend
-  const fetchProducts = async () => {
+  // Fetch Products & Categories from Backend
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/products`);
-      setProducts(response.data);
+      const [prodRes, catRes] = await Promise.all([
+        axios.get(`${API_BASE_URL}/products`),
+        axios.get(`${API_BASE_URL}/categories`)
+      ]);
+      setProducts(prodRes.data);
+      setCategories(catRes.data);
+      if (catRes.data.length > 0) {
+        setNewProduct(prev => ({...prev, category: catRes.data[0].name }));
+      }
     } catch (err) {
-      console.error('Error fetching products:', err);
+      console.error('Error fetching data:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchData();
   }, []);
 
   // Handle Add Product
@@ -63,7 +66,7 @@ export default function ProductsPage() {
       
       await axios.post(`${API_BASE_URL}/products`, payload);
       setIsAddModalOpen(false);
-      fetchProducts(); // Refresh List
+      fetchData(); // Refresh List
       
       // Reset Form
       setNewProduct({
@@ -86,7 +89,7 @@ export default function ProductsPage() {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     try {
       await axios.delete(`${API_BASE_URL}/products/${id}`);
-      fetchProducts();
+      fetchData();
     } catch (err) {
       console.error('Error deleting product:', err);
     }
@@ -127,7 +130,7 @@ export default function ProductsPage() {
                </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {products.map((product, idx) => (
+              {products.map((product) => (
                 <motion.tr 
                   key={product.id}
                   initial={{ opacity: 0 }}
@@ -145,7 +148,7 @@ export default function ProductsPage() {
                        </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6 font-bold text-slate-900">${product.price}</td>
+                  <td className="px-8 py-6 font-bold text-slate-900">₹{product.price}</td>
                   <td className="px-8 py-6 font-bold text-slate-600">{product.stock} Units</td>
                   <td className="px-8 py-6">
                      <div className="flex gap-2">
@@ -178,7 +181,7 @@ export default function ProductsPage() {
                />
                <div className="grid grid-cols-2 gap-4">
                   <Input 
-                    label="Price ($)" icon={DollarSign} type="number" 
+                    label="Price (₹)" icon={DollarSign} type="number" 
                     value={newProduct.price} onChange={(e: any) => setNewProduct({...newProduct, price: e.target.value})}
                   />
                   <Input 
@@ -191,12 +194,7 @@ export default function ProductsPage() {
                <Select 
                  label="Category" icon={Layers} 
                  value={newProduct.category} onChange={(e: any) => setNewProduct({...newProduct, category: e.target.value})}
-                 options={[
-                   { label: 'Fruits', value: 'Fruits' },
-                   { label: 'Dairy', value: 'Dairy' },
-                   { label: 'Vegetables', value: 'Vegetables' },
-                   { label: 'Bakery', value: 'Bakery' },
-                 ]}
+                 options={categories.map(cat => ({ label: cat.name, value: cat.name }))}
                />
                <Input 
                  label="Initial Stock" icon={Archive} type="number" 

@@ -16,6 +16,13 @@ import 'views/notifications/notifications_view.dart';
 import 'views/support/support_view.dart';
 import 'views/about/about_view.dart';
 import 'views/address/pick_location_view.dart';
+import 'views/details/product_details_view.dart';
+import 'views/cart/cart_view.dart';
+import 'views/search/search_view.dart';
+import 'views/category/all_categories_view.dart';
+import 'views/category/category_products_view.dart';
+import 'views/product/product_list_view.dart';
+import 'views/main_shell_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,7 +66,7 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/', page: () => const SplashView()),
         GetPage(name: '/login', page: () => const LoginView()),
-        GetPage(name: '/home', page: () => const HomeView()),
+        GetPage(name: '/home', page: () => const MainShellView()),
         GetPage(name: '/profile', page: () => const ProfileView()),
         GetPage(name: '/orders', page: () => const OrdersView()),
         GetPage(name: '/addresses', page: () => const AddressListView()),
@@ -68,6 +75,12 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/support', page: () => const SupportView()),
         GetPage(name: '/about', page: () => const AboutView()),
         GetPage(name: '/pick-location', page: () => const PickLocationView()),
+        GetPage(name: '/product-details', page: () => ProductDetailsView()),
+        GetPage(name: '/cart', page: () => const CartView()),
+        GetPage(name: '/search', page: () => const SearchView()),
+        GetPage(name: '/all-categories', page: () => const AllCategoriesView()),
+        GetPage(name: '/category-products', page: () => const CategoryProductsView()),
+        GetPage(name: '/product-list', page: () => const ProductListView(title: "Products")),
       ],
     );
   }

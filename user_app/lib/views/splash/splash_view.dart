@@ -5,6 +5,7 @@ import '../../utils/app_constants.dart';
 import '../auth/login_view.dart';
 import '../home/home_view.dart';
 import '../../services/storage_service.dart';
+import 'package:lottie/lottie.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -27,9 +28,9 @@ class _SplashViewState extends State<SplashView> {
     
     String? token = _storage.getToken();
     if (token != null) {
-      Get.offAll(() => const HomeView());
+      Get.offAllNamed('/home');
     } else {
-      Get.offAll(() => const LoginView());
+      Get.offAllNamed('/login');
     }
   }
 
@@ -48,22 +49,12 @@ class _SplashViewState extends State<SplashView> {
           children: [
             // App Logo
             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  )
-                ],
-              ),
-              child: const Icon(
-                Icons.shopping_basket_rounded,
-                size: 80,
-                color: AppColors.primaryColor,
+              height: 250,
+              width: 250,
+              child: Lottie.network(
+                'https://assets4.lottiefiles.com/packages/lf20_m6cuL6.json',
+                repeat: true,
+                errorBuilder: (c, e, s) => const Icon(Icons.shopping_cart, size: 100, color: Colors.white),
               ),
             ),
             const SizedBox(height: 24),

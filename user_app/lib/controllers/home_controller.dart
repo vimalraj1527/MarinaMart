@@ -50,6 +50,7 @@ class HomeController extends GetxController {
       }
       
     } catch (e) {
+      print("API_ERROR: $e");
       _setFallbackCategories();
       Get.snackbar('Notice', 'Using offline categories');
     } finally {

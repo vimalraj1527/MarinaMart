@@ -1,54 +1,66 @@
 import 'package:get/get.dart';
+import '../models/product_model.dart';
 
 class CartItem {
-  final String id;
-  final String name;
-  final double price;
-  final String image;
+  final Product product;
   int quantity;
 
-  CartItem({
-    required this.id,
-    required this.name,
-    required this.price,
-    required this.image,
-    this.quantity = 1,
-  });
+  CartItem({required this.product, this.quantity = 1});
 }
 
 class CartController extends GetxController {
-  final RxList<CartItem> _items = <CartItem>[].obs;
+  var cartItems = <CartItem>[].obs;
 
-  List<CartItem> get items => _items;
-
-  double get totalPrice => _items.fold(0, (sum, item) => sum + (item.price * item.quantity));
-  
-  int get totalItems => _items.fold(0, (sum, item) => sum + item.quantity);
-
-  void addItem(CartItem newItem) {
-    int index = _items.indexWhere((item) => item.id == newItem.id);
+  void addToCart(Product product) {
+    int index = cartItems.indexWhere((item) => item.product.id == product.id);
     if (index != -1) {
-      _items[index].quantity++;
-      _items.refresh();
+      cartItems[index].quantity++;
+      cartItems.refresh();
     } else {
-      _items.add(newItem);
+      cartItems.add(CartItem(product: product));
     }
-    Get.snackbar('Cart', '${newItem.name} added to cart', snackPosition: SnackPosition.BOTTOM);
+    Get.snackbar(
+      'Success',
+      '${product.name} added to cart',
+      snackPosition: SnackPosition.BOTTOM,
+      duration: const Duration(seconds: 1),
+    );
   }
 
-  void removeItem(String id) {
-    int index = _items.indexWhere((item) => item.id == id);
+  void removeFromCart(Product product) {
+    int index = cartItems.indexWhere((item) => item.product.id == product.id);
     if (index != -1) {
-      if (_items[index].quantity > 1) {
-        _items[index].quantity--;
-        _items.refresh();
+      if (cartItems[index].quantity > 1) {
+        cartItems[index].quantity--;
       } else {
-        _items.removeAt(index);
+        cartItems.removeAt(index);
       }
+      cartItems.refresh();
     }
   }
 
   void clearCart() {
-    _items.clear();
+    cartItems.clear();
+  }
+
+  double get totalAmount {
+    double total = 0;
+    for (var item in cartItems) {
+      total += item.product.price * item.quantity;
+    }
+    return total;
+  }
+
+  int get totalItems {
+    int count = 0;
+    for (var item in cartItems) {
+      count += item.quantity;
+    }
+    return count;
+  }
+
+  int getItemCount(String id) {
+    int index = cartItems.indexWhere((item) => item.product.id == id);
+    return index != -1 ? cartItems[index].quantity : 0;
   }
 }

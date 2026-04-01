@@ -1,11 +1,9 @@
-import React from 'react';
 import { 
   ShoppingBag, 
   Users, 
   TrendingUp, 
   Package, 
-  MapPin, 
-  Bell 
+  MapPin
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -60,7 +58,7 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Sales" value="$42,890.00" icon={TrendingUp} trend="+12.5%" />
+        <StatCard title="Total Sales" value="₹42,890.00" icon={TrendingUp} trend="+12.5%" />
         <StatCard title="Total Orders" value="1,280" icon={ShoppingBag} trend="+8.2%" />
         <StatCard title="Active Users" value="842" icon={Users} trend="+3.1%" />
         <StatCard title="Pending Deliveries" value="45" icon={Package} trend="-2.4%" />
