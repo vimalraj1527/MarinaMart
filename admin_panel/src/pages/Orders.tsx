@@ -88,6 +88,7 @@ export default function OrdersPage() {
                  <th className="px-8 py-6 text-xs font-bold uppercase tracking-wider text-slate-400">Delivery To</th>
                  <th className="px-8 py-6 text-xs font-bold uppercase tracking-wider text-slate-400">Status</th>
                  <th className="px-8 py-6 text-xs font-bold uppercase tracking-wider text-slate-400 text-center">Manage</th>
+                 <th className="px-8 py-6 text-xs font-bold uppercase tracking-wider text-slate-400">Strategy</th>
                </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -160,6 +161,20 @@ export default function OrdersPage() {
                               {order.assignedRider.name}
                            </div>
                         )}
+                    </div>
+                  </td>
+                  <td className="px-8 py-6">
+                    <div className="flex flex-col gap-1">
+                       <span className={`px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                          order.deliveryType === 'Scheduled' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
+                       }`}>
+                          {order.deliveryType || 'Instant'}
+                       </span>
+                       {order.deliveryType === 'Scheduled' && order.scheduledAt && (
+                         <span className="text-[10px] text-slate-500 font-bold tracking-tight mt-1">
+                            {new Date(order.scheduledAt).toLocaleDateString()} {new Date(order.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                         </span>
+                       )}
                     </div>
                   </td>
                 </motion.tr>

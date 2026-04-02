@@ -105,6 +105,7 @@ export default function CategoriesPage() {
   const resetForm = () => {
     setEditingCategory(null);
     setCategoryForm({ name: '', image: 'https://placehold.co/400' });
+    setUploading(false);
   };
 
   return (
@@ -202,7 +203,7 @@ export default function CategoriesPage() {
               value={categoryForm.name} onChange={(e: any) => setCategoryForm({...categoryForm, name: e.target.value})}
             />
             <Input 
-              label="Image URL (Cloud Photo Fallback)" icon={ImageIcon} placeholder="https://..." 
+              label="Image URL (e.g. AWS S3)" icon={ImageIcon} placeholder="https://s3.aws.com/category-icon.png" 
               value={categoryForm.image} onChange={(e: any) => setCategoryForm({...categoryForm, image: e.target.value})}
             />
             {categoryForm.image && (

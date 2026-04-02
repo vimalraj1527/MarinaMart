@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../../controllers/cart_controller.dart';
 import '../../controllers/location_controller.dart';
 import '../../services/storage_service.dart';
@@ -22,6 +23,8 @@ class _CheckoutViewState extends State<CheckoutView> {
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   String _paymentMethod = "Cash on Delivery";
+  String _deliveryType = "Instant";
+  DateTime? _scheduledDateTime;
 
   @override
   void initState() {
@@ -51,6 +54,43 @@ class _CheckoutViewState extends State<CheckoutView> {
     _nameController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDateTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(hours: 1)),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 7)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(primary: AppColors.primaryColor),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate != null) {
+      if (!mounted) return;
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (pickedTime != null) {
+        setState(() {
+          _scheduledDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
+    }
   }
 
   @override
@@ -98,6 +138,54 @@ class _CheckoutViewState extends State<CheckoutView> {
             )),
             
             const SizedBox(height: 25),
+
+            // **NEW: Delivery Strategy**
+            _buildSectionHeader("Delivery Strategy"),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+              child: Column(
+                children: [
+                   RadioListTile(
+                     value: "Instant",
+                     groupValue: _deliveryType,
+                     title: const Text("Instant Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
+                     subtitle: const Text("Delivery in 15-20 mins"),
+                     secondary: const Icon(Icons.bolt, color: Colors.amber),
+                     activeColor: AppColors.primaryColor,
+                     onChanged: (val) => setState(() => _deliveryType = val.toString()),
+                   ),
+                   const Divider(indent: 70),
+                   RadioListTile(
+                     value: "Scheduled",
+                     groupValue: _deliveryType,
+                     title: const Text("Scheduled Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
+                     subtitle: Text(_scheduledDateTime == null ? "Pick a date & time" : DateFormat('EEE, MMM d – hh:mm a').format(_scheduledDateTime!)),
+                     secondary: const Icon(Icons.calendar_today, color: Colors.blue),
+                     activeColor: AppColors.primaryColor,
+                     onChanged: (val) {
+                        setState(() => _deliveryType = val.toString());
+                        if (_scheduledDateTime == null) _selectDateTime(context);
+                     },
+                   ),
+                   if (_deliveryType == "Scheduled")
+                     Padding(
+                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                       child: OutlinedButton.icon(
+                         onPressed: () => _selectDateTime(context),
+                         icon: const Icon(Icons.edit_calendar, size: 18),
+                         label: const Text("Change Schedule"),
+                         style: OutlinedButton.styleFrom(
+                           minimumSize: const Size(double.infinity, 45),
+                           side: BorderSide(color: AppColors.primaryColor.withOpacity(0.3)),
+                         ),
+                       ),
+                     ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 25),
             
             // 2. Contact Details
             _buildSectionHeader("Contact Details"),
@@ -142,7 +230,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                      groupValue: _paymentMethod,
                      title: const Text("Online Payment"),
                      subtitle: const Text("UPI, Card, Wallet"),
-                     onChanged: null, // Disabled for now as per user COD focus
+                     onChanged: null,
                    ),
                 ],
               ),
@@ -150,7 +238,7 @@ class _CheckoutViewState extends State<CheckoutView> {
 
             const SizedBox(height: 25),
 
-            // 4. Bill Details (GST & Total)
+            // 4. Bill Details
             _buildSectionHeader("Bill Details"),
             Container(
               padding: const EdgeInsets.all(20),
@@ -166,7 +254,7 @@ class _CheckoutViewState extends State<CheckoutView> {
               ),
             ),
             
-            const SizedBox(height: 100), // Space for button
+            const SizedBox(height: 100),
           ],
         ),
       ),
@@ -225,6 +313,17 @@ class _CheckoutViewState extends State<CheckoutView> {
        return;
      }
 
-     _cartController.placeOrder(total, _nameController.text, _phoneController.text);
+     if (_deliveryType == "Scheduled" && _scheduledDateTime == null) {
+       Get.snackbar("Schedule Required", "Please pick a date & time for delivery.");
+       return;
+     }
+
+     _cartController.placeOrder(
+       total, 
+       _nameController.text, 
+       _phoneController.text,
+       deliveryType: _deliveryType,
+       scheduledAt: _scheduledDateTime?.toIso8601String(),
+     );
   }
 }

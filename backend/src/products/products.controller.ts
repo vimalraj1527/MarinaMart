@@ -1,4 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, UseInterceptors, ClassSerializerInterceptor } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Query, UseInterceptors, ClassSerializerInterceptor, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import { ProductsService } from './products.service';
 
 @Controller('products')
@@ -18,6 +21,30 @@ export class ProductsController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return await this.productsService.findOne(id);
+  }
+
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const name = file.originalname.split('.')[0];
+          const fileExtName = extname(file.originalname);
+          const randomName = Array(4)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          cb(null, `${name}-${randomName}${fileExtName}`);
+        },
+      }),
+    }),
+  )
+  async uploadFile(@UploadedFile() file: any) {
+    const baseUrl = process.env.URL || 'http://localhost:5001';
+    return {
+      url: `${baseUrl}/uploads/${file.filename}`,
+    };
   }
 
   @Post()

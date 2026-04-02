@@ -75,7 +75,7 @@ export default function OrderDetailsPage() {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate('/orders')}
-            className="p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900 shadow-sm"
+            className="p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all text-slate-400 hover:text-slate-900 shadow-sm no-print"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -88,7 +88,10 @@ export default function OrderDetailsPage() {
           </div>
         </div>
         <div className="flex gap-4">
-           <button className="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200">
+           <button 
+             onClick={() => window.print()}
+             className="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+           >
               Generate Invoice
            </button>
         </div>
@@ -122,15 +125,15 @@ export default function OrderDetailsPage() {
                  <div className="flex justify-between text-sm font-bold text-slate-500 px-2">
                     <span>Subtotal</span>
                     <span>₹{Number(order.totalAmount).toFixed(2)}</span>
-                 </div>
-                 <div className="flex justify-between text-sm font-bold text-emerald-500 px-2">
+                  </div>
+                  <div className="flex justify-between text-sm font-bold text-emerald-500 px-2">
                     <span>Delivery Fee</span>
                     <span>₹0.00</span>
-                 </div>
-                 <div className="pt-4 mt-4 border-t border-slate-200 flex justify-between items-center px-2">
+                  </div>
+                  <div className="pt-4 mt-4 border-t border-slate-200 flex justify-between items-center px-2">
                     <span className="text-lg font-bold text-slate-900 font-outfit">Total Paid</span>
                     <span className="text-3xl font-black text-slate-900 font-outfit">₹{Number(order.totalAmount).toFixed(2)}</span>
-                 </div>
+                  </div>
               </div>
            </div>
 
@@ -152,8 +155,16 @@ export default function OrderDetailsPage() {
                           <Clock className="w-6 h-6 text-emerald-400" />
                        </div>
                        <div>
-                          <p className="text-xs font-bold text-slate-400">Estimated Delivery</p>
-                          <p className="font-bold">Lightning Fast (15-20 mins)</p>
+                          <p className="text-xs font-bold text-slate-400">Shipment Strategy</p>
+                          <p className="font-bold text-lg">{order.deliveryType || 'Instant Delivery'}</p>
+                          {order.deliveryType === 'Scheduled' && order.scheduledAt && (
+                            <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mt-1">
+                               Target: {new Date(order.scheduledAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                            </p>
+                          )}
+                          {(!order.deliveryType || order.deliveryType === 'Instant') && (
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Lightning Fast (15-20 mins)</p>
+                          )}
                        </div>
                     </div>
                  </div>
@@ -217,7 +228,7 @@ export default function OrderDetailsPage() {
               </div>
               <button 
                 onClick={() => navigate('/customers')}
-                className="w-full mt-10 py-4 bg-slate-50 text-slate-600 font-bold rounded-2xl hover:bg-emerald-50 hover:text-emerald-600 transition-all text-sm font-outfit border border-slate-100"
+                className="w-full mt-10 py-4 bg-slate-50 text-slate-600 font-bold rounded-2xl hover:bg-emerald-50 hover:text-emerald-600 transition-all text-sm font-outfit border border-slate-100 no-print"
               >
                 View Customer Profile
               </button>

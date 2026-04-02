@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { 
-  Plus, 
-  Trash2, 
+  Plus,
+  Trash2,
   Type,
   DollarSign,
   Layers,
-  Archive,
-  Loader2
+  Archive, 
+  Loader2,
+  Image as ImageIcon,
+  UploadCloud
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Modal, Input, Select } from '../components/ui/LayoutComponents';
@@ -23,6 +25,9 @@ export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   
   const categoryFilter = searchParams.get('category');
+  
+  const [uploading, setUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Fetch Products & Categories from Backend
   const fetchData = async () => {
@@ -56,12 +61,59 @@ export default function ProductsPage() {
     category: '',
     unit: '1 kg',
     stock: 100,
-    images: ['https://placehold.co/400']
+    images: [] as string[]
   });
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show Preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to Backend
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const res = await api.post('/products/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      setNewProduct(prev => ({
+        ...prev,
+        images: [res.data.url]
+      }));
+    } catch (err) {
+      console.error('Upload failed:', err);
+      alert('Failed to upload image');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setNewProduct({
+      name: '',
+      description: '',
+      price: 0,
+      category: categories.length > 0 ? categories[0].name : '',
+      unit: '1 kg',
+      stock: 100,
+      images: []
+    });
+    setImagePreview(null);
+    setUploading(false);
+  };
 
   // Handle Add Product
   const handleAddProduct = async () => {
@@ -75,17 +127,7 @@ export default function ProductsPage() {
       await api.post('/products', payload);
       setIsAddModalOpen(false);
       fetchData(); // Refresh List
-      
-      // Reset Form
-      setNewProduct({
-        name: '',
-        description: '',
-        price: 0,
-        category: categories.length > 0 ? categories[0].name : '',
-        unit: '1 kg',
-        stock: 100,
-        images: ['https://placehold.co/400']
-      });
+      resetForm();
     } catch (err) {
       console.error('Error adding product:', err);
       alert('Failed to add product. Check backend connection.');
@@ -131,7 +173,10 @@ export default function ProductsPage() {
              </button>
            )}
            <button 
-             onClick={() => setIsAddModalOpen(true)}
+             onClick={() => {
+                resetForm();
+                setIsAddModalOpen(true);
+             }}
              className="flex items-center gap-3 px-8 py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all hover:-translate-y-1 font-outfit"
            >
              <Plus className="w-5 h-5" />
@@ -228,11 +273,73 @@ export default function ProductsPage() {
                  label="Initial Stock" icon={Archive} type="number" 
                  value={newProduct.stock} onChange={(e: any) => setNewProduct({...newProduct, stock: e.target.value})}
                />
+               
+               {/* Image Options */}
+               <div className="space-y-4">
+                 <div className="space-y-2">
+                   <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                     <ImageIcon className="w-4 h-4 text-emerald-500" />
+                     Product Image (Upload or URL)
+                   </label>
+                   
+                   {/* URL Input */}
+                   <Input 
+                     label="Direct Image URL" icon={ImageIcon} placeholder="https://s3.aws.com/image.png"
+                     value={newProduct.images[0] || ''} 
+                     onChange={(e: any) => {
+                       const url = e.target.value;
+                       setNewProduct({...newProduct, images: [url]});
+                       setImagePreview(url); // Set preview to URL
+                     }}
+                   />
+
+                   {/* Upload Area */}
+                   <div className="relative group">
+                      <div className={`
+                        h-32 w-full rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-3 overflow-hidden
+                        ${imagePreview && !newProduct.images[0]?.startsWith('http') ? 'border-emerald-500 bg-emerald-50/30' : 'border-slate-200 bg-slate-50 hover:border-emerald-300 hover:bg-emerald-50/20'}
+                      `}>
+                        {imagePreview ? (
+                          <>
+                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                               <p className="text-white text-xs font-bold px-4 py-2 bg-white/20 backdrop-blur-md rounded-lg">Change File</p>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="p-2 bg-white rounded-xl shadow-sm group-hover:scale-110 transition-transform">
+                               <UploadCloud className="w-5 h-5 text-emerald-500" />
+                            </div>
+                            <div className="text-center">
+                               <p className="text-[11px] font-bold text-slate-700 uppercase tracking-widest">Or Click to upload File</p>
+                            </div>
+                          </>
+                        )}
+                        {uploading && (
+                          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center gap-3">
+                             <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+                             <span className="text-xs font-bold text-emerald-600">Uploading...</span>
+                          </div>
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          disabled={uploading}
+                        />
+                      </div>
+                   </div>
+                 </div>
+               </div>
+
                <button 
                  onClick={handleAddProduct}
-                 className="w-full py-5 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-100 mt-auto hover:bg-emerald-700 transition-all"
+                 disabled={uploading || !imagePreview || !newProduct.images[0]}
+                 className="w-full py-5 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-100 mt-auto hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                >
-                 Create Listing
+                 {uploading ? 'Processing...' : 'Create Listing'}
                </button>
             </div>
          </div>

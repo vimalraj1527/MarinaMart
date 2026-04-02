@@ -47,7 +47,7 @@ class CartController extends GetxController {
     }
   }
 
-  Future<void> placeOrder(double targetTotal, String customerName, String customerPhone) async {
+  Future<void> placeOrder(double targetTotal, String customerName, String customerPhone, {String deliveryType = 'Instant', String? scheduledAt}) async {
     if (cartItems.isEmpty) return;
 
     try {
@@ -66,6 +66,8 @@ class CartController extends GetxController {
         'deliveryAddress': _locationController.currentAddress.value,
         'paymentMethod': 'Cash on Delivery',
         'status': 'Pending',
+        'deliveryType': deliveryType,
+        'scheduledAt': scheduledAt,
       };
 
       final response = await _apiService.postData(AppConstants.ordersUrl, orderData);

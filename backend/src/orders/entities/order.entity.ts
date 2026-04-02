@@ -9,6 +9,11 @@ export enum OrderStatus {
   CANCELLED = 'Cancelled',
 }
 
+export enum DeliveryType {
+  INSTANT = 'Instant',
+  SCHEDULED = 'Scheduled',
+}
+
 import { User } from '../../users/entities/user.entity';
 
 @Entity('orders')
@@ -53,6 +58,16 @@ export class Order {
 
   @Column({ default: 'Paid' })
   paymentStatus: string;
+
+  @Column({
+    type: 'enum',
+    enum: DeliveryType,
+    default: DeliveryType.INSTANT,
+  })
+  deliveryType: DeliveryType;
+
+  @Column({ type: 'timestamp', nullable: true })
+  scheduledAt: Date;
 
   @ManyToOne(() => Rider, { nullable: true })
   assignedRider: Rider;
