@@ -48,6 +48,9 @@ class _CheckoutViewState extends State<CheckoutView> {
     
     _nameController = TextEditingController(text: name);
     _phoneController = TextEditingController(text: phone);
+
+    // Ensure we have the absolute latest pricing from backend
+    _settings.fetchRemoteSettings();
   }
 
   @override
@@ -170,11 +173,11 @@ class _CheckoutViewState extends State<CheckoutView> {
     
     if (_deliveryType == "Instant") {
       double distance = _locationController.getDistanceFromStore();
-      // Formula: 50 basic + 5rs per KM
-      return 50.0 + (distance * 5.0);
+      // Formula: Dynamic Instant Base + (distance * Dynamic Per KM)
+      return _settings.instantBaseFee.value + (distance * _settings.perKmCharge.value);
     } else {
-      // Scheduled Delivery: Flat 25
-      return 25.0;
+      // Scheduled Delivery: Dynamic Base Charge
+      return _settings.baseDeliveryCharge.value;
     }
   }
 
@@ -224,7 +227,7 @@ class _CheckoutViewState extends State<CheckoutView> {
             const SizedBox(height: 25),
 
             _buildSectionHeader("Delivery Strategy"),
-            Container(
+            Obx(() => Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
               child: Column(
@@ -233,7 +236,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                      value: "Instant",
                      groupValue: _deliveryType,
                      title: const Text("Instant Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
-                     subtitle: Text("₹50 + ₹5/km • Nearby: ${distance.toStringAsFixed(1)} KM"),
+                     subtitle: Text("₹${_settings.instantBaseFee.value.toInt()} + ₹${_settings.perKmCharge.value.toInt()}/km • Nearby: ${distance.toStringAsFixed(1)} KM"),
                      secondary: const Icon(Icons.bolt, color: Colors.amber, size: 32),
                      activeColor: AppColors.primaryColor,
                      onChanged: (val) => setState(() => _deliveryType = val.toString()),
@@ -243,7 +246,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                      value: "Scheduled",
                      groupValue: _deliveryType,
                      title: const Text("Scheduled Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
-                     subtitle: Text(_selectedSlotLabel ?? "Flat ₹25 • Choose window"),
+                     subtitle: Text(_selectedSlotLabel ?? "Flat ₹${_settings.baseDeliveryCharge.value.toInt()} • Choose window"),
                      secondary: const Icon(Icons.calendar_month, color: Colors.blue, size: 32),
                      activeColor: AppColors.primaryColor,
                      onChanged: (val) {
@@ -267,7 +270,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                      ),
                 ],
               ),
-            ),
+            )),
 
             const SizedBox(height: 25),
             

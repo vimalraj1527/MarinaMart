@@ -8,7 +8,10 @@ class SettingsController extends GetxController {
   final StorageService _storage = Get.find<StorageService>();
 
   final RxDouble freeDeliveryThreshold = 499.0.obs;
-  final RxDouble baseDeliveryCharge = 30.0.obs;
+  final RxDouble baseDeliveryCharge = 25.0.obs; // Scheduled
+  final RxDouble instantBaseFee = 50.0.obs;    // Instant Base
+  final RxDouble perKmCharge = 5.0.obs;       // Instant Per KM
+  
   final RxString storeName = "Bloomarina Instamart".obs;
   final RxBool isLoading = false.obs;
 
@@ -51,8 +54,11 @@ class SettingsController extends GetxController {
 
   void _applySettings(Map<String, dynamic> data) {
     if (data['delivery'] != null) {
-       freeDeliveryThreshold.value = (data['delivery']['freeThreshold'] ?? 499.0).toDouble();
-       baseDeliveryCharge.value = (data['delivery']['baseCharge'] ?? 30.0).toDouble();
+       final d = data['delivery'];
+       freeDeliveryThreshold.value = (d['freeThreshold'] ?? 499.0).toDouble();
+       baseDeliveryCharge.value = (d['baseCharge'] ?? 25.0).toDouble();
+       instantBaseFee.value = (d['instantBase'] ?? 50.0).toDouble();
+       perKmCharge.value = (d['perKmCharge'] ?? 5.0).toDouble();
     }
     if (data['store'] != null) {
        storeName.value = data['store']['name'] ?? "Bloomarina Instamart";

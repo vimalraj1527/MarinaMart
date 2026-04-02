@@ -64,7 +64,10 @@ class _HomeViewState extends State<HomeView> {
                 _buildSearchBar(),
                 Expanded(
                   child: RefreshIndicator(
-                    onRefresh: () => controller.fetchHomeData(),
+                    onRefresh: () async {
+                      await controller.fetchHomeData();
+                      await Get.find<SettingsController>().fetchRemoteSettings();
+                    },
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
                       child: Column(

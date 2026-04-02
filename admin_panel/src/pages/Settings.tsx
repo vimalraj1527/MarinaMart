@@ -13,7 +13,9 @@ import {
   UserPlus,
   Key,
   ShieldAlert,
-  TrendingUp
+  TrendingUp,
+  Zap,
+  Map
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '../components/ui/LayoutComponents';
@@ -36,7 +38,9 @@ export default function SettingsPage() {
   });
 
   const [deliverySettings, setDeliverySettings] = useState({
-    baseCharge: 30,
+    baseCharge: 25, // Scheduled Flat Fee
+    instantBase: 50, // Instant Base Fee
+    perKmCharge: 5,  // Instant Per KM
     freeThreshold: 499,
     openingTime: '06:00',
     closingTime: '23:30',
@@ -62,17 +66,18 @@ export default function SettingsPage() {
     const userData = localStorage.getItem('user');
     if (userData) setUser(JSON.parse(userData));
     
-    // Load from API instead of localStorage
+    // Load from API
     const loadSettings = async () => {
       try {
         const response = await api.get('/settings');
         const data = response.data;
         if (data.store) setStoreSettings(data.store);
-        if (data.delivery) setDeliverySettings(data.delivery);
+        // Merge with defaults to handle new fields gracefully
+        if (data.delivery) setDeliverySettings({ ...deliverySettings, ...data.delivery });
         if (data.security) setSecuritySettings(data.security);
         if (data.notifications) setNotificationSettings(data.notifications);
       } catch (err) {
-        console.error('Failed to lead settings from API:', err);
+        console.error('Failed to load settings from API:', err);
       }
     };
     
@@ -82,7 +87,6 @@ export default function SettingsPage() {
   const saveSettings = async () => {
     try {
       setIsSaving(true);
-      // Persist to BACKEND so Users can see the changes
       await api.post('/settings/bulk', {
         store: storeSettings,
         delivery: deliverySettings,
@@ -197,15 +201,29 @@ export default function SettingsPage() {
                     </div>
                     <h2 className="text-xl font-bold text-slate-900 font-outfit">Logistics Configuration</h2>
                  </div>
+                 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Input label="Base Delivery Charge (₹)" icon={DollarSign} type="number" value={deliverySettings.baseCharge} onChange={(e: any) => setDeliverySettings({...deliverySettings, baseCharge: Number(e.target.value)})} />
-                    <Input label="Free Delivery Threshold (₹)" icon={TrendingUp} type="number" value={deliverySettings.freeThreshold} onChange={(e: any) => setDeliverySettings({...deliverySettings, freeThreshold: Number(e.target.value)})} />
+                    <div className="space-y-6">
+                       <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">General Billing</h3>
+                       <Input label="Scheduled Delivery Fee (₹)" icon={DollarSign} type="number" value={deliverySettings.baseCharge} onChange={(e: any) => setDeliverySettings({...deliverySettings, baseCharge: Number(e.target.value)})} />
+                       <Input label="Free Delivery Above (₹)" icon={TrendingUp} type="number" value={deliverySettings.freeThreshold} onChange={(e: any) => setDeliverySettings({...deliverySettings, freeThreshold: Number(e.target.value)})} />
+                    </div>
+
+                    <div className="space-y-6">
+                       <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Instant Delivery Logic</h3>
+                       <Input label="Instant Base Fee (₹)" icon={Zap} type="number" value={deliverySettings.instantBase} onChange={(e: any) => setDeliverySettings({...deliverySettings, instantBase: Number(e.target.value)})} />
+                       <Input label="Charge per Kilometer (₹)" icon={Map} type="number" value={deliverySettings.perKmCharge} onChange={(e: any) => setDeliverySettings({...deliverySettings, perKmCharge: Number(e.target.value)})} />
+                    </div>
+                 </div>
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-50">
                     <Input label="Opening Hours" icon={Clock} type="time" value={deliverySettings.openingTime} onChange={(e: any) => setDeliverySettings({...deliverySettings, openingTime: e.target.value})} />
                     <Input label="Closing Hours" icon={Clock} type="time" value={deliverySettings.closingTime} onChange={(e: any) => setDeliverySettings({...deliverySettings, closingTime: e.target.value})} />
                  </div>
+
                  <button onClick={saveSettings} disabled={isSaving} className="mt-4 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-3 cursor-pointer">
                     {isSaving ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Save Logistics
+                    Save Logistics Engine
                  </button>
               </motion.div>
             )}

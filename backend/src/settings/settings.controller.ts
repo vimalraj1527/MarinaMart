@@ -10,6 +10,7 @@ export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
   @Get()
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate')
   @ApiOperation({ summary: 'Get all platform settings' })
   async getAll() {
     return this.settingsService.getAll();
