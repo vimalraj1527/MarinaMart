@@ -62,34 +62,40 @@ export default function SettingsPage() {
     const userData = localStorage.getItem('user');
     if (userData) setUser(JSON.parse(userData));
     
-    // Load from localStorage if exists
-    const saved = localStorage.getItem('platform_settings');
-    if (saved) {
-       const data = JSON.parse(saved);
-       setStoreSettings(data.store);
-       setDeliverySettings(data.delivery);
-       setSecuritySettings(data.security);
-       setNotificationSettings(data.notifications);
-    }
+    // Load from API instead of localStorage
+    const loadSettings = async () => {
+      try {
+        const response = await api.get('/settings');
+        const data = response.data;
+        if (data.store) setStoreSettings(data.store);
+        if (data.delivery) setDeliverySettings(data.delivery);
+        if (data.security) setSecuritySettings(data.security);
+        if (data.notifications) setNotificationSettings(data.notifications);
+      } catch (err) {
+        console.error('Failed to lead settings from API:', err);
+      }
+    };
+    
+    loadSettings();
   }, []);
 
   const saveSettings = async () => {
     try {
       setIsSaving(true);
-      localStorage.setItem('platform_settings', JSON.stringify({
+      // Persist to BACKEND so Users can see the changes
+      await api.post('/settings/bulk', {
         store: storeSettings,
         delivery: deliverySettings,
         security: securitySettings,
         notifications: notificationSettings
-      }));
+      });
       
-      setTimeout(() => {
-        setShowSuccess(true);
-        setIsSaving(false);
-        setTimeout(() => setShowSuccess(false), 3000);
-      }, 500);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
     } catch (err) {
       console.error('Failed to save settings:', err);
+      alert("Failed to sync platform rules to server.");
+    } finally {
       setIsSaving(false);
     }
   };

@@ -92,6 +92,49 @@ export default function Dashboard() {
         <StatCard title="In Logistics" value={stats.pendingDeliveries} icon={Package} trend="-2.4%" onClick={() => navigate('/orders')} />
       </div>
 
+      {/* Packing Purpose Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="p-8 bg-slate-900 rounded-[2.5rem] text-white shadow-2xl shadow-emerald-900/20 overflow-hidden relative group transition-all hover:shadow-emerald-500/10">
+           <div className="absolute -top-10 -right-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
+              <Package className="w-64 h-64" />
+           </div>
+           <div className="relative z-10 flex items-center justify-between gap-6">
+              <div>
+                 <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <p className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em] font-outfit">Priority Packing</p>
+                 </div>
+                 <h2 className="text-4xl font-black font-outfit tracking-tighter leading-none mb-2">Today's Total</h2>
+                 <p className="text-slate-400 font-bold text-sm max-w-[240px]">Immediate dispatch required for instant and slot deliveries.</p>
+              </div>
+              <div className="text-center bg-white/10 px-8 py-6 rounded-3xl border border-white/20 backdrop-blur-xl shadow-2xl">
+                 <p className="text-6xl font-black font-outfit text-emerald-400 leading-none">{stats.logistics?.today || 0}</p>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-3">Live Orders</p>
+              </div>
+           </div>
+        </div>
+
+        <div className="p-8 bg-white rounded-[2.5rem] border-2 border-indigo-50 shadow-xl shadow-indigo-100/20 overflow-hidden relative group hover:border-indigo-100 transition-all">
+           <div className="absolute -top-10 -right-10 opacity-[0.03] group-hover:scale-110 transition-transform duration-700 text-indigo-600">
+              <ShoppingBag className="w-64 h-64" />
+           </div>
+           <div className="relative z-10 flex items-center justify-between gap-6">
+              <div>
+                 <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                    <p className="text-xs font-black text-indigo-500 uppercase tracking-[0.2em] font-outfit">Fulfillment Buffer</p>
+                 </div>
+                 <h2 className="text-4xl font-black font-outfit tracking-tighter leading-none mb-2 text-slate-900">Tomorrow's Load</h2>
+                 <p className="text-slate-500 font-bold text-sm max-w-[240px]">Scheduled inventory requirements for upcoming slots.</p>
+              </div>
+              <div className="text-center bg-indigo-50/50 px-8 py-6 rounded-3xl border border-indigo-100 shadow-sm">
+                 <p className="text-6xl font-black font-outfit text-indigo-600 leading-none">{stats.logistics?.tomorrow || 0}</p>
+                 <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mt-3">Pre-orders</p>
+              </div>
+           </div>
+        </div>
+      </div>
+
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 p-8 bg-white rounded-3xl border border-slate-100 shadow-sm">

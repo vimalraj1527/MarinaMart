@@ -69,12 +69,53 @@ export class StatsService {
         rider: o.assignedRider?.name || 'Unassigned'
       }));
 
+    // 4. Logistics Counters (Packing Purpose)
+    const nowForLogistics = new Date();
+    const logisticsTodayStart = new Date(nowForLogistics.setHours(0, 0, 0, 0));
+    const logisticsTodayEnd = new Date(nowForLogistics.setHours(23, 59, 59, 999));
+    
+    const logisticsTomorrowStart = new Date(logisticsTodayStart);
+    logisticsTomorrowStart.setDate(logisticsTomorrowStart.getDate() + 1);
+    const logisticsTomorrowEnd = new Date(logisticsTodayEnd);
+    logisticsTomorrowEnd.setDate(logisticsTomorrowEnd.getDate() + 1);
+
+    const relevantStatuses = [OrderStatus.PENDING, OrderStatus.PROCESSING, OrderStatus.OUT_FOR_DELIVERY];
+
+    const todayPackingCount = orders.filter(o => {
+      const isRelevant = relevantStatuses.includes(o.status);
+      if (!isRelevant) return false;
+
+      if (o.deliveryType === 'Instant' || !o.deliveryType) {
+         const createdAt = new Date(o.createdAt);
+         return createdAt >= logisticsTodayStart && createdAt <= logisticsTodayEnd;
+      } else if (o.deliveryType === 'Scheduled' && o.scheduledAt) {
+         const scheduledAt = new Date(o.scheduledAt);
+         return scheduledAt >= logisticsTodayStart && scheduledAt <= logisticsTodayEnd;
+      }
+      return false;
+    }).length;
+
+    const tomorrowPackingCount = orders.filter(o => {
+      const isRelevant = relevantStatuses.includes(o.status);
+      if (!isRelevant) return false;
+
+      if (o.deliveryType === 'Scheduled' && o.scheduledAt) {
+         const scheduledAt = new Date(o.scheduledAt);
+         return scheduledAt >= logisticsTomorrowStart && scheduledAt <= logisticsTomorrowEnd;
+      }
+      return false;
+    }).length;
+
     return {
       stats: {
         totalSales,
         totalOrders: orders.length,
         activeUsers: totalUsers,
         pendingDeliveries,
+        logistics: {
+           today: todayPackingCount,
+           tomorrow: tomorrowPackingCount
+        }
       },
       salesTrends,
       liveDeliveries,

@@ -6,6 +6,7 @@ import 'package:shimmer/shimmer.dart';
 
 import '../../controllers/home_controller.dart';
 import '../../controllers/location_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../models/product_model.dart';
@@ -90,16 +91,17 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _buildTicker() {
+    final settings = Get.find<SettingsController>();
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 4),
       color: Colors.yellow.shade700,
-      child: const Center(
+      child: Obx(() => Center(
         child: Text(
-          "🚚 FREE DELIVERY ON ALL ORDERS ABOVE ₹499!",
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+          "🚚 FREE DELIVERY ON ALL ORDERS ABOVE ₹${settings.freeDeliveryThreshold.value.toInt()}!",
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blueAccent),
         ),
-      ),
+      )),
     );
   }
 

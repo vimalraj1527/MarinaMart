@@ -12,6 +12,8 @@ import { RidersModule } from './riders/riders.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { StatsModule } from './stats/stats.module';
+import { SettingsModule } from './settings/settings.module';
+import { Setting } from './settings/entities/setting.entity';
 
 @Module({
   imports: [
@@ -29,7 +31,7 @@ import { StatsModule } from './stats/stats.module';
       username: process.env.DB_USER || 'grocery_user',
       password: process.env.DB_PASSWORD || 'grocery_password',
       database: process.env.DB_NAME || 'grocery_delivery',
-      entities: [Product, Category],
+      entities: [Product, Category, Setting],
       synchronize: true, // Auto-create tables (Dev only)
       autoLoadEntities: true,
     }),
@@ -40,6 +42,7 @@ import { StatsModule } from './stats/stats.module';
     UsersModule,
     AuthModule,
     StatsModule,
+    SettingsModule,
   ],
 })
 export class AppModule {}

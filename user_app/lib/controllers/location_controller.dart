@@ -1,6 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
+import '../utils/app_constants.dart';
 
 class LocationController extends GetxController {
   final RxString currentAddress = "Locating...".obs;
@@ -14,6 +15,24 @@ class LocationController extends GetxController {
   void onInit() {
     super.onInit();
     getCurrentLocation();
+  }
+
+  // Calculate distance from Store in KM
+  double getDistanceFromStore() {
+    if (currentPosition.value == null) {
+      // Default mock distance for testing if location is pending
+      return 3.2; 
+    }
+    
+    double distanceInMeters = Geolocator.distanceBetween(
+      AppConstants.storeLat,
+      AppConstants.storeLong,
+      currentPosition.value!.latitude,
+      currentPosition.value!.longitude,
+    );
+    
+    // Return distance in Kilometers
+    return (distanceInMeters / 1000).toPrecision(1);
   }
 
   void addAddress(String title, String address) {
@@ -31,7 +50,6 @@ class LocationController extends GetxController {
       bool serviceEnabled;
       LocationPermission permission;
 
-      // Check if location services are enabled.
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         currentAddress.value = "Location services disabled";
@@ -55,13 +73,11 @@ class LocationController extends GetxController {
         return;
       }
 
-      // Get current position
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high
       );
       currentPosition.value = position;
 
-      // Reverse geocode to get address
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude, 
         position.longitude
@@ -89,7 +105,6 @@ class LocationController extends GetxController {
 
   void updateAddressManual(String newAddress) {
     currentAddress.value = newAddress;
-    // For manual, we just show the first few words as short address
     List<String> parts = newAddress.split(',');
     if (parts.length > 1) {
       shortAddress.value = "${parts[0].trim()}, ${parts[1].trim()}";

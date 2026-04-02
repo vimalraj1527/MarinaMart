@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../controllers/cart_controller.dart';
 import '../../controllers/location_controller.dart';
+import '../../controllers/settings_controller.dart';
 import '../../services/storage_service.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
@@ -18,6 +19,7 @@ class CheckoutView extends StatefulWidget {
 class _CheckoutViewState extends State<CheckoutView> {
   final CartController _cartController = Get.find<CartController>();
   final LocationController _locationController = Get.find<LocationController>();
+  final SettingsController _settings = Get.find<SettingsController>();
   final StorageService _storage = Get.find<StorageService>();
   
   late TextEditingController _nameController;
@@ -64,7 +66,6 @@ class _CheckoutViewState extends State<CheckoutView> {
        DateTime date = now.add(Duration(days: i));
        String dayLabel = i == 0 ? "Today" : i == 1 ? "Tomorrow" : DateFormat('EEE, MMM d').format(date);
        
-       // Morning Slot: 8 AM - 12 PM (Cutoff: 7 AM)
        DateTime morningStart = DateTime(date.year, date.month, date.day, 8, 0);
        DateTime morningCutoff = DateTime(date.year, date.month, date.day, 7, 0);
        
@@ -77,7 +78,6 @@ class _CheckoutViewState extends State<CheckoutView> {
           });
        }
 
-       // Evening Slot: 4 PM - 8 PM (Cutoff: 3 PM)
        DateTime eveningStart = DateTime(date.year, date.month, date.day, 16, 0);
        DateTime eveningCutoff = DateTime(date.year, date.month, date.day, 15, 0);
 
@@ -163,12 +163,28 @@ class _CheckoutViewState extends State<CheckoutView> {
     );
   }
 
+  double _calculateDeliveryFee(double subtotal) {
+    if (subtotal >= _settings.freeDeliveryThreshold.value) {
+      return 0.0;
+    }
+    
+    if (_deliveryType == "Instant") {
+      double distance = _locationController.getDistanceFromStore();
+      // Formula: 50 basic + 5rs per KM
+      return 50.0 + (distance * 5.0);
+    } else {
+      // Scheduled Delivery: Flat 25
+      return 25.0;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double subtotal = _cartController.totalAmount;
     double gst = subtotal * 0.05;
-    double deliveryFee = subtotal > 499 ? 0 : 40;
+    double deliveryFee = _calculateDeliveryFee(subtotal);
     double total = subtotal + gst + deliveryFee;
+    double distance = _locationController.getDistanceFromStore();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -217,18 +233,18 @@ class _CheckoutViewState extends State<CheckoutView> {
                      value: "Instant",
                      groupValue: _deliveryType,
                      title: const Text("Instant Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
-                     subtitle: const Text("Arrival in 15-20 minutes"),
-                     secondary: const Icon(Icons.bolt, color: Colors.amber, size: 30),
+                     subtitle: Text("₹50 + ₹5/km • Nearby: ${distance.toStringAsFixed(1)} KM"),
+                     secondary: const Icon(Icons.bolt, color: Colors.amber, size: 32),
                      activeColor: AppColors.primaryColor,
                      onChanged: (val) => setState(() => _deliveryType = val.toString()),
                    ),
-                   const Divider(indent: 70),
+                   const Divider(indent: 72),
                    RadioListTile(
                      value: "Scheduled",
                      groupValue: _deliveryType,
                      title: const Text("Scheduled Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
-                     subtitle: Text(_selectedSlotLabel ?? "Choose Morning or Evening Slot"),
-                     secondary: const Icon(Icons.calendar_month, color: Colors.blue, size: 30),
+                     subtitle: Text(_selectedSlotLabel ?? "Flat ₹25 • Choose window"),
+                     secondary: const Icon(Icons.calendar_month, color: Colors.blue, size: 32),
                      activeColor: AppColors.primaryColor,
                      onChanged: (val) {
                         setState(() => _deliveryType = val.toString());
@@ -245,7 +261,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                          style: OutlinedButton.styleFrom(
                            minimumSize: const Size(double.infinity, 45),
                            side: BorderSide(color: AppColors.primaryColor.withOpacity(0.3)),
-                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                          ),
                        ),
                      ),
@@ -312,7 +328,19 @@ class _CheckoutViewState extends State<CheckoutView> {
                 children: [
                   _buildBillRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
                   _buildBillRow("Taxes & GST (5%)", "₹${gst.toStringAsFixed(2)}"),
-                  _buildBillRow("Delivery Partner Fee", deliveryFee == 0 ? "FREE" : "₹${deliveryFee.toStringAsFixed(2)}", isFree: deliveryFee == 0),
+                  _buildBillRow(
+                    _deliveryType == "Instant" ? "Rapid Delivery Fee ($distance KM)" : "Value Delivery Fee (Slot)", 
+                    deliveryFee == 0 ? "FREE" : "₹${deliveryFee.toStringAsFixed(2)}", 
+                    isFree: deliveryFee == 0
+                  ),
+                  if (deliveryFee > 0 && subtotal < _settings.freeDeliveryThreshold.value)
+                     Padding(
+                       padding: const EdgeInsets.only(top: 8),
+                       child: Text(
+                         "Add ₹${(_settings.freeDeliveryThreshold.value - subtotal).toStringAsFixed(0)} more for FREE delivery", 
+                         style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)
+                       ),
+                     ),
                   const Divider(height: 30),
                   _buildBillRow("TOTAL PAYABLE", "₹${total.toStringAsFixed(2)}", isBold: true),
                 ],
