@@ -7,6 +7,7 @@ import Categories from './pages/Categories';
 import Orders from './pages/Orders';
 import OrderDetails from './pages/OrderDetails';
 import Customers from './pages/Customers';
+import CustomerDetails from './pages/CustomerDetails';
 import Riders from './pages/Riders';
 import Settings from './pages/Settings';
 import Revenue from './pages/Revenue';
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="orders" element={<Orders />} />
           <Route path="orders/:id" element={<OrderDetails />} />
           <Route path="customers" element={<Customers />} />
+          <Route path="customers/:id" element={<CustomerDetails />} />
           <Route path="riders" element={<Riders />} />
           <Route path="revenue" element={<Revenue />} />
           <Route path="settings" element={<Settings />} />
