@@ -158,9 +158,17 @@ export default function OrderDetailsPage() {
                           <p className="text-xs font-bold text-slate-400">Shipment Strategy</p>
                           <p className="font-bold text-lg">{order.deliveryType || 'Instant Delivery'}</p>
                           {order.deliveryType === 'Scheduled' && order.scheduledAt && (
-                            <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mt-1">
-                               Target: {new Date(order.scheduledAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
-                            </p>
+                            <div className="mt-2 space-y-1">
+                              <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">
+                                Target: {new Date(order.scheduledAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                              </p>
+                              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                                <Clock className="w-3 h-3 text-emerald-400" />
+                                <span className="text-[10px] font-black uppercase tracking-tighter text-emerald-400">
+                                  {new Date(order.scheduledAt).getHours() < 12 ? 'MORNING SLOT (8AM-12PM)' : 'EVENING SLOT (4PM-8PM)'}
+                                </span>
+                              </div>
+                            </div>
                           )}
                           {(!order.deliveryType || order.deliveryType === 'Instant') && (
                             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Lightning Fast (15-20 mins)</p>

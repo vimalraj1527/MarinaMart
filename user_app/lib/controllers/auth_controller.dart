@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../services/storage_service.dart';
-import '../views/home/home_view.dart';
 import 'orders_controller.dart';
 import 'cart_controller.dart';
 

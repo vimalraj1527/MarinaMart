@@ -25,12 +25,11 @@ class _CheckoutViewState extends State<CheckoutView> {
   String _paymentMethod = "Cash on Delivery";
   String _deliveryType = "Instant";
   DateTime? _scheduledDateTime;
+  String? _selectedSlotLabel;
 
   @override
   void initState() {
     super.initState();
-    
-    // Initialize with user profile data
     String? userStr = _storage.getUser();
     String name = "Bloomarina Customer";
     String phone = "+91 9999999999";
@@ -56,48 +55,118 @@ class _CheckoutViewState extends State<CheckoutView> {
     super.dispose();
   }
 
-  Future<void> _selectDateTime(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().add(const Duration(hours: 1)),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 7)),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(primary: AppColors.primaryColor),
-          ),
-          child: child!,
-        );
-      },
-    );
+  // Generates 2 slots per day for the next 7 days
+  List<Map<String, dynamic>> _generateAvailableSlots() {
+    List<Map<String, dynamic>> slots = [];
+    DateTime now = DateTime.now();
+    
+    for (int i = 0; i < 7; i++) {
+       DateTime date = now.add(Duration(days: i));
+       String dayLabel = i == 0 ? "Today" : i == 1 ? "Tomorrow" : DateFormat('EEE, MMM d').format(date);
+       
+       // Morning Slot: 8 AM - 12 PM (Cutoff: 7 AM)
+       DateTime morningStart = DateTime(date.year, date.month, date.day, 8, 0);
+       DateTime morningCutoff = DateTime(date.year, date.month, date.day, 7, 0);
+       
+       if (now.isBefore(morningCutoff)) {
+          slots.add({
+            'label': '$dayLabel (Morning 8AM-12PM)',
+            'dateTime': morningStart,
+            'display': 'Morning Slot (8 AM - 12 PM)',
+            'dateLabel': dayLabel,
+          });
+       }
 
-    if (pickedDate != null) {
-      if (!mounted) return;
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
+       // Evening Slot: 4 PM - 8 PM (Cutoff: 3 PM)
+       DateTime eveningStart = DateTime(date.year, date.month, date.day, 16, 0);
+       DateTime eveningCutoff = DateTime(date.year, date.month, date.day, 15, 0);
 
-      if (pickedTime != null) {
-        setState(() {
-          _scheduledDateTime = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
-        });
-      }
+       if (now.isBefore(eveningCutoff)) {
+          slots.add({
+            'label': '$dayLabel (Evening 4PM-8PM)',
+            'dateTime': eveningStart,
+            'display': 'Evening Slot (4 PM - 8 PM)',
+            'dateLabel': dayLabel,
+          });
+       }
     }
+    return slots;
+  }
+
+  void _showSlotPicker() {
+    final availableSlots = _generateAvailableSlots();
+    
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text("Select Delivery Slot", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            const Text("Choose a convenient time for your delivery", style: TextStyle(color: AppColors.grey)),
+            const SizedBox(height: 20),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: availableSlots.length,
+                itemBuilder: (context, index) {
+                  final slot = availableSlots[index];
+                  bool isSelected = _selectedSlotLabel == slot['label'];
+                  
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          _scheduledDateTime = slot['dateTime'];
+                          _selectedSlotLabel = slot['label'];
+                        });
+                        Get.back();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.primaryColor.withOpacity(0.05) : Colors.white,
+                          border: Border.all(color: isSelected ? AppColors.primaryColor : Colors.grey.shade200),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(slot['dateLabel'], style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? AppColors.primaryColor : Colors.black87)),
+                                const SizedBox(height: 2),
+                                Text(slot['display'], style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                              ],
+                            ),
+                            if (isSelected) const Icon(Icons.check_circle, color: AppColors.primaryColor)
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      isScrollControlled: true,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Bill Calculation
     double subtotal = _cartController.totalAmount;
-    double gst = subtotal * 0.05; // 5% GST
+    double gst = subtotal * 0.05;
     double deliveryFee = subtotal > 499 ? 0 : 40;
     double total = subtotal + gst + deliveryFee;
 
@@ -113,7 +182,6 @@ class _CheckoutViewState extends State<CheckoutView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Delivery Address Summary
             _buildSectionHeader("Deliver To"),
             Obx(() => Container(
               padding: const EdgeInsets.all(15),
@@ -139,7 +207,6 @@ class _CheckoutViewState extends State<CheckoutView> {
             
             const SizedBox(height: 25),
 
-            // **NEW: Delivery Strategy**
             _buildSectionHeader("Delivery Strategy"),
             Container(
               padding: const EdgeInsets.all(10),
@@ -150,8 +217,8 @@ class _CheckoutViewState extends State<CheckoutView> {
                      value: "Instant",
                      groupValue: _deliveryType,
                      title: const Text("Instant Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
-                     subtitle: const Text("Delivery in 15-20 mins"),
-                     secondary: const Icon(Icons.bolt, color: Colors.amber),
+                     subtitle: const Text("Arrival in 15-20 minutes"),
+                     secondary: const Icon(Icons.bolt, color: Colors.amber, size: 30),
                      activeColor: AppColors.primaryColor,
                      onChanged: (val) => setState(() => _deliveryType = val.toString()),
                    ),
@@ -160,24 +227,25 @@ class _CheckoutViewState extends State<CheckoutView> {
                      value: "Scheduled",
                      groupValue: _deliveryType,
                      title: const Text("Scheduled Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
-                     subtitle: Text(_scheduledDateTime == null ? "Pick a date & time" : DateFormat('EEE, MMM d – hh:mm a').format(_scheduledDateTime!)),
-                     secondary: const Icon(Icons.calendar_today, color: Colors.blue),
+                     subtitle: Text(_selectedSlotLabel ?? "Choose Morning or Evening Slot"),
+                     secondary: const Icon(Icons.calendar_month, color: Colors.blue, size: 30),
                      activeColor: AppColors.primaryColor,
                      onChanged: (val) {
                         setState(() => _deliveryType = val.toString());
-                        if (_scheduledDateTime == null) _selectDateTime(context);
+                        if (_scheduledDateTime == null) _showSlotPicker();
                      },
                    ),
                    if (_deliveryType == "Scheduled")
                      Padding(
                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                        child: OutlinedButton.icon(
-                         onPressed: () => _selectDateTime(context),
+                         onPressed: _showSlotPicker,
                          icon: const Icon(Icons.edit_calendar, size: 18),
-                         label: const Text("Change Schedule"),
+                         label: const Text("Change Delivery Slot"),
                          style: OutlinedButton.styleFrom(
                            minimumSize: const Size(double.infinity, 45),
                            side: BorderSide(color: AppColors.primaryColor.withOpacity(0.3)),
+                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                          ),
                        ),
                      ),
@@ -187,7 +255,6 @@ class _CheckoutViewState extends State<CheckoutView> {
 
             const SizedBox(height: 25),
             
-            // 2. Contact Details
             _buildSectionHeader("Contact Details"),
             Container(
               padding: const EdgeInsets.all(15),
@@ -196,13 +263,13 @@ class _CheckoutViewState extends State<CheckoutView> {
                 children: [
                   TextField(
                     controller: _nameController,
-                    decoration: const InputDecoration(labelText: "Deliver to Whom?", border: InputBorder.none, prefixIcon: Icon(Icons.person_outline)),
+                    decoration: const InputDecoration(labelText: "Recipient Name", border: InputBorder.none, prefixIcon: Icon(Icons.person_outline)),
                   ),
                   const Divider(),
                   TextField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(labelText: "Mobile Number", border: InputBorder.none, prefixIcon: Icon(Icons.phone_iphone_outlined)),
+                    decoration: const InputDecoration(labelText: "Mobile Contact", border: InputBorder.none, prefixIcon: Icon(Icons.phone_iphone_outlined)),
                   ),
                 ],
               ),
@@ -210,7 +277,6 @@ class _CheckoutViewState extends State<CheckoutView> {
 
             const SizedBox(height: 25),
 
-            // 3. Payment Method
             _buildSectionHeader("Payment Mode"),
             Container(
               padding: const EdgeInsets.all(10),
@@ -221,15 +287,15 @@ class _CheckoutViewState extends State<CheckoutView> {
                      value: "Cash on Delivery",
                      groupValue: _paymentMethod,
                      title: const Text("Cash on Delivery (COD)"),
-                     subtitle: const Text("Pay at your doorstep"),
+                     subtitle: const Text("Physical payment at doorstep"),
                      activeColor: AppColors.primaryColor,
                      onChanged: (val) => setState(() => _paymentMethod = val.toString()),
                    ),
                    RadioListTile(
                      value: "Online",
                      groupValue: _paymentMethod,
-                     title: const Text("Online Payment"),
-                     subtitle: const Text("UPI, Card, Wallet"),
+                     title: const Text("Secure Online Payment"),
+                     subtitle: const Text("UPI, Cards, & Wallets"),
                      onChanged: null,
                    ),
                 ],
@@ -238,23 +304,22 @@ class _CheckoutViewState extends State<CheckoutView> {
 
             const SizedBox(height: 25),
 
-            // 4. Bill Details
-            _buildSectionHeader("Bill Details"),
+            _buildSectionHeader("Financial Summary"),
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
               child: Column(
                 children: [
-                  _buildBillRow("Item Total", "₹${subtotal.toStringAsFixed(2)}"),
-                  _buildBillRow("Handling Fee & GST (5%)", "₹${gst.toStringAsFixed(2)}"),
-                  _buildBillRow("Delivery Fee", deliveryFee == 0 ? "FREE" : "₹${deliveryFee.toStringAsFixed(2)}", isFree: deliveryFee == 0),
+                  _buildBillRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
+                  _buildBillRow("Taxes & GST (5%)", "₹${gst.toStringAsFixed(2)}"),
+                  _buildBillRow("Delivery Partner Fee", deliveryFee == 0 ? "FREE" : "₹${deliveryFee.toStringAsFixed(2)}", isFree: deliveryFee == 0),
                   const Divider(height: 30),
-                  _buildBillRow("To Pay", "₹${total.toStringAsFixed(2)}", isBold: true),
+                  _buildBillRow("TOTAL PAYABLE", "₹${total.toStringAsFixed(2)}", isBold: true),
                 ],
               ),
             ),
             
-            const SizedBox(height: 100),
+            const SizedBox(height: 120),
           ],
         ),
       ),
@@ -269,17 +334,18 @@ class _CheckoutViewState extends State<CheckoutView> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
             foregroundColor: Colors.white,
-            minimumSize: const Size(double.infinity, 55),
+            minimumSize: const Size(double.infinity, 56),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            elevation: 0,
           ),
           child: _cartController.isLoading.value 
             ? const CircularProgressIndicator(color: Colors.white)
               : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text("Place Order for ₹${total.toStringAsFixed(0)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-                  const SizedBox(width: 10),
-                  const Icon(Icons.check_circle_rounded),
+                  Text("Confirm Order • ₹${total.toStringAsFixed(0)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward_ios, size: 16),
                 ],
               ),
         )),
@@ -290,18 +356,18 @@ class _CheckoutViewState extends State<CheckoutView> {
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(title.toUpperCase(), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: AppColors.grey, letterSpacing: 1.2)),
+      child: Text(title.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.grey, letterSpacing: 1.5)),
     );
   }
 
   Widget _buildBillRow(String label, String value, {bool isBold = false, bool isFree = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: isBold ? Colors.black : AppColors.grey, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: isBold ? 16 : 14)),
-          Text(value, style: TextStyle(color: isFree ? Colors.green : Colors.black, fontWeight: isBold ? FontWeight.bold : FontWeight.w600, fontSize: isBold ? 18 : 14)),
+          Text(label, style: TextStyle(color: isBold ? Colors.black : AppColors.grey, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: isBold ? 15 : 14)),
+          Text(value, style: TextStyle(color: isFree ? Colors.green : Colors.black, fontWeight: isBold ? FontWeight.bold : FontWeight.w600, fontSize: isBold ? 17 : 14)),
         ],
       ),
     );
@@ -309,12 +375,13 @@ class _CheckoutViewState extends State<CheckoutView> {
 
   void _confirmOrder(double total) {
      if (_nameController.text.isEmpty || _phoneController.text.isEmpty) {
-       Get.snackbar("Missing Details", "Please provide delivery contact info.");
+       Get.snackbar("Details Missing", "Please provide recipient contact information.");
        return;
      }
 
      if (_deliveryType == "Scheduled" && _scheduledDateTime == null) {
-       Get.snackbar("Schedule Required", "Please pick a date & time for delivery.");
+       Get.snackbar("Select Slot", "A delivery time slot is required for scheduled orders.");
+       _showSlotPicker();
        return;
      }
 

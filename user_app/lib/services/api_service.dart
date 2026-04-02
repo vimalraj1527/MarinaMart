@@ -26,7 +26,7 @@ class ApiService extends GetxService {
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
       return response;
-    } catch (e, stack) {
+    } catch (e) {
       print("[CRITICAL] API_GET_ERROR: $e at $uri");
       return http.Response(jsonEncode({'message': 'Unreachable: $e'}), 503);
     }
@@ -43,7 +43,7 @@ class ApiService extends GetxService {
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
       return response;
-    } catch (e, stack) {
+    } catch (e) {
       print("[CRITICAL] API_POST_ERROR: $e at $uri");
       return http.Response(jsonEncode({'message': 'Unreachable: $e'}), 503);
     }
@@ -59,7 +59,7 @@ class ApiService extends GetxService {
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
       return response;
-    } catch (e, stack) {
+    } catch (e) {
       print("[CRITICAL] API_PUT_ERROR: $e at $uri");
       return http.Response(jsonEncode({'message': 'Unreachable: $e'}), 503);
     }
@@ -74,7 +74,7 @@ class ApiService extends GetxService {
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
       return response;
-    } catch (e, stack) {
+    } catch (e) {
       print("[CRITICAL] API_DELETE_ERROR: $e at $uri");
       return http.Response(jsonEncode({'message': 'Unreachable: $e'}), 503);
     }
