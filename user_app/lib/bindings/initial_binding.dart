@@ -9,7 +9,7 @@ class InitialBinding extends Bindings {
   @override
   void dependencies() {
     // Services setup
-    Get.lazyPut(() => StorageService());
+    // StorageService is already put in main.dart's Get.put(storage, permanent: true)
     Get.lazyPut(() => ApiService());
     
     // Controllers setup

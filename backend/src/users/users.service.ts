@@ -13,6 +13,10 @@ export class UsersService {
     private readonly orderRepository: Repository<Order>,
   ) {}
 
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findOne({ where: { email } });
+  }
+
   async create(createUserDto: any) {
     const user = this.userRepository.create(createUserDto);
     return await this.userRepository.save(user);
@@ -23,14 +27,10 @@ export class UsersService {
     if (role) where.role = role;
     const users = await this.userRepository.find({ where, order: { createdAt: 'DESC' } });
     
-    // FETCH ALL ORDERS once to avoid N+1 query issue for customer list
     const allOrders = await this.orderRepository.find();
 
     return users.map(user => {
-      // Filter orders belonging to this specific user ID
       const userOrders = allOrders.filter(o => o.customerId === user.id);
-      
-      // Calculate Total Order Value (Lifetime Value) precisely
       const totalOrderValue = userOrders.reduce((sum, o) => {
         const val = typeof o.totalAmount === 'string' ? parseFloat(o.totalAmount) : Number(o.totalAmount);
         return sum + (isNaN(val) ? 0 : val);
@@ -49,13 +49,11 @@ export class UsersService {
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
     
-    // Fetch individual user orders for the deep-dive view
     const userOrders = await this.orderRepository.find({ 
       where: { customerId: id },
       order: { createdAt: 'DESC' }
     });
 
-    // Precise aggregation of Lifetime Total Order Value
     const totalOrderValue = userOrders.reduce((sum, o) => {
       const val = typeof o.totalAmount === 'string' ? parseFloat(o.totalAmount) : Number(o.totalAmount);
       return sum + (isNaN(val) ? 0 : val);

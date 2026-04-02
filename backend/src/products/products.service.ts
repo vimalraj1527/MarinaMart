@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike } from 'typeorm';
+import { Repository, ILike, Any } from 'typeorm';
 import { Product } from './entities/product.entity';
 
 @Injectable()
@@ -12,10 +12,21 @@ export class ProductsService {
 
   async findAll(category?: string, search?: string, trending?: boolean) {
     const where: any = { isAvailable: true };
+    
     if (category) {
-      where.category = ILike(`%${category}%`);
+      const cat = category.toLowerCase();
+      // Handle the common "Fruits & Vegetables" grouping vs individual "Fruits" or "Vegetables"
+      if (cat.includes("fruit") || cat.includes("veg")) {
+         where.category = Any([ILike('%fruit%'), ILike('%veg%')]);
+      } else if (cat.includes("dairy") || cat.includes("diary") || cat.includes("milk")) {
+         where.category = Any([ILike('%dairy%'), ILike('%diary%'), ILike('%milk%'), ILike('%bread%'), ILike('%egg%')]);
+      } else {
+         where.category = ILike(`%${category}%`);
+      }
     }
+    
     if (trending) where.isTrending = true;
+    
     if (search) {
       where.name = ILike(`%${search}%`);
     }
@@ -33,7 +44,10 @@ export class ProductsService {
   }
 
   async create(createProductDto: any) {
-    const product = this.productRepository.create(createProductDto);
+    const product = this.productRepository.create({
+      ...createProductDto,
+      isAvailable: true // Ensure new products are visible by default
+    });
     return await this.productRepository.save(product);
   }
 

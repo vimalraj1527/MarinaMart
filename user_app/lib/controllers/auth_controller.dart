@@ -15,54 +15,89 @@ class AuthController extends GetxController {
 
   final RxBool isLoading = false.obs;
   final TextEditingController emailController = TextEditingController(text: 'tech@bloomarina.com');
-  final TextEditingController passwordController = TextEditingController(text: '123456');
+  final TextEditingController passwordController = TextEditingController(text: 'WelcomeBM@2026');
 
   Future<void> login() async {
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      Get.snackbar('Error', 'Please enter email and password', 
-          backgroundColor: Colors.red, colorText: Colors.white);
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      Get.snackbar('Input Required', 'Provide email and password credentials', 
+          backgroundColor: Colors.orange, colorText: Colors.white);
       return;
     }
 
     try {
       isLoading.value = true;
+      print("[AUTH] Starting login request for: $email to ${AppConstants.baseUrl}${AppConstants.loginUrl}");
       
+      // ApiService already has a 15s timeout, removing the redundant .timeout(10) here
       final response = await _apiService.postData(AppConstants.loginUrl, {
-        'email': emailController.text.trim(),
-        'password': passwordController.text.trim(),
+        'email': email,
+        'password': password,
       });
 
+      print("[AUTH] Response Code: ${response.statusCode}");
+
       if (response.statusCode == 201 || response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        await _storage.setToken(data['access_token']);
-        await _storage.setUser(jsonEncode(data['user']));
-        Get.offAllNamed('/home');
-        Get.snackbar('Success', 'Welcome back, ${data['user']['name']}', 
-            backgroundColor: Colors.green, colorText: Colors.white);
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        
+        if (data.containsKey('access_token')) {
+          await _storage.setToken(data['access_token']);
+          await _storage.setUser(jsonEncode(data['user']));
+          
+          Get.offAllNamed('/home');
+          Get.snackbar('Identity Verified', 'Welcome back, ${data['user']?['name'] ?? 'Authorized User'}', 
+              backgroundColor: Colors.green, colorText: Colors.white);
+        } else {
+           throw Exception("Identity payload missing access_token");
+        }
+      } else if (response.statusCode == 503) {
+         // This is our custom 503 from ApiService when network is unreachable
+         _handleConnectionError(null);
       } else {
-        final data = jsonDecode(response.body);
-        Get.snackbar('Login Failed', data['message'] ?? 'Invalid credentials', 
-            backgroundColor: Colors.red, colorText: Colors.white);
+        try {
+           final errData = jsonDecode(response.body);
+           Get.snackbar('Login Refused', errData['message'] ?? 'Identity not recognized.', 
+               backgroundColor: Colors.red, colorText: Colors.white);
+        } catch (_) {
+           Get.snackbar('Credential Mismatch', 'Password was rejected by the identity service.', 
+               backgroundColor: Colors.red, colorText: Colors.white);
+        }
       }
     } catch (e) {
-       print("LOGIN_ERROR: $e");
-       Get.snackbar('Error', 'Connection failed. Please check your network and try again.', 
-          backgroundColor: Colors.red, colorText: Colors.white);
+       _handleConnectionError(e);
     } finally {
       isLoading.value = false;
     }
   }
 
+  void _handleConnectionError(dynamic error) {
+    print("[CRITICAL] AUTH_LOGIN_FAILURE: $error");
+    
+    String hint = 'The backend server is unreachable. Ensure yours is running and reachable.';
+    if (error?.toString().contains("10.0.2.2") ?? true) {
+      hint = "Network unreachable. Verify you ran 'adb reverse tcp:5001 tcp:5001' on your host machine for this device.";
+    }
+    
+    Get.snackbar('Connection Terminated', hint, 
+      backgroundColor: Colors.blueGrey.shade900, colorText: Colors.white, 
+      duration: const Duration(seconds: 7),
+      mainButton: TextButton(
+        onPressed: login, 
+        child: const Text("Retry", style: TextStyle(color: Colors.greenAccent))
+      ));
+  }
+
   Future<void> register(String name, String email, String password, String phone) async {
     if (name.isEmpty || email.isEmpty || password.isEmpty || phone.isEmpty) {
-      Get.snackbar('Error', 'All fields are required', 
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar('Data Incomplete', 'Registry requirements not met.', 
+          backgroundColor: Colors.orange, colorText: Colors.white);
       return;
     }
 
     try {
       isLoading.value = true;
-      
       final response = await _apiService.postData(AppConstants.registerUrl, {
         'name': name.trim(),
         'email': email.trim(),
@@ -75,16 +110,21 @@ class AuthController extends GetxController {
         await _storage.setToken(data['access_token']);
         await _storage.setUser(jsonEncode(data['user']));
         Get.offAllNamed('/home');
-        Get.snackbar('Success', 'Account created successfully!', 
+        Get.snackbar('Registry Complete', 'Welcome to the platform!', 
             backgroundColor: Colors.green, colorText: Colors.white);
       } else {
-        final data = jsonDecode(response.body);
-        Get.snackbar('Registration Failed', data['message'] ?? 'Email already exists', 
-            backgroundColor: Colors.red, colorText: Colors.white);
+        try {
+           final errData = jsonDecode(response.body);
+           Get.snackbar('Registry Error', errData['message'] ?? 'Identity already exists.', 
+               backgroundColor: Colors.red, colorText: Colors.white);
+        } catch (_) {
+           Get.snackbar('Failed', 'Endpoint not reachable.', 
+               backgroundColor: Colors.red, colorText: Colors.white);
+        }
       }
     } catch (e) {
-      Get.snackbar('Error', 'Connection failed. Check backend.', 
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar('Connection Failure', 'Backend sync interrupted.', 
+          backgroundColor: Colors.blueGrey.shade900, colorText: Colors.white);
     } finally {
       isLoading.value = false;
     }
@@ -94,7 +134,6 @@ class AuthController extends GetxController {
     try {
       await _storage.clearAll();
       
-      // Clear data but keep mandatory controllers alive to avoid crashes
       if (Get.isRegistered<OrdersController>()) {
         Get.delete<OrdersController>(force: true);
       }
@@ -104,9 +143,8 @@ class AuthController extends GetxController {
       }
       
       Get.offAllNamed('/login');
-      print("LOGOUT: Data cleared and navigated to login.");
     } catch (e) {
-      print("LOGOUT_ERROR: $e");
+      print("[CRITICAL] LOGOUT_DATA_FAILURE: $e");
       Get.offAllNamed('/login'); 
     }
   }

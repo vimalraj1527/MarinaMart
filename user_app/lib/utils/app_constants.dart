@@ -1,7 +1,11 @@
 class AppConstants {
   static const String appName = 'Bloomarina Instamart';
   static const String appVersion = '1.0.0';
-  static const String baseUrl = 'http://localhost:5001'; // Connects to backend via ADB reverse for physical devices
+  
+  // NOTE: If using Android Emulator, use http://10.0.2.2:5001
+  // If using Real Device, use your Computer's Local IP (e.g. http://192.168.1.5:5001)
+  // Ensure you run 'adb reverse tcp:5001 tcp:5001' for USB-connected real devices.
+  static const String baseUrl = 'http://localhost:5001'; 
 
   // API Endpoints
   static const String loginUrl = '/auth/login';

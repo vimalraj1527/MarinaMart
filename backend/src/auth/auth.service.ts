@@ -11,16 +11,18 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
-    console.log(`[AUTH] Attempting login for: ${email}`);
-    const user: any = await (this.usersService as any).userRepository.findOne({ where: { email } });
+    console.log(`[AUTH] Attemping login for: ${email}`);
+    
+    // Using formal findByEmail instead of hacking the repository access
+    const user = await this.usersService.findByEmail(email);
     
     if (!user) {
-      console.log(`[AUTH] User not found: ${email}`);
+      console.log(`[AUTH] Identity not found: ${email}`);
       return null;
     }
 
     const isMatch = await bcrypt.compare(pass, user.password || '');
-    console.log(`[AUTH] Password Match for ${email}: ${isMatch}`);
+    console.log(`[AUTH] Verified ${email}: ${isMatch}`);
 
     if (isMatch) {
       const { password, ...result } = user;
@@ -42,13 +44,12 @@ export class AuthService {
       },
     };
   }
+  
   async register(registerDto: any) {
-    const existingUser = await (this.usersService as any).userRepository.findOne({ 
-      where: { email: registerDto.email } 
-    });
+    const existingUser = await this.usersService.findByEmail(registerDto.email);
     
     if (existingUser) {
-      throw new UnauthorizedException('User with this email already exists');
+      throw new UnauthorizedException('Identity collision: User with this email already exists');
     }
 
     const user = await this.usersService.create(registerDto);
