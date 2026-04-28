@@ -17,33 +17,32 @@ class AddToCartButton extends StatelessWidget {
       int count = controller.getItemCount(product?.id ?? "");
       
       return AnimatedSwitcher(
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 350),
+        switchInCurve: Curves.elasticOut,
+        switchOutCurve: Curves.easeInBack,
         transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: ScaleTransition(scale: animation, child: child),
-          );
+          return ScaleTransition(scale: animation, child: child);
         },
         child: count == 0
             ? GestureDetector(
                 key: const ValueKey('add_button'),
                 onTap: () {
-                  HapticFeedback.selectionClick();
+                  HapticFeedback.lightImpact();
                   if (product != null) controller.addToCart(product!);
                 },
                 child: Container(
-                  height: 32,
-                  width: 75,
+                  height: 36,
+                  width: 78,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    border: Border.all(color: AppColors.primaryColor, width: 1.5),
-                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.primaryColor.withOpacity(0.4), width: 1.5),
+                    borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.primaryColor.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       )
                     ],
                   ),
@@ -57,27 +56,31 @@ class AddToCartButton extends StatelessWidget {
                           color: AppColors.primaryColor,
                           fontWeight: FontWeight.w900,
                           fontSize: 13,
-                          letterSpacing: 0.5,
+                          letterSpacing: 1.0,
                         ),
                       ),
-                      SizedBox(width: 4),
-                      Icon(Icons.add, color: AppColors.primaryColor, size: 16),
+                      SizedBox(width: 2),
+                      Icon(Icons.add_rounded, color: AppColors.primaryColor, size: 16),
                     ],
                   ),
                 ),
               )
             : Container(
                 key: const ValueKey('counter_button'),
-                height: 32,
-                width: 75,
+                height: 36,
+                width: 86,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryColor,
-                  borderRadius: BorderRadius.circular(8),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6C5CE7), AppColors.primaryColor],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primaryColor.withOpacity(0.3),
-                      blurRadius: 8,
+                      color: AppColors.primaryColor.withOpacity(0.4),
+                      blurRadius: 10,
                       offset: const Offset(0, 4),
                     )
                   ],
@@ -87,13 +90,13 @@ class AddToCartButton extends StatelessWidget {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.selectionClick();
+                        HapticFeedback.lightImpact();
                         controller.removeFromCart(product!);
                       },
                       behavior: HitTestBehavior.opaque,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Icon(Icons.remove, color: Colors.white, size: 16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        child: const Icon(Icons.remove_rounded, color: Colors.white, size: 18),
                       ),
                     ),
                     Text(
@@ -106,13 +109,13 @@ class AddToCartButton extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {
-                        HapticFeedback.selectionClick();
+                        HapticFeedback.lightImpact();
                         controller.addToCart(product!);
                       },
                       behavior: HitTestBehavior.opaque,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
-                        child: Icon(Icons.add, color: Colors.white, size: 16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        child: const Icon(Icons.add_rounded, color: Colors.white, size: 18),
                       ),
                     ),
                   ],

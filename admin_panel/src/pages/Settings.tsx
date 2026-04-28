@@ -30,11 +30,13 @@ export default function SettingsPage() {
   const [user, setUser] = useState<any>(null);
 
   // Form States
-  const [storeSettings, setStoreSettings] = useState({
+  const [storeSettings, setStoreSettings] = useState<any>({
     name: 'Bloomarina Instamart',
     email: 'support@instamart.co',
     phone: '+91 9876543210',
-    address: '123 Cloud St, Silicon Valley, CA'
+    address: '123 Cloud St, Silicon Valley, CA',
+    latitude: 12.9716,
+    longitude: 77.5946
   });
 
   const [deliverySettings, setDeliverySettings] = useState({
@@ -180,16 +182,33 @@ export default function SettingsPage() {
                     </div>
                     <h2 className="text-xl font-bold text-slate-900 font-outfit">Store Identity</h2>
                  </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Input label="Store Name" icon={Store} value={storeSettings.name} onChange={(e: any) => setStoreSettings({...storeSettings, name: e.target.value})} />
                     <Input label="Support Email" icon={Mail} value={storeSettings.email} onChange={(e: any) => setStoreSettings({...storeSettings, email: e.target.value})} />
                     <Input label="Business Address" icon={Store} value={storeSettings.address} onChange={(e: any) => setStoreSettings({...storeSettings, address: e.target.value})} />
                     <Input label="Contact Phone" icon={Store} value={storeSettings.phone} onChange={(e: any) => setStoreSettings({...storeSettings, phone: e.target.value})} />
+                    <Input label="Store Latitude" icon={Map} type="number" step="any" value={storeSettings.latitude} onChange={(e: any) => setStoreSettings({...storeSettings, latitude: Number(e.target.value)})} />
+                    <Input label="Store Longitude" icon={Map} type="number" step="any" value={storeSettings.longitude} onChange={(e: any) => setStoreSettings({...storeSettings, longitude: Number(e.target.value)})} />
                  </div>
-                 <button onClick={saveSettings} disabled={isSaving} className="mt-4 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-3 cursor-pointer">
-                    {isSaving ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Save Identity
-                 </button>
+                 <div className="flex gap-4">
+                  <button onClick={saveSettings} disabled={isSaving} className="mt-4 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-3 cursor-pointer">
+                      {isSaving ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      Save Identity
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition((pos) => {
+                          setStoreSettings({...storeSettings, latitude: pos.coords.latitude, longitude: pos.coords.longitude});
+                        });
+                      }
+                    }} 
+                    className="mt-4 px-8 py-4 bg-emerald-50 text-emerald-600 font-bold rounded-2xl hover:bg-emerald-100 transition-all flex items-center gap-3 cursor-pointer border border-emerald-100"
+                  >
+                      <Map className="w-4 h-4" />
+                      Set to Current Location
+                  </button>
+                 </div>
               </motion.div>
             )}
 

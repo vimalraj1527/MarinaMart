@@ -1,7 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:get/get.dart';
-import '../utils/app_constants.dart';
+import 'settings_controller.dart';
 
 class LocationController extends GetxController {
   final RxString currentAddress = "Locating...".obs;
@@ -20,19 +20,20 @@ class LocationController extends GetxController {
   // Calculate distance from Store in KM
   double getDistanceFromStore() {
     if (currentPosition.value == null) {
-      // Default mock distance for testing if location is pending
-      return 3.2; 
+      // Return 0.0 if location hasn't been fetched yet to avoid unfair charges
+      return 0.0; 
     }
     
+    final settings = Get.find<SettingsController>();
     double distanceInMeters = Geolocator.distanceBetween(
-      AppConstants.storeLat,
-      AppConstants.storeLong,
+      settings.storeLat.value,
+      settings.storeLong.value,
       currentPosition.value!.latitude,
       currentPosition.value!.longitude,
     );
     
-    // Return distance in Kilometers
-    return (distanceInMeters / 1000).toPrecision(1);
+    // Return distance in Kilometers with 1-decimal precision
+    return double.parse((distanceInMeters / 1000).toStringAsFixed(1));
   }
 
   void addAddress(String title, String address) {
@@ -74,7 +75,8 @@ class LocationController extends GetxController {
       }
 
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high
+        desiredAccuracy: LocationAccuracy.bestForNavigation,
+        timeLimit: const Duration(seconds: 5), // Added 5-second limit
       );
       currentPosition.value = position;
 

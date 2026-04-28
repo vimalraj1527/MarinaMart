@@ -12,6 +12,9 @@ class SettingsController extends GetxController {
   final RxDouble instantBaseFee = 50.0.obs;    // Instant Base
   final RxDouble perKmCharge = 5.0.obs;       // Instant Per KM
   
+  final RxDouble storeLat = 12.9716.obs; // Bangalore default
+  final RxDouble storeLong = 77.5946.obs; // Bangalore default
+  
   final RxString storeName = "Bloomarina Instamart".obs;
   final RxBool isLoading = false.obs;
 
@@ -40,8 +43,7 @@ class SettingsController extends GetxController {
       final response = await _api.getData('/settings');
       
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        _applySettings(data);
+        _applySettings(jsonDecode(response.body));
         // Persist for offline/next launch
         await _storage.setSettings(response.body);
       }
@@ -61,7 +63,33 @@ class SettingsController extends GetxController {
        perKmCharge.value = (d['perKmCharge'] ?? 5.0).toDouble();
     }
     if (data['store'] != null) {
-       storeName.value = data['store']['name'] ?? "Bloomarina Instamart";
+       final s = data['store'];
+       storeName.value = s['name'] ?? "Bloomarina Instamart";
+       storeLat.value = (s['latitude'] ?? 12.9716).toDouble();
+       storeLong.value = (s['longitude'] ?? 77.5946).toDouble();
+    }
+  }
+
+  // Set the current user location as the Store Location (Admin Sync)
+  Future<void> syncStoreToCurrentLocation(double lat, double lng) async {
+    try {
+      isLoading.value = true;
+      final response = await _api.postData('/settings/bulk', {
+        'store': {
+          'latitude': lat,
+          'longitude': lng,
+        }
+      });
+      
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        storeLat.value = lat;
+        storeLong.value = lng;
+        Get.snackbar("Sync Success", "Store location updated to your current spot.");
+      }
+    } catch (e) {
+      Get.snackbar("Sync Failed", "Could not update store location registry.");
+    } finally {
+      isLoading.value = false;
     }
   }
 }

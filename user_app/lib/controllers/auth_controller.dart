@@ -13,8 +13,8 @@ class AuthController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
 
   final RxBool isLoading = false.obs;
-  final TextEditingController emailController = TextEditingController(text: 'tech@bloomarina.com');
-  final TextEditingController passwordController = TextEditingController(text: 'WelcomeBM@2026');
+  final TextEditingController emailController = TextEditingController(text: 'rvimalrajravi@gmail.com');
+  final TextEditingController passwordController = TextEditingController(text: 'User@2026');
 
   Future<void> login() async {
     final email = emailController.text.trim();
@@ -45,9 +45,7 @@ class AuthController extends GetxController {
           await _storage.setToken(data['access_token']);
           await _storage.setUser(jsonEncode(data['user']));
           
-          Get.offAllNamed('/home');
-          Get.snackbar('Identity Verified', 'Welcome back, ${data['user']?['name'] ?? 'Authorized User'}', 
-              backgroundColor: Colors.green, colorText: Colors.white);
+          Get.offAllNamed('/login_success', arguments: data['user']?['name'] ?? 'Authorized User');
         } else {
            throw Exception("Identity payload missing access_token");
         }

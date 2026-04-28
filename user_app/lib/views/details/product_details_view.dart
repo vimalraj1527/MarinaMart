@@ -1,12 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../models/product_model.dart';
 import '../../controllers/cart_controller.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
-
 import 'package:flutter/services.dart';
-
 import '../../widgets/sticky_cart_bar.dart';
 
 class ProductDetailsView extends StatelessWidget {
@@ -18,52 +17,91 @@ class ProductDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: const Color(0xFFF7F9FC),
       body: Stack(
         children: [
           CustomScrollView(
+            physics: const BouncingScrollPhysics(),
             slivers: [
               _buildSliverAppBar(),
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppConstants.defaultPadding),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              product.name,
-                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF7F9FC),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppConstants.defaultPadding),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Fast Delivery Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.timer_outlined, color: AppColors.primaryColor, size: 16),
+                              SizedBox(width: 6),
+                              Text("Delivery in 12 mins", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.w800, fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                        
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                product.name,
+                                style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, height: 1.2),
+                              ),
                             ),
+                            const SizedBox(width: 10),
+                            Text(
+                              "₹${product.price}",
+                              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Colors.black87),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          product.unit,
+                          style: TextStyle(fontSize: 15, color: Colors.grey.shade600, fontWeight: FontWeight.w600),
+                        ),
+                        
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Divider(color: Colors.black12, thickness: 1),
+                        ),
+                        
+                        const Text(
+                          "Product Details",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.black87),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
                           ),
-                          const SizedBox(width: 10),
-                          Text(
-                            "₹${product.price}",
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: AppColors.primaryColor),
+                          child: Text(
+                            product.description ?? "Experience the best quality freshness delivered right to your doorstep. This item is carefully handled and packed to ensure maximum freshness and quality.",
+                            style: const TextStyle(fontSize: 14, color: Colors.black54, height: 1.6, fontWeight: FontWeight.w500),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        product.unit,
-                        style: const TextStyle(fontSize: 16, color: AppColors.grey),
-                      ),
-                      const SizedBox(height: 24),
-                      const Text(
-                        "Product Description",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        product.description ?? "No description available for this product.",
-                        style: const TextStyle(fontSize: 15, color: AppColors.grey, height: 1.5),
-                      ),
-                      const SizedBox(height: 120), // Extra space for sticky bars
-                    ],
+                        ),
+                        
+                        const SizedBox(height: 120), // Extra space for sticky bars
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -73,7 +111,7 @@ class ProductDetailsView extends StatelessWidget {
             left: 0,
             right: 0,
             bottom: 95,
-            child: StickyCartBar(),
+            child: const StickyCartBar(),
           ),
         ],
       ),
@@ -83,23 +121,43 @@ class ProductDetailsView extends StatelessWidget {
 
   Widget _buildSliverAppBar() {
     return SliverAppBar(
-      expandedHeight: 400,
+      expandedHeight: 420,
       backgroundColor: Colors.white,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
-        onPressed: () => Get.back(),
+      pinned: true,
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), shape: BoxShape.circle),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 20),
+          onPressed: () => Get.back(),
+        ),
       ),
       flexibleSpace: FlexibleSpaceBar(
         background: Hero(
-          tag: product.id,
+          tag: 'product_${product.id}',
           child: Container(
             color: Colors.white,
-            padding: const EdgeInsets.all(40),
-            child: Image.network(
-              product.image,
-              fit: BoxFit.contain,
-              errorBuilder: (c, e, s) => const Icon(Icons.image, size: 100, color: AppColors.greyLight),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: RadialGradient(colors: [Colors.white, Color(0xFFF0F4F8)], radius: 1.5),
+                    ),
+                  ),
+                ),
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(50),
+                    child: Image.network(
+                      product.image,
+                      fit: BoxFit.contain,
+                      errorBuilder: (c, e, s) => const Icon(Icons.shopping_bag_rounded, size: 100, color: Colors.grey),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -109,13 +167,14 @@ class ProductDetailsView extends StatelessWidget {
 
   Widget _buildBottomAction() {
     return Container(
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 34),
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
             offset: const Offset(0, -5),
           )
         ],
@@ -125,13 +184,14 @@ class ProductDetailsView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              height: 56,
-              width: 56,
+              height: 60,
+              width: 60,
               decoration: BoxDecoration(
-                border: Border.all(color: AppColors.greyLight),
-                borderRadius: BorderRadius.circular(15),
+                color: Colors.grey.shade50,
+                border: Border.all(color: Colors.grey.shade200, width: 2),
+                borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(Icons.favorite_border),
+              child: const Icon(Icons.favorite_border_rounded, color: Colors.black54, size: 28),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -139,47 +199,61 @@ class ProductDetailsView extends StatelessWidget {
                 int count = cartController.getItemCount(product.id);
                 return AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
                   child: count == 0
                       ? ElevatedButton(
                           key: const ValueKey('add_btn'),
                           onPressed: () {
-                            HapticFeedback.selectionClick();
+                            HapticFeedback.lightImpact();
                             cartController.addToCart(product);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryColor,
                             foregroundColor: Colors.white,
-                            minimumSize: const Size(double.infinity, 56),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                            minimumSize: const Size(double.infinity, 60),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                             elevation: 0,
+                            shadowColor: AppColors.primaryColor.withOpacity(0.5),
                           ),
-                          child: const Text("Add to Cart", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.shopping_bag_outlined, size: 22),
+                              SizedBox(width: 10),
+                              Text("Add to Cart", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                            ],
+                          ),
                         )
                       : Container(
                           key: const ValueKey('counter_btn'),
-                          height: 56,
+                          height: 60,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryColor,
-                            borderRadius: BorderRadius.circular(15),
+                            gradient: const LinearGradient(colors: [AppColors.primaryColor, Color(0xFF6C5CE7)]),
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [BoxShadow(color: AppColors.primaryColor.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.remove, color: Colors.white),
+                                icon: const Icon(Icons.remove_rounded, color: Colors.white, size: 28),
                                 onPressed: () {
-                                  HapticFeedback.selectionClick();
+                                  HapticFeedback.lightImpact();
                                   cartController.removeFromCart(product);
                                 },
                               ),
-                              Text(
-                                "$count",
-                                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(12)),
+                                child: Text(
+                                  "$count",
+                                  style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                                ),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.add, color: Colors.white),
+                                icon: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
                                 onPressed: () {
-                                  HapticFeedback.selectionClick();
+                                  HapticFeedback.lightImpact();
                                   cartController.addToCart(product);
                                 },
                               ),

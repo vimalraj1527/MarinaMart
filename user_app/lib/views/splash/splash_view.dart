@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
-import '../auth/login_view.dart';
-import '../home/home_view.dart';
 import '../../services/storage_service.dart';
 import 'package:lottie/lottie.dart';
 
@@ -48,7 +46,7 @@ class _SplashViewState extends State<SplashView> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // App Logo
-            Container(
+            SizedBox(
               height: 250,
               width: 250,
               child: Lottie.network(

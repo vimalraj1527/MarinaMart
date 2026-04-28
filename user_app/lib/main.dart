@@ -7,6 +7,7 @@ import 'bindings/initial_binding.dart';
 import 'services/storage_service.dart';
 import 'views/splash/splash_view.dart';
 import 'views/auth/login_view.dart';
+import 'views/auth/login_success_view.dart';
 import 'views/user_info/profile_view.dart';
 import 'views/order/orders_view.dart';
 import 'views/address/address_list_view.dart';
@@ -70,6 +71,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/', page: () => const SplashView()),
         GetPage(name: '/login', page: () => const LoginView()),
         GetPage(name: '/signup', page: () => const SignupView()),
+        GetPage(name: '/login_success', page: () => const LoginSuccessView()),
         GetPage(name: '/home', page: () => const MainShellView()),
         GetPage(name: '/profile', page: () => const ProfileView()),
         GetPage(name: '/orders', page: () => const OrdersView()),

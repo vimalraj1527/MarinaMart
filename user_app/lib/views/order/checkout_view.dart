@@ -173,22 +173,14 @@ class _CheckoutViewState extends State<CheckoutView> {
     
     if (_deliveryType == "Instant") {
       double distance = _locationController.getDistanceFromStore();
-      // Formula: Dynamic Instant Base + (distance * Dynamic Per KM)
       return _settings.instantBaseFee.value + (distance * _settings.perKmCharge.value);
     } else {
-      // Scheduled Delivery: Dynamic Base Charge
       return _settings.baseDeliveryCharge.value;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    double subtotal = _cartController.totalAmount;
-    double gst = subtotal * 0.05;
-    double deliveryFee = _calculateDeliveryFee(subtotal);
-    double total = subtotal + gst + deliveryFee;
-    double distance = _locationController.getDistanceFromStore();
-
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
@@ -196,191 +188,205 @@ class _CheckoutViewState extends State<CheckoutView> {
         backgroundColor: Colors.white,
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionHeader("Deliver To"),
-            Obx(() => Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-              child: Row(
-                children: [
-                   const Icon(Icons.location_on, color: AppColors.primaryColor, size: 30),
-                   const SizedBox(width: 15),
-                   Expanded(
-                     child: Column(
-                       crossAxisAlignment: CrossAxisAlignment.start,
-                       children: [
-                         Text(_locationController.shortAddress.value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                         const SizedBox(height: 4),
-                         Text(_locationController.currentAddress.value, style: const TextStyle(color: AppColors.grey, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
-                       ],
-                     ),
-                   ),
-                   TextButton(onPressed: () => Get.toNamed('/addresses'), child: const Text("CHANGE")),
-                ],
-              ),
-            )),
-            
-            const SizedBox(height: 25),
+      body: Obx(() {
+        double subtotal = _cartController.totalAmount;
+        double gst = subtotal * 0.05;
+        double deliveryFee = _calculateDeliveryFee(subtotal);
+        double total = subtotal + gst + deliveryFee;
+        double distance = _locationController.getDistanceFromStore();
 
-            _buildSectionHeader("Delivery Strategy"),
-            Obx(() => Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-              child: Column(
-                children: [
-                   RadioListTile(
-                     value: "Instant",
-                     groupValue: _deliveryType,
-                     title: const Text("Instant Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
-                     subtitle: Text("₹${_settings.instantBaseFee.value.toInt()} + ₹${_settings.perKmCharge.value.toInt()}/km • Nearby: ${distance.toStringAsFixed(1)} KM"),
-                     secondary: const Icon(Icons.bolt, color: Colors.amber, size: 32),
-                     activeColor: AppColors.primaryColor,
-                     onChanged: (val) => setState(() => _deliveryType = val.toString()),
-                   ),
-                   const Divider(indent: 72),
-                   RadioListTile(
-                     value: "Scheduled",
-                     groupValue: _deliveryType,
-                     title: const Text("Scheduled Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
-                     subtitle: Text(_selectedSlotLabel ?? "Flat ₹${_settings.baseDeliveryCharge.value.toInt()} • Choose window"),
-                     secondary: const Icon(Icons.calendar_month, color: Colors.blue, size: 32),
-                     activeColor: AppColors.primaryColor,
-                     onChanged: (val) {
-                        setState(() => _deliveryType = val.toString());
-                        if (_scheduledDateTime == null) _showSlotPicker();
-                     },
-                   ),
-                   if (_deliveryType == "Scheduled")
-                     Padding(
-                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                       child: OutlinedButton.icon(
-                         onPressed: _showSlotPicker,
-                         icon: const Icon(Icons.edit_calendar, size: 18),
-                         label: const Text("Change Delivery Slot"),
-                         style: OutlinedButton.styleFrom(
-                           minimumSize: const Size(double.infinity, 45),
-                           side: BorderSide(color: AppColors.primaryColor.withOpacity(0.3)),
-                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(AppConstants.defaultPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionHeader("Deliver To"),
+              Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+                child: Row(
+                  children: [
+                     const Icon(Icons.location_on, color: AppColors.primaryColor, size: 30),
+                     const SizedBox(width: 15),
+                     Expanded(
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                           Text(_locationController.shortAddress.value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                           const SizedBox(height: 4),
+                           Text(_locationController.currentAddress.value, style: const TextStyle(color: AppColors.grey, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
+                         ],
+                       ),
+                     ),
+                     TextButton(onPressed: () => Get.toNamed('/addresses'), child: const Text("CHANGE")),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 25),
+
+              _buildSectionHeader("Delivery Strategy"),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+                child: Column(
+                  children: [
+                     RadioListTile(
+                       value: "Instant",
+                       groupValue: _deliveryType,
+                       title: const Text("Instant Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
+                       subtitle: Text("₹${_settings.instantBaseFee.value.toInt()} + ₹${_settings.perKmCharge.value.toInt()}/km • Nearby: ${distance.toStringAsFixed(1)} KM"),
+                       secondary: const Icon(Icons.bolt, color: Colors.amber, size: 32),
+                       activeColor: AppColors.primaryColor,
+                       onChanged: (val) => setState(() => _deliveryType = val.toString()),
+                     ),
+                     const Divider(indent: 72),
+                     RadioListTile(
+                       value: "Scheduled",
+                       groupValue: _deliveryType,
+                       title: const Text("Scheduled Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
+                       subtitle: Text(_selectedSlotLabel ?? "Flat ₹${_settings.baseDeliveryCharge.value.toInt()} • Choose window"),
+                       secondary: const Icon(Icons.calendar_month, color: Colors.blue, size: 32),
+                       activeColor: AppColors.primaryColor,
+                       onChanged: (val) {
+                          setState(() => _deliveryType = val.toString());
+                          if (_scheduledDateTime == null) _showSlotPicker();
+                       },
+                     ),
+                     if (_deliveryType == "Scheduled")
+                       Padding(
+                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                         child: OutlinedButton.icon(
+                           onPressed: _showSlotPicker,
+                           icon: const Icon(Icons.edit_calendar, size: 18),
+                           label: const Text("Change Delivery Slot"),
+                           style: OutlinedButton.styleFrom(
+                             minimumSize: const Size(double.infinity, 45),
+                             side: BorderSide(color: AppColors.primaryColor.withOpacity(0.3)),
+                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                           ),
                          ),
                        ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 25),
+              
+              _buildSectionHeader("Contact Details"),
+              Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(labelText: "Recipient Name", border: InputBorder.none, prefixIcon: Icon(Icons.person_outline)),
+                    ),
+                    const Divider(),
+                    TextField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      decoration: const InputDecoration(labelText: "Mobile Contact", border: InputBorder.none, prefixIcon: Icon(Icons.phone_iphone_outlined)),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              _buildSectionHeader("Payment Mode"),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+                child: Column(
+                  children: [
+                     RadioListTile(
+                       value: "Cash on Delivery",
+                       groupValue: _paymentMethod,
+                       title: const Text("Cash on Delivery (COD)"),
+                       subtitle: const Text("Physical payment at doorstep"),
+                       activeColor: AppColors.primaryColor,
+                       onChanged: (val) => setState(() => _paymentMethod = val.toString()),
                      ),
-                ],
+                     RadioListTile(
+                       value: "Online",
+                       groupValue: _paymentMethod,
+                       title: const Text("Secure Online Payment"),
+                       subtitle: const Text("UPI, Cards, & Wallets"),
+                       onChanged: null,
+                     ),
+                  ],
+                ),
               ),
-            )),
 
-            const SizedBox(height: 25),
-            
-            _buildSectionHeader("Contact Details"),
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(labelText: "Recipient Name", border: InputBorder.none, prefixIcon: Icon(Icons.person_outline)),
-                  ),
-                  const Divider(),
-                  TextField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(labelText: "Mobile Contact", border: InputBorder.none, prefixIcon: Icon(Icons.phone_iphone_outlined)),
-                  ),
-                ],
-              ),
-            ),
+              const SizedBox(height: 25),
 
-            const SizedBox(height: 25),
-
-            _buildSectionHeader("Payment Mode"),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-              child: Column(
-                children: [
-                   RadioListTile(
-                     value: "Cash on Delivery",
-                     groupValue: _paymentMethod,
-                     title: const Text("Cash on Delivery (COD)"),
-                     subtitle: const Text("Physical payment at doorstep"),
-                     activeColor: AppColors.primaryColor,
-                     onChanged: (val) => setState(() => _paymentMethod = val.toString()),
-                   ),
-                   RadioListTile(
-                     value: "Online",
-                     groupValue: _paymentMethod,
-                     title: const Text("Secure Online Payment"),
-                     subtitle: const Text("UPI, Cards, & Wallets"),
-                     onChanged: null,
-                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 25),
-
-            _buildSectionHeader("Financial Summary"),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
-              child: Column(
-                children: [
-                  _buildBillRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
-                  _buildBillRow("Taxes & GST (5%)", "₹${gst.toStringAsFixed(2)}"),
-                  _buildBillRow(
-                    _deliveryType == "Instant" ? "Rapid Delivery Fee ($distance KM)" : "Value Delivery Fee (Slot)", 
-                    deliveryFee == 0 ? "FREE" : "₹${deliveryFee.toStringAsFixed(2)}", 
-                    isFree: deliveryFee == 0
-                  ),
-                  if (deliveryFee > 0 && subtotal < _settings.freeDeliveryThreshold.value)
-                     Padding(
-                       padding: const EdgeInsets.only(top: 8),
-                       child: Text(
-                         "Add ₹${(_settings.freeDeliveryThreshold.value - subtotal).toStringAsFixed(0)} more for FREE delivery", 
-                         style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)
+              _buildSectionHeader("Financial Summary"),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+                child: Column(
+                  children: [
+                    _buildBillRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
+                    _buildBillRow("Taxes & GST (5%)", "₹${gst.toStringAsFixed(2)}"),
+                    _buildBillRow(
+                      _deliveryType == "Instant" ? "Rapid Delivery Fee (${distance.toStringAsFixed(1)} KM)" : "Value Delivery Fee (Slot)", 
+                      deliveryFee == 0 ? "FREE" : "₹${deliveryFee.toStringAsFixed(2)}", 
+                      isFree: deliveryFee == 0
+                    ),
+                    if (deliveryFee > 0 && subtotal < _settings.freeDeliveryThreshold.value)
+                       Padding(
+                         padding: const EdgeInsets.only(top: 8),
+                         child: Text(
+                           "Add ₹${(_settings.freeDeliveryThreshold.value - subtotal).toStringAsFixed(0)} more for FREE delivery", 
+                           style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)
+                         ),
                        ),
-                     ),
-                  const Divider(height: 30),
-                  _buildBillRow("TOTAL PAYABLE", "₹${total.toStringAsFixed(2)}", isBold: true),
-                ],
+                    const Divider(height: 30),
+                    _buildBillRow("TOTAL PAYABLE", "₹${total.toStringAsFixed(2)}", isBold: true),
+                  ],
+                ),
               ),
-            ),
-            
-            const SizedBox(height: 120),
-          ],
-        ),
-      ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: const Offset(0, -2))],
-        ),
-        child: Obx(() => ElevatedButton(
-          onPressed: _cartController.isLoading.value ? null : () => _confirmOrder(total),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryColor,
-            foregroundColor: Colors.white,
-            minimumSize: const Size(double.infinity, 56),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            elevation: 0,
+              
+              const SizedBox(height: 120),
+            ],
           ),
-          child: _cartController.isLoading.value 
-            ? const CircularProgressIndicator(color: Colors.white)
-              : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Confirm Order • ₹${total.toStringAsFixed(0)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward_ios, size: 16),
-                ],
-              ),
-        )),
-      ),
+        );
+      }),
+      bottomSheet: Obx(() {
+        double subtotal = _cartController.totalAmount;
+        double deliveryFee = _calculateDeliveryFee(subtotal);
+        double total = subtotal + (subtotal * 0.05) + deliveryFee;
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: const Offset(0, -2))],
+          ),
+          child: ElevatedButton(
+            onPressed: _cartController.isLoading.value ? null : () => _confirmOrder(total),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 56),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              elevation: 0,
+            ),
+            child: _cartController.isLoading.value 
+              ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Confirm Order • ₹${total.toStringAsFixed(0)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 8),
+                    const Icon(Icons.arrow_forward_ios, size: 16),
+                  ],
+                ),
+          ),
+        );
+      }),
     );
   }
 
