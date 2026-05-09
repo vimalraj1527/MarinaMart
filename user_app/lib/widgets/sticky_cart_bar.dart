@@ -2,22 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/cart_controller.dart';
 import '../utils/app_colors.dart';
-import 'dart:math' as math;
+import 'package:shimmer/shimmer.dart';
 
 class StickyCartBar extends StatefulWidget {
   const StickyCartBar({super.key});
-
   @override
   State<StickyCartBar> createState() => _StickyCartBarState();
 }
 
 class _StickyCartBarState extends State<StickyCartBar> with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _pulseController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
   }
 
   @override
@@ -33,87 +34,79 @@ class _StickyCartBarState extends State<StickyCartBar> with SingleTickerProvider
     return Obx(() {
       if (cartController.cartItems.isEmpty) return const SizedBox.shrink();
 
-      return SafeArea(
-        child: AnimatedBuilder(
-          animation: _pulseController,
-          builder: (context, child) {
-            return Container(
-              margin: const EdgeInsets.fromLTRB(20, 0, 20, 15), 
+      return AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _scaleAnimation.value,
+            child: Container(
+              width: double.infinity,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)], // Ultra premium dark mode pill
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: BorderRadius.circular(40), // Perfect pill shape
+                color: AppColors.primaryColor,
                 boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryColor.withOpacity(0.3 + (_pulseController.value * 0.2)), // Pulsing aura
-                    blurRadius: 15 + (_pulseController.value * 10), 
-                    offset: const Offset(0, 8),
-                  ),
+                  BoxShadow(color: AppColors.primaryColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, -4)),
                 ],
-                border: Border.all(color: Colors.white.withOpacity(0.15), width: 1.5),
               ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => Get.toNamed('/cart'),
-                  borderRadius: BorderRadius.circular(40),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFF8C00)]),
-                                shape: BoxShape.circle,
-                                boxShadow: [BoxShadow(color: const Color(0xFFFF8C00).withOpacity(0.5), blurRadius: 8)],
+              child: SafeArea(
+                top: false,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => Get.toNamed('/cart'),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Left side: Items & Price only
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                "${cartController.totalItems} ITEM${cartController.totalItems > 1 ? 'S' : ''}",
+                                style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5),
                               ),
-                              child: const Icon(Icons.shopping_bag_rounded, color: Colors.white, size: 24),
-                            ),
-                            const SizedBox(width: 14),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${cartController.totalItems} ITEMS",
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 1.0),
+                              const SizedBox(height: 2),
+                              Text(
+                                "₹${cartController.totalAmount.toStringAsFixed(2)}",
+                                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                              ),
+                            ],
+                          ),
+                          // Right side: Animated View Cart action
+                          Row(
+                            children: [
+                              Shimmer.fromColors(
+                                baseColor: Colors.white,
+                                highlightColor: const Color(0xFFFFD700), // Premium gold highlight
+                                period: const Duration(seconds: 2),
+                                child: const Text(
+                                  "View Cart",
+                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.5),
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  "₹${cartController.totalAmount.toStringAsFixed(2)}",
-                                  style: const TextStyle(color: Color(0xFF10B981), fontSize: 17, fontWeight: FontWeight.w900), // Emerald green price
+                              ),
+                              const SizedBox(width: 4),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white, 
+                                  shape: BoxShape.circle,
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Text("VIEW CART", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1.0)),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
-                              child: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
-                            ),
-                          ],
-                        ),
-                      ],
+                                child: const Icon(Icons.shopping_cart_checkout_rounded, color: AppColors.primaryColor, size: 18),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            );
-          }
-        ),
+            ),
+          );
+        }
       );
     });
   }

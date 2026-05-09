@@ -120,6 +120,7 @@ export default function DashboardLayout() {
           <SidebarItem icon={LayoutDashboard} label="Dashboard" path="/" />
           <SidebarItem icon={TrendingUp} label="Revenue" path="/revenue" />
           <SidebarItem icon={Package} label="Products" path="/products" />
+          <SidebarItem icon={Layers} label="Banners" path="/banners" />
           <SidebarItem icon={Layers} label="Categories" path="/categories" />
           <SidebarItem icon={ShoppingBag} label="Orders" path="/orders" />
           <SidebarItem icon={Users} label="Customers" path="/customers" />

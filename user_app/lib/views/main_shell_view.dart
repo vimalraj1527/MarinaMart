@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import '../controllers/cart_controller.dart';
 import '../utils/app_colors.dart';
-import '../widgets/sticky_cart_bar.dart';
 import 'home/home_view.dart';
 import 'category/all_categories_view.dart';
 import 'search/search_view.dart';
@@ -16,9 +15,31 @@ class MainShellView extends StatefulWidget {
   State<MainShellView> createState() => _MainShellViewState();
 }
 
-class _MainShellViewState extends State<MainShellView> {
+class _MainShellViewState extends State<MainShellView>
+    with TickerProviderStateMixin {
   int _selectedIndex = 0;
   final CartController _cartController = Get.find<CartController>();
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
 
   final List<Widget> _pages = [
     const HomeView(),
@@ -30,57 +51,85 @@ class _MainShellViewState extends State<MainShellView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          IndexedStack(
-            index: _selectedIndex,
-            children: _pages,
-          ),
-          Positioned(
-            left: 0, right: 0, bottom: 10,
-            child: const StickyCartBar(),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.toNamed('/cart'),
-        backgroundColor: AppColors.primaryColor,
-        elevation: 10,
-        shape: const CircleBorder(),
-        child: Obx(() => Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Center(
-              child: Lottie.network(
-                'https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json',
-                width: 32,
-                height: 32,
-                errorBuilder: (c, e, s) => const Icon(Icons.shopping_basket_rounded, color: Colors.white),
+      body: IndexedStack(index: _selectedIndex, children: _pages),
+      floatingActionButton: ScaleTransition(
+        scale: _pulseAnimation,
+        child: Container(
+          height: 64,
+          width: 64,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: AppColors.primaryGradient,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryColor.withOpacity(0.4),
+                blurRadius: 15,
+                spreadRadius: 2,
+                offset: const Offset(0, 5),
               ),
-            ),
-            if (_cartController.cartItems.isNotEmpty)
-              Positioned(
-                right: 2,
-                top: 2,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                  child: Text(
-                    "${_cartController.totalItems}",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
+            ],
+          ),
+          child: FloatingActionButton(
+            onPressed: () => Get.toNamed('/cart'),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            highlightElevation: 0,
+            shape: const CircleBorder(),
+            child: Obx(
+              () => Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Center(
+                    child: Lottie.network(
+                      'https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json',
+                      width: 32,
+                      height: 32,
+                      errorBuilder: (c, e, s) => const Icon(
+                        Icons.shopping_basket_rounded,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
                   ),
-                ),
+                  if (_cartController.cartItems.isNotEmpty)
+                    Positioned(
+                      right: -4,
+                      top: -4,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 5,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 20,
+                          minHeight: 20,
+                        ),
+                        child: Center(
+                          child: Text(
+                            "${_cartController.totalItems}",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
-          ],
-        )),
+            ),
+          ),
+        ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
@@ -114,9 +163,20 @@ class _MainShellViewState extends State<MainShellView> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isSelected ? AppColors.primaryColor : Colors.grey.shade400, size: 26),
+          Icon(
+            icon,
+            color: isSelected ? AppColors.primaryColor : Colors.grey.shade400,
+            size: 26,
+          ),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 10, color: isSelected ? AppColors.primaryColor : Colors.grey.shade600, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: isSelected ? AppColors.primaryColor : Colors.grey.shade600,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
         ],
       ),
     );

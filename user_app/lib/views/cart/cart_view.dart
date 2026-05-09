@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../controllers/cart_controller.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CartView extends StatefulWidget {
   const CartView({super.key});
@@ -16,16 +17,21 @@ class CartView extends StatefulWidget {
 
 class _CartViewState extends State<CartView> with TickerProviderStateMixin {
   late AnimationController _floatController;
+  late AnimationController _pulseController;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _floatController = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
+    _pulseController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut));
   }
 
   @override
   void dispose() {
     _floatController.dispose();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -239,40 +245,56 @@ class _CartViewState extends State<CartView> with TickerProviderStateMixin {
                 ],
               ),
               const SizedBox(height: 20),
-              GestureDetector(
-                onTap: () {
-                   if (!controller.isLoading.value) Get.toNamed('/checkout');
-                },
-                child: Container(
-                  height: 65,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(color: const Color(0xFF203A43).withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 10))
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      controller.isLoading.value
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("PROCEED TO CHECKOUT", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
-                      if (!controller.isLoading.value) ...[
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
-                          child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+              AnimatedBuilder(
+                animation: _pulseController,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: GestureDetector(
+                      onTap: () {
+                         if (!controller.isLoading.value) Get.toNamed('/checkout');
+                      },
+                      child: Container(
+                        height: 65,
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryColor,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(color: AppColors.primaryColor.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 6))
+                          ],
                         ),
-                      ],
-                    ],
-                  ),
-                ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            controller.isLoading.value
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : Shimmer.fromColors(
+                                  baseColor: Colors.white,
+                                  highlightColor: const Color(0xFFFFD700), // Premium gold highlight
+                                  period: const Duration(seconds: 2),
+                                  child: const Text(
+                                    "Proceed to Checkout",
+                                    style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                                  ),
+                                ),
+                            if (!controller.isLoading.value) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white, 
+                                  shape: BoxShape.circle,
+                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+                                ),
+                                child: const Icon(Icons.shopping_cart_checkout_rounded, color: AppColors.primaryColor, size: 18),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }
               ),
             ],
           ),

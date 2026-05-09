@@ -11,6 +11,7 @@ import CustomerDetails from './pages/CustomerDetails';
 import Riders from './pages/Riders';
 import Settings from './pages/Settings';
 import Revenue from './pages/Revenue';
+import Banners from './pages/Banners';
 import Login from './pages/Login';
 
 // --- Protective Auth Wrapper ---
@@ -42,6 +43,7 @@ export default function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="products" element={<Products />} />
+          <Route path="banners" element={<Banners />} />
           <Route path="categories" element={<Categories />} />
           <Route path="orders" element={<Orders />} />
           <Route path="orders/:id" element={<OrderDetails />} />

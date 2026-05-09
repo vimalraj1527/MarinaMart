@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../models/product_model.dart';
 import '../../widgets/add_to_cart_button.dart';
+import '../../services/storage_service.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -122,7 +124,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                           _buildHorizontalProducts(controller),
                           _buildSectionHeader("Popular Items", onSeeAll: () => Get.toNamed('/product-list', arguments: controller.products, parameters: {'title': 'Popular Items'}), icon: Icons.star_rounded),
                           _buildProductGrid(controller),
-                          const SizedBox(height: 120),
+                          const SizedBox(height: 250),
                         ],
                       ),
                     ),
@@ -172,6 +174,17 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   }
 
   Widget _buildAppBar(LocationController locationController) {
+    final storage = Get.find<StorageService>();
+    final userStr = storage.getUser();
+    String firstLetter = 'U';
+    if (userStr != null) {
+      try {
+        final user = jsonDecode(userStr);
+        final name = user['name']?.toString() ?? 'U';
+        if (name.isNotEmpty) firstLetter = name[0].toUpperCase();
+      } catch (e) {}
+    }
+
     return Container(
       padding: const EdgeInsets.fromLTRB(AppConstants.defaultPadding, 16, AppConstants.defaultPadding, 10),
       child: Row(
@@ -198,8 +211,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     overflow: TextOverflow.ellipsis,
                     text: const TextSpan(
                       children: [
-                        TextSpan(text: "Delivery in ", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 19, color: Colors.black87, letterSpacing: -0.5, fontFamily: 'Outfit')),
-                        TextSpan(text: "12 Mins", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 19, color: AppColors.primaryColor, letterSpacing: -0.5, fontFamily: 'Outfit')),
+                        TextSpan(text: "Standard ", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 19, color: Colors.black87, letterSpacing: -0.5, fontFamily: 'Outfit')),
+                        TextSpan(text: "Delivery", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 19, color: AppColors.primaryColor, letterSpacing: -0.5, fontFamily: 'Outfit')),
                       ],
                     ),
                   ),
@@ -234,12 +247,14 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             child: Container(
               height: 48, width: 48,
               decoration: BoxDecoration(
-                color: Colors.white,
+                gradient: const LinearGradient(colors: [Color(0xFF6C5CE7), Color(0xFFa29bfe)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 10, offset: const Offset(0, 3))],
+                boxShadow: [BoxShadow(color: const Color(0xFF6C5CE7).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 3))],
               ),
-              child: const Icon(Icons.person_rounded, color: Colors.black87, size: 24),
+              child: Center(
+                child: Text(firstLetter, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+              ),
             ),
           ),
         ],
@@ -287,14 +302,6 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF0F4F8), 
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.mic_rounded, color: Colors.black87, size: 20),
-                  ),
                 ],
               ),
             );
@@ -314,23 +321,31 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         child: PageView(
           controller: _bannerController,
           onPageChanged: (idx) => _currentBanner = idx,
-          children: [
-            _buildSingleBanner(
-              const Color(0xFF00B894), 
-              "Fresh Delivery\nEVERYDAY", 
-              "https://assets9.lottiefiles.com/packages/lf20_76m8m1.json"
-            ),
-            _buildSingleBanner(
-              const Color(0xFF6C5CE7), 
-              "MEGA SAVINGS\non Snacking", 
-              "https://assets4.lottiefiles.com/packages/lf20_m6cuL6.json"
-            ),
-            _buildSingleBanner(
-              const Color(0xFFE17055), 
-              "Summer Fruits\nUp to 30% OFF", 
-              "https://assets10.lottiefiles.com/packages/lf20_rc63p8u1.json"
-            ),
-          ],
+          children: controller.banners.isNotEmpty 
+            ? controller.banners.map<Widget>((b) {
+                return _buildSingleBanner(
+                  Color(int.tryParse(b['color'] ?? '0xFF00B894') ?? 0xFF00B894),
+                  b['title'] ?? '',
+                  b['lottieUrl'] ?? 'https://assets9.lottiefiles.com/packages/lf20_76m8m1.json'
+                );
+              }).toList()
+            : [
+                _buildSingleBanner(
+                  const Color(0xFF00B894), 
+                  "Fresh Delivery\nEVERYDAY", 
+                  "https://assets9.lottiefiles.com/packages/lf20_76m8m1.json"
+                ),
+                _buildSingleBanner(
+                  const Color(0xFF6C5CE7), 
+                  "MEGA SAVINGS\non Snacking", 
+                  "https://assets4.lottiefiles.com/packages/lf20_m6cuL6.json"
+                ),
+                _buildSingleBanner(
+                  const Color(0xFFE17055), 
+                  "Summer Fruits\nUp to 30% OFF", 
+                  "https://assets10.lottiefiles.com/packages/lf20_rc63p8u1.json"
+                ),
+              ],
         ),
       );
     });
@@ -592,7 +607,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.bolt_rounded, color: Colors.white, size: 10),
-                          Text("12 MINS", style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
+                          Text("STANDARD", style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
                         ],
                       ),
                     ),

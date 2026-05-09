@@ -191,7 +191,7 @@ class _ProductListViewState extends State<ProductListView> with TickerProviderSt
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.bolt_rounded, color: Colors.white, size: 10),
-                          Text("12 MINS", style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
+                          Text("STANDARD", style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
                         ],
                       ),
                     ),

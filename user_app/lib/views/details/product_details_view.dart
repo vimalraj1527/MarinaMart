@@ -7,6 +7,7 @@ import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import 'package:flutter/services.dart';
 import '../../widgets/sticky_cart_bar.dart';
+import '../../widgets/add_to_cart_button.dart';
 
 class ProductDetailsView extends StatelessWidget {
   final Product product = Get.arguments;
@@ -48,7 +49,7 @@ class ProductDetailsView extends StatelessWidget {
                             children: [
                               Icon(Icons.timer_outlined, color: AppColors.primaryColor, size: 16),
                               SizedBox(width: 6),
-                              Text("Delivery in 12 mins", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.w800, fontSize: 12)),
+                              Text("Standard Delivery (Fast on ₹1000+)", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.w800, fontSize: 12)),
                             ],
                           ),
                         ),
@@ -99,7 +100,7 @@ class ProductDetailsView extends StatelessWidget {
                           ),
                         ),
                         
-                        const SizedBox(height: 120), // Extra space for sticky bars
+                        const SizedBox(height: 250), // Extra space for sticky bars
                       ],
                     ),
                   ),
@@ -110,12 +111,12 @@ class ProductDetailsView extends StatelessWidget {
           Positioned(
             left: 0,
             right: 0,
-            bottom: 95,
+            bottom: 110,
             child: const StickyCartBar(),
           ),
         ],
       ),
-      bottomSheet: _buildBottomAction(),
+      bottomSheet: _buildBottomAction(context),
     );
   }
 
@@ -165,7 +166,7 @@ class ProductDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomAction() {
+  Widget _buildBottomAction(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 16, 24, 34),
       decoration: BoxDecoration(
@@ -201,27 +202,31 @@ class ProductDetailsView extends StatelessWidget {
                   duration: const Duration(milliseconds: 300),
                   transitionBuilder: (child, animation) => ScaleTransition(scale: animation, child: child),
                   child: count == 0
-                      ? ElevatedButton(
-                          key: const ValueKey('add_btn'),
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            cartController.addToCart(product);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size(double.infinity, 60),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            elevation: 0,
-                            shadowColor: AppColors.primaryColor.withOpacity(0.5),
-                          ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.shopping_bag_outlined, size: 22),
-                              SizedBox(width: 10),
-                              Text("Add to Cart", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                            ],
+                      ? Builder(
+                          builder: (btnCtx) => ElevatedButton(
+                            key: const ValueKey('add_btn'),
+                            onPressed: () {
+                              final renderBox = btnCtx.findRenderObject() as RenderBox?;
+                              if (renderBox != null) {
+                                triggerMeteorDropCartAnimation(context, product, cartController, renderBox);
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(double.infinity, 60),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                              elevation: 0,
+                              shadowColor: AppColors.primaryColor.withOpacity(0.5),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.shopping_bag_outlined, size: 22),
+                                SizedBox(width: 10),
+                                Text("Add to Cart", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                              ],
+                            ),
                           ),
                         )
                       : Container(
@@ -250,12 +255,16 @@ class ProductDetailsView extends StatelessWidget {
                                   style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
                                 ),
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
-                                onPressed: () {
-                                  HapticFeedback.lightImpact();
-                                  cartController.addToCart(product);
-                                },
+                              Builder(
+                                builder: (addCtx) => IconButton(
+                                  icon: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+                                  onPressed: () {
+                                    final renderBox = addCtx.findRenderObject() as RenderBox?;
+                                    if (renderBox != null) {
+                                      triggerMeteorDropCartAnimation(context, product, cartController, renderBox);
+                                    }
+                                  },
+                                ),
                               ),
                             ],
                           ),
