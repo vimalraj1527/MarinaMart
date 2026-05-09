@@ -312,9 +312,25 @@ class _CheckoutViewState extends State<CheckoutView> {
                      RadioListTile(
                        value: "Online",
                        groupValue: _paymentMethod,
-                       title: const Text("Secure Online Payment"),
+                       title: Row(
+                         children: [
+                           const Text("Secure Online Payment"),
+                           const SizedBox(width: 8),
+                           Container(
+                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                             decoration: BoxDecoration(
+                               color: AppColors.primaryColor.withOpacity(0.1),
+                               borderRadius: BorderRadius.circular(6),
+                             ),
+                             child: const Text("COMING SOON", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.primaryColor)),
+                           )
+                         ],
+                       ),
                        subtitle: const Text("UPI, Cards, & Wallets"),
-                       onChanged: null,
+                       activeColor: AppColors.primaryColor,
+                       onChanged: (val) {
+                         Get.snackbar("Coming Soon", "Online payments will be available shortly!", backgroundColor: Colors.black87, colorText: Colors.white);
+                       },
                      ),
                   ],
                 ),
