@@ -167,16 +167,16 @@ class _CheckoutViewState extends State<CheckoutView> {
   }
 
   double _calculateDeliveryFee(double subtotal) {
+    if (_deliveryType == "Instant") {
+      double distance = _locationController.getDistanceFromStore();
+      return _settings.instantBaseFee.value + (distance * _settings.perKmCharge.value);
+    }
+
     if (subtotal >= _settings.freeDeliveryThreshold.value) {
       return 0.0;
     }
     
-    if (_deliveryType == "Instant") {
-      double distance = _locationController.getDistanceFromStore();
-      return _settings.instantBaseFee.value + (distance * _settings.perKmCharge.value);
-    } else {
-      return _settings.baseDeliveryCharge.value;
-    }
+    return _settings.baseDeliveryCharge.value;
   }
 
   @override
