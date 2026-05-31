@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/auth_controller.dart';
+import '../../controllers/theme_controller.dart';
 import '../../services/storage_service.dart';
 import '../../utils/app_colors.dart';
 
@@ -12,6 +13,7 @@ class ProfileView extends StatelessWidget {
   Widget build(BuildContext context) {
     final AuthController authController = Get.find<AuthController>();
     final StorageService storage = Get.find<StorageService>();
+    final ThemeController themeController = Get.find<ThemeController>();
     
     Map<String, dynamic> user = {};
     String? userStr = storage.getUser();
@@ -20,11 +22,11 @@ class ProfileView extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F8), // Blinkit minimal grey background
+      backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
         title: const Text("Profile", style: TextStyle(fontWeight: FontWeight.w800, color: Colors.black87, fontSize: 18)),
         centerTitle: false,
-        elevation: 0.5, // Slight shadow for clean separation
+        elevation: 0.5,
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
@@ -107,6 +109,26 @@ class ProfileView extends StatelessWidget {
                       Get.snackbar("Birthday", "Birthday setup coming soon!", backgroundColor: Colors.black87, colorText: Colors.white);
                     }
                   ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 12),
+
+            // Branding Customize Section
+            Container(
+              color: Colors.white,
+              child: Column(
+                children: [
+                  Obx(() => _buildMenuItem(
+                    Icons.palette_outlined, 
+                    "App Brand Theme", 
+                    subtitle: "Current: ${themeController.selectedThemeName}",
+                    trailingText: "SWITCH",
+                    onTap: () {
+                      themeController.showThemeBottomSheet();
+                    }
+                  )),
                 ],
               ),
             ),
@@ -206,7 +228,7 @@ class ProfileView extends StatelessWidget {
                   color: AppColors.primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(trailingText, style: const TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold, fontSize: 11)),
+                child: Text(trailingText, style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold, fontSize: 11)),
               )
             else
               Icon(Icons.chevron_right_rounded, color: Colors.grey.shade400, size: 24),

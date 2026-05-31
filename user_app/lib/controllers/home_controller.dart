@@ -33,13 +33,7 @@ class HomeController extends GetxController {
       final categoryRes = await _apiService.getData(AppConstants.categoriesUrl);
       if (categoryRes.statusCode == 200) {
         List data = jsonDecode(categoryRes.body);
-        if (data.isNotEmpty) {
-          categories.assignAll(data.map((e) => Category.fromJson(e)).toList());
-        } else {
-          _setFallbackCategories();
-        }
-      } else {
-        _setFallbackCategories();
+        categories.assignAll(data.map((e) => Category.fromJson(e)).toList());
       }
 
       // Fetch Featured Products
@@ -51,29 +45,13 @@ class HomeController extends GetxController {
       
     } catch (e) {
       print("API_ERROR: $e");
-      _setFallbackCategories();
-      Get.snackbar('Notice', 'Using offline categories');
+      Get.snackbar(
+        'Connection Error', 
+        'Could not fetch data. Please check your internet or pull to refresh.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isLoading.value = false;
     }
-  }
-
-  void _setFallbackCategories() {
-    final List<Map<String, String>> fallbackData = [
-      {'id': '1', 'name': 'Fruits & Vegetables', 'image': ''},
-      {'id': '2', 'name': 'Dairy & Eggs', 'image': ''},
-      {'id': '22', 'name': 'Diary & Milk', 'image': ''}, // Added 'Diary' fallback to handle admin spelling variants
-      {'id': '3', 'name': 'Munchies & Chips', 'image': ''},
-      {'id': '4', 'name': 'Cold Drinks & Juices', 'image': ''},
-      {'id': '5', 'name': 'Tea, Coffee & Health', 'image': ''},
-      {'id': '6', 'name': 'Atta, Rice & Dal', 'image': ''},
-      {'id': '7', 'name': 'Masala, Oil & More', 'image': ''},
-      {'id': '8', 'name': 'Chicken, Meat & Fish', 'image': ''},
-      {'id': '9', 'name': 'Cleaning Essentials', 'image': ''},
-      {'id': '10', 'name': 'Personal Care', 'image': ''},
-      {'id': '11', 'name': 'Baby Care', 'image': ''},
-      {'id': '12', 'name': 'Pet Care', 'image': ''},
-    ];
-    categories.assignAll(fallbackData.map((e) => Category.fromJson(e)).toList());
   }
 }

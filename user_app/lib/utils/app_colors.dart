@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import '../controllers/theme_controller.dart';
 
 class AppColors {
-  static const Color primaryColor = Color(0xFF0C831F); // Emerald Green
-  static const Color primaryLight = Color(0xFF2EAF4E);
-  static const Color secondaryColor = Color(0xFFFABD05); // Gold/Yellow
-  static const Color accentColor = Color(0xFFE50914); // For discounts/sale (Red)
+  static Color get primaryColor => ThemeController.to.primaryColor;
+  static Color get primaryLight => ThemeController.to.primaryLight;
+  static Color get secondaryColor => ThemeController.to.secondaryColor;
+  static Color get accentColor => ThemeController.to.accentColor;
   
-  static const Color backgroundColor = Color(0xFFF7F7F7);
+  static Color get backgroundColor => ThemeController.to.backgroundColor;
   static const Color white = Colors.white;
   static const Color black = Color(0xFF1A1A1A);
   static const Color grey = Color(0xFF9E9E9E);
@@ -18,7 +19,7 @@ class AppColors {
   static const Color info = Color(0xFF2196F3);
 
   // Gradient for a premium feel
-  static const LinearGradient primaryGradient = LinearGradient(
+  static LinearGradient get primaryGradient => LinearGradient(
     colors: [primaryColor, primaryLight],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,

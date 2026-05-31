@@ -27,6 +27,7 @@ import 'views/order/checkout_view.dart';
 import 'views/order/track_order_view.dart';
 import 'views/order/order_success_view.dart';
 import 'views/auth/signup_view.dart';
+import 'controllers/theme_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +36,9 @@ void main() async {
   final storage = StorageService();
   await storage.init();
   Get.put(storage, permanent: true);
+  
+  // ThemeController initialization
+  Get.put(ThemeController(), permanent: true);
   
   runApp(const MyApp());
 }

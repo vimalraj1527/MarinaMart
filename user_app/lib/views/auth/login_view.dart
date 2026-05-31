@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/auth_controller.dart';
+import '../../controllers/theme_controller.dart';
 import '../../utils/app_colors.dart';
 import 'package:flutter/services.dart';
 
@@ -20,24 +21,6 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
   
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
-
-  final List<Map<String, String>> _onboardingData = [
-    {
-      "title": "Groceries in 10 Minutes",
-      "subtitle": "Freshness delivered directly to your doorstep.",
-      "image": "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      "title": "Farm Fresh Produce",
-      "subtitle": "Handpicked quality fruits & veggies, guaranteed.",
-      "image": "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      "title": "Exclusive Discounts",
-      "subtitle": "Save more on your daily household essentials.",
-      "image": "https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?auto=format&fit=crop&w=800&q=80",
-    },
-  ];
 
   @override
   void initState() {
@@ -79,375 +62,485 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     final AuthController controller = Get.find<AuthController>();
+    final ThemeController themeController = Get.find<ThemeController>();
     final size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // Auto-scrolling Carousel
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: size.height * 0.48, // Reduced height so form has more space
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (int page) {
-                setState(() {
-                  _currentPage = page;
-                });
-              },
-              itemCount: _onboardingData.length,
-              itemBuilder: (context, index) {
-                return Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.network(
-                      _onboardingData[index]["image"]!,
-                      fit: BoxFit.cover,
-                    ),
-                    // Gradient to make text pop
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withOpacity(0.2),
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.9),
-                          ],
-                          stops: const [0.0, 0.4, 1.0],
+    return Obx(() {
+      final activeTheme = themeController.currentTheme;
+
+      final List<Map<String, String>> onboardingData = [
+        {
+          "title": activeTheme.name == "Zepto"
+              ? "Zepto Instant"
+              : activeTheme.name == "Swiggy Instamart"
+                  ? "Instamart Delivery"
+                  : activeTheme.name == "Zomato"
+                      ? "Zomato Groceries"
+                      : "Groceries in 10 Mins",
+          "subtitle": activeTheme.name == "Zepto"
+              ? "Your favorite snacks & essentials delivered in 10 minutes."
+              : activeTheme.name == "Swiggy Instamart"
+                  ? "From fresh milk to party essentials, delivered in minutes."
+                  : activeTheme.name == "Zomato"
+                      ? "Craving food or needing groceries? We deliver both instantly."
+                      : "Freshness delivered directly to your doorstep.",
+          "image": activeTheme.loginBannerUrl,
+        },
+        {
+          "title": "Farm Fresh Produce",
+          "subtitle": "Handpicked quality fruits & veggies, guaranteed.",
+          "image": "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80",
+        },
+        {
+          "title": "Exclusive Discounts",
+          "subtitle": "Save more on your daily household essentials.",
+          "image": "https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?auto=format&fit=crop&w=800&q=80",
+        },
+      ];
+
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            // Auto-scrolling Carousel
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: size.height * 0.48, // Reduced height so form has more space
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (int page) {
+                  setState(() {
+                    _currentPage = page;
+                  });
+                },
+                itemCount: onboardingData.length,
+                itemBuilder: (context, index) {
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.network(
+                        onboardingData[index]["image"]!,
+                        fit: BoxFit.cover,
+                      ),
+                      // Gradient to make text pop
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.2),
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.9),
+                            ],
+                            stops: const [0.0, 0.4, 1.0],
+                          ),
                         ),
                       ),
-                    ),
-                    Positioned(
-                      bottom: size.height * 0.1, // Adjusted offset
-                      left: 24,
-                      right: 24,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Eye-catching Delivery Badge
-                          ScaleTransition(
-                            scale: _pulseAnimation,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFFFFD700), Color(0xFFFF8C00)], // Vibrant Gold to Orange
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(30),
-                                boxShadow: [
-                                  // Intense glow effect
-                                  BoxShadow(
-                                    color: const Color(0xFFFF8C00).withOpacity(0.6),
-                                    blurRadius: 25,
-                                    spreadRadius: 8,
-                                    offset: const Offset(0, 5),
+                      Positioned(
+                        bottom: size.height * 0.1, // Adjusted offset
+                        left: 24,
+                        right: 24,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Eye-catching Delivery Badge
+                            ScaleTransition(
+                              scale: _pulseAnimation,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [activeTheme.primaryColor, activeTheme.secondaryColor],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                                  // Inner highlight
-                                  BoxShadow(
-                                    color: Colors.white.withOpacity(0.5),
-                                    blurRadius: 4,
-                                    spreadRadius: 1,
-                                    offset: const Offset(0, -1),
-                                  ),
-                                ],
-                                border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.5),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.bolt_rounded, color: Colors.black, size: 20),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    "10 MIN DELIVERY",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 1.5,
+                                  borderRadius: BorderRadius.circular(30),
+                                  boxShadow: [
+                                    // Intense glow effect
+                                    BoxShadow(
+                                      color: activeTheme.primaryColor.withOpacity(0.6),
+                                      blurRadius: 25,
+                                      spreadRadius: 8,
+                                      offset: const Offset(0, 5),
                                     ),
-                                  ),
-                                ],
+                                    // Inner highlight
+                                    BoxShadow(
+                                      color: Colors.white.withOpacity(0.5),
+                                      blurRadius: 4,
+                                      spreadRadius: 1,
+                                      offset: const Offset(0, -1),
+                                    ),
+                                  ],
+                                  border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.5),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.bolt_rounded,
+                                      color: activeTheme.name == 'Blinkit' ? Colors.black87 : Colors.white,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      activeTheme.name == "Zepto"
+                                          ? "ZEPTO INSTANT"
+                                          : activeTheme.name == "Swiggy Instamart"
+                                              ? "INSTAMART 10 MIN"
+                                              : activeTheme.name == "Zomato"
+                                                  ? "ZOMATO INSTANT"
+                                                  : "10 MIN DELIVERY",
+                                      style: TextStyle(
+                                        color: activeTheme.name == 'Blinkit' ? Colors.black87 : Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 1.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
+                            const SizedBox(height: 12),
+                            Text(
+                              onboardingData[index]["title"]!,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 32, // Slightly smaller
+                                fontWeight: FontWeight.w900,
+                                height: 1.0,
+                                letterSpacing: -1,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              onboardingData[index]["subtitle"]!,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.85),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+
+            // Custom Dots Indicator
+            Positioned(
+              top: size.height * 0.41,
+              left: 24,
+              child: Row(
+                children: List.generate(
+                  onboardingData.length,
+                  (index) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.only(right: 6),
+                    height: 6,
+                    width: _currentPage == index ? 24 : 6,
+                    decoration: BoxDecoration(
+                      color: _currentPage == index ? activeTheme.secondaryColor : Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Glassmorphic Brand Switcher
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 16,
+              left: 24,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  themeController.showThemeBottomSheet();
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.palette_rounded, color: activeTheme.primaryColor, size: 16),
+                          const SizedBox(width: 6),
                           Text(
-                            _onboardingData[index]["title"]!,
+                            activeTheme.name,
                             style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 32, // Slightly smaller
-                              fontWeight: FontWeight.w900,
-                              height: 1.0,
-                              letterSpacing: -1,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                              letterSpacing: 0.5,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.white, size: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Glassmorphic Skip Button
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 16,
+              right: 24,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  Get.offAllNamed('/home');
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                           Text(
-                            _onboardingData[index]["subtitle"]!,
+                            "Skip",
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.85),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              height: 1.4,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 10),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Permanent Bottom Sheet (Login Card)
+            Positioned(
+              top: size.height * 0.44, // Increased space for the form
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 20,
+                      offset: Offset(0, -5),
+                    ),
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                activeTheme.name == "Zepto"
+                                    ? "Hello Zepto!"
+                                    : activeTheme.name == "Swiggy Instamart"
+                                        ? "Welcome to Instamart!"
+                                        : activeTheme.name == "Zomato"
+                                            ? "Welcome to Zomato!"
+                                            : "Welcome to Blinkit!",
+                                style: const TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.black,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                "Login to access your orders & exclusive offers",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.grey,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Image.network(
+                            activeTheme.logoUrl,
+                            height: 48,
+                            width: 48,
+                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_bag_outlined),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Inputs (Grey Filled Boxes)
+                      _buildInputField(
+                        controller: controller.emailController,
+                        hint: "Email Address",
+                        icon: Icons.alternate_email_rounded,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildInputField(
+                        controller: controller.passwordController,
+                        hint: "Password",
+                        icon: Icons.lock_outline_rounded,
+                        isPassword: true,
+                      ),
+                      
+                      const SizedBox(height: 4),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {},
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primaryColor,
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            "Forgot Password?",
+                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+
+                      // Login Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: controller.isLoading.value ? null : () {
+                            HapticFeedback.selectionClick();
+                            controller.login();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryColor,
+                            shadowColor: AppColors.primaryColor.withOpacity(0.5),
+                            elevation: 6,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: controller.isLoading.value
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                                )
+                              : Text(
+                                  "Login Securely",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    color: activeTheme.name == 'Blinkit' ? Colors.black87 : Colors.white,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 16),
+
+                      // Google Login
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: OutlinedButton.icon(
+                          onPressed: () { HapticFeedback.selectionClick(); },
+                          icon: Image.network('https://cdn-icons-png.flaticon.com/512/2991/2991148.png', height: 20),
+                          label: const Text(
+                            "Continue with Google",
+                            style: TextStyle(
+                              color: AppColors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: AppColors.greyLight, width: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+                      
+                      // Register Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Don't have an account? ",
+                            style: TextStyle(color: AppColors.grey, fontWeight: FontWeight.w600, fontSize: 14),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              Get.toNamed('/signup');
+                            },
+                            child: Text(
+                              "Sign Up",
+                              style: TextStyle(
+                                color: AppColors.primaryColor,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 15,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-
-          // Custom Dots Indicator
-          Positioned(
-            top: size.height * 0.41,
-            left: 24,
-            child: Row(
-              children: List.generate(
-                _onboardingData.length,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.only(right: 6),
-                  height: 6,
-                  width: _currentPage == index ? 24 : 6,
-                  decoration: BoxDecoration(
-                    color: _currentPage == index ? AppColors.secondaryColor : Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(10),
+                    ],
                   ),
                 ),
               ),
             ),
-          ),
-
-          // Glassmorphic Skip Button
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 16,
-            right: 24,
-            child: GestureDetector(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                Get.offAllNamed('/home');
-              },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          "Skip",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 13,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 10),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Permanent Bottom Sheet (Login Card)
-          Positioned(
-            top: size.height * 0.44, // Increased space for the form
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 20,
-                    offset: Offset(0, -5),
-                  ),
-                ],
-              ),
-              // Use SingleChildScrollView but components are tightly packed so it won't scroll on normal screens
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "Welcome!",
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.black,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Login to access your orders & exclusive offers",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.grey,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Inputs (Grey Filled Boxes)
-                    _buildInputField(
-                      controller: controller.emailController,
-                      hint: "Email Address",
-                      icon: Icons.alternate_email_rounded,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildInputField(
-                      controller: controller.passwordController,
-                      hint: "Password",
-                      icon: Icons.lock_outline_rounded,
-                      isPassword: true,
-                    ),
-                    
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primaryColor,
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text(
-                          "Forgot Password?",
-                          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 16),
-
-                    // Login Button
-                    Obx(() => SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: ElevatedButton(
-                        onPressed: controller.isLoading.value ? null : () {
-                          HapticFeedback.selectionClick();
-                          controller.login();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryColor,
-                          shadowColor: AppColors.primaryColor.withOpacity(0.5),
-                          elevation: 6,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: controller.isLoading.value
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
-                              )
-                            : const Text(
-                                "Login Securely",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                      ),
-                    )),
-                    
-                    const SizedBox(height: 16),
-
-                    // Google Login
-                    SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: OutlinedButton.icon(
-                        onPressed: () { HapticFeedback.selectionClick(); },
-                        icon: Image.network('https://cdn-icons-png.flaticon.com/512/2991/2991148.png', height: 20),
-                        label: const Text(
-                          "Continue with Google",
-                          style: TextStyle(
-                            color: AppColors.black,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.greyLight, width: 2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                    
-                    // Register Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Don't have an account? ",
-                          style: TextStyle(color: AppColors.grey, fontWeight: FontWeight.w600, fontSize: 14),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            Get.toNamed('/signup');
-                          },
-                          child: const Text(
-                            "Sign Up",
-                            style: TextStyle(
-                              color: AppColors.primaryColor,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 15,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildInputField({

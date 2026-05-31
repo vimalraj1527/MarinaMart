@@ -27,7 +27,7 @@ class StorageService {
     return _prefs.getString(AppConstants.userKey);
   }
 
-  // PLATFORM SETTINGS (Synced from Backend)
+  // Platform Settings (Synced from Backend)
   Future<void> setSettings(String settingsData) async {
     await _prefs.setString('platform_settings', settingsData);
   }
@@ -36,11 +36,23 @@ class StorageService {
     return _prefs.getString('platform_settings');
   }
 
+  // App Theme Management
+  Future<void> setTheme(String themeName) async {
+    await _prefs.setString('app_theme', themeName);
+  }
+
+  String? getTheme() {
+    return _prefs.getString('app_theme');
+  }
+
   // Logout/Clear Storage
   Future<void> clearAll() async {
-    // We clear credentials but maybe we keep platform settings?
-    // Usually better to clear everything and re-fetch.
+    // Save theme before clearing
+    final theme = getTheme();
     await _prefs.clear();
+    if (theme != null) {
+      await setTheme(theme);
+    }
   }
 
   bool isFirstTime() {
@@ -49,5 +61,14 @@ class StorageService {
 
   Future<void> setNotFirstTime() async {
     await _prefs.setBool(AppConstants.isFirstTime, false);
+  }
+
+  // Recent Searches Management
+  Future<void> saveRecentSearches(List<String> searches) async {
+    await _prefs.setStringList('recent_searches', searches);
+  }
+
+  List<String> getRecentSearches() {
+    return _prefs.getStringList('recent_searches') ?? [];
   }
 }

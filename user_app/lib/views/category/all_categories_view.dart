@@ -79,7 +79,7 @@ class _AllCategoriesViewState extends State<AllCategoriesView> with TickerProvid
           SafeArea(
             child: Obx(() {
               if (controller.isLoading.value && controller.categories.isEmpty) {
-                return const Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
+                return Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
               }
               
               return GridView.builder(
@@ -157,8 +157,9 @@ class _AllCategoriesViewState extends State<AllCategoriesView> with TickerProvid
   Widget _getCategoryIcon(String name) {
     IconData icon = Icons.shopping_bag_rounded;
     final n = name.toLowerCase();
-    if (n.contains("fruit") || n.contains("veg")) icon = Icons.apple_rounded;
-    else if (n.contains("milk") || n.contains("dairy")) icon = Icons.egg_rounded;
+    if (n.contains("fruit") || n.contains("veg")) {
+      icon = Icons.apple_rounded;
+    } else if (n.contains("milk") || n.contains("dairy")) icon = Icons.egg_rounded;
     else if (n.contains("drink") || n.contains("juice")) icon = Icons.local_drink_rounded;
     else if (n.contains("snack") || n.contains("munch")) icon = Icons.fastfood_rounded;
     else if (n.contains("clean")) icon = Icons.cleaning_services_rounded;
