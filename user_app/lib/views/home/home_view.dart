@@ -10,6 +10,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../controllers/home_controller.dart';
 import '../../controllers/location_controller.dart';
 import '../../controllers/settings_controller.dart';
+import '../../controllers/theme_controller.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../models/product_model.dart';
@@ -96,30 +97,25 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       backgroundColor: const Color(0xFFF7F9FC), // Ultra premium soft background
       body: Stack(
         children: [
-          // Dynamic Ambient Glow in Background
+          // Top Brand Header Background Gradient
           Positioned(
-            top: -100, right: -50,
-            child: AnimatedBuilder(
-              animation: _floatController,
-              builder: (context, child) {
-                return Transform.translate(
-                  offset: Offset(math.sin(_floatController.value * 2 * math.pi) * 30, math.cos(_floatController.value * 2 * math.pi) * 30),
-                  child: Container(
-                    width: 300, height: 300, 
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle, 
-                      color: AppColors.primaryColor.withOpacity(0.12),
-                    ),
+            top: 0, left: 0, right: 0,
+            height: 250,
+            child: Obx(() {
+              final activeTheme = ThemeController.to.currentTheme;
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      activeTheme.primaryColor.withOpacity(0.15),
+                      activeTheme.primaryColor.withOpacity(0.0),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
-                );
-              }
-            ),
-          ),
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
-              child: const SizedBox(),
-            ),
+                ),
+              );
+            }),
           ),
           
           SafeArea(
@@ -214,15 +210,18 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFF8C00)]),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [BoxShadow(color: const Color(0xFFFF8C00).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3))],
-            ),
-            child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 24),
-          ),
+          Obx(() {
+            final activeTheme = ThemeController.to.currentTheme;
+            return Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [activeTheme.primaryColor, activeTheme.secondaryColor]),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [BoxShadow(color: activeTheme.primaryColor.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3))],
+              ),
+              child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 24),
+            );
+          }),
           const SizedBox(width: 14),
           Expanded(
             child: GestureDetector(
@@ -230,16 +229,19 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RichText(
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    text: TextSpan(
-                      children: [
-                        TextSpan(text: "Standard ", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 19, color: Colors.black87, letterSpacing: -0.5, fontFamily: 'Outfit')),
-                        TextSpan(text: "Delivery", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 19, color: AppColors.primaryColor, letterSpacing: -0.5, fontFamily: 'Outfit')),
-                      ],
-                    ),
-                  ),
+                  Obx(() {
+                    final activeTheme = ThemeController.to.currentTheme;
+                    return RichText(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      text: TextSpan(
+                        children: [
+                          const TextSpan(text: "Instant ", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 19, color: Colors.black87, letterSpacing: -0.5, fontFamily: 'Outfit')),
+                          TextSpan(text: "Delivery", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 19, color: activeTheme.primaryColor, letterSpacing: -0.5, fontFamily: 'Outfit')),
+                        ],
+                      ),
+                    );
+                  }),
                   const SizedBox(height: 2),
                   Row(
                     children: [
@@ -251,36 +253,42 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         )),
                       ),
                       const SizedBox(width: 4),
-                      Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: AppColors.primaryColor),
+                      Obx(() {
+                        final activeTheme = ThemeController.to.currentTheme;
+                        return Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: activeTheme.primaryColor);
+                      }),
                     ],
                   ),
                 ],
               ),
             ),
           ),
-          GestureDetector(
-            onLongPress: () {
-              if (locationController.currentPosition.value != null) {
-                Get.find<SettingsController>().syncStoreToCurrentLocation(
-                  locationController.currentPosition.value!.latitude, 
-                  locationController.currentPosition.value!.longitude
-                );
-              }
-            },
-            onTap: () => Get.toNamed('/profile'),
-            child: Container(
-              height: 48, width: 48,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF6C5CE7), Color(0xFFa29bfe)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-                boxShadow: [BoxShadow(color: const Color(0xFF6C5CE7).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 3))],
+          Obx(() {
+            final activeTheme = ThemeController.to.currentTheme;
+            return GestureDetector(
+              onLongPress: () {
+                if (locationController.currentPosition.value != null) {
+                  Get.find<SettingsController>().syncStoreToCurrentLocation(
+                    locationController.currentPosition.value!.latitude, 
+                    locationController.currentPosition.value!.longitude
+                  );
+                }
+              },
+              onTap: () => Get.toNamed('/profile'),
+              child: Container(
+                height: 48, width: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [activeTheme.primaryColor, activeTheme.secondaryColor], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [BoxShadow(color: activeTheme.primaryColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 3))],
+                ),
+                child: Center(
+                  child: Text(firstLetter, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+                ),
               ),
-              child: Center(
-                child: Text(firstLetter, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
-              ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );
@@ -380,10 +388,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   Widget _buildBanners(HomeController controller) {
     return Obx(() {
       if (controller.isLoading.value && controller.banners.isEmpty) {
-        return _buildShimmer(height: 190, width: double.infinity);
+        return _buildShimmer(height: 165, width: double.infinity);
       }
       return SizedBox(
-        height: 190,
+        height: 165,
         child: PageView(
           controller: _bannerController,
           onPageChanged: (idx) => _currentBanner = idx,
@@ -397,17 +405,17 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               }).toList()
             : [
                 _buildSingleBanner(
-                  const Color(0xFF00B894), 
+                  const Color(0xFF0C831F), 
                   "Fresh Delivery\nEVERYDAY", 
                   "https://assets9.lottiefiles.com/packages/lf20_76m8m1.json"
                 ),
                 _buildSingleBanner(
-                  const Color(0xFF6C5CE7), 
+                  const Color(0xFF5F25D9), 
                   "MEGA SAVINGS\non Snacking", 
                   "https://assets4.lottiefiles.com/packages/lf20_m6cuL6.json"
                 ),
                 _buildSingleBanner(
-                  const Color(0xFFE17055), 
+                  const Color(0xFFFC8019), 
                   "Summer Fruits\nUp to 30% OFF", 
                   "https://assets10.lottiefiles.com/packages/lf20_rc63p8u1.json"
                 ),
@@ -419,39 +427,41 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   Widget _buildSingleBanner(Color color, String title, String lottieUrl) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding, vertical: 5),
-      padding: const EdgeInsets.all(25.0),
+      margin: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
-          colors: [color.withOpacity(0.95), color.withOpacity(0.65)], 
+          colors: [color.withOpacity(0.95), color.withOpacity(0.7)], 
           begin: Alignment.topLeft, 
           end: Alignment.bottomRight
         ),
         boxShadow: [
-          BoxShadow(color: color.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10)),
+          BoxShadow(color: color.withOpacity(0.2), blurRadius: 12, offset: const Offset(0, 6)),
         ],
       ),
       child: Stack(
         children: [
           Positioned(
-            right: -25, bottom: -25, top: -25,
-            child: Lottie.network(lottieUrl, width: 160, errorBuilder: (c, e, s) => const Icon(Icons.local_offer_rounded, size: 50, color: Colors.white54)),
+            right: -15, bottom: -15, top: -15,
+            child: Lottie.network(lottieUrl, width: 130, errorBuilder: (c, e, s) => const Icon(Icons.local_offer_rounded, size: 40, color: Colors.white54)),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(title, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900, height: 1.15, letterSpacing: 0.5)),
-              const SizedBox(height: 16),
+              Text(
+                title, 
+                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, height: 1.15, letterSpacing: 0.2, fontFamily: 'Outfit')
+              ),
+              const SizedBox(height: 12),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white, 
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 8, offset: const Offset(0, 4))],
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Text("ORDER NOW", style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                child: Text("ORDER NOW", style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 1)),
               ),
             ],
           ),
@@ -471,77 +481,59 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           }
           
           return SizedBox(
-            height: 260, // Increased height for floating effect
+            height: 200, 
             child: GridView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2, 
-                mainAxisSpacing: 15,
-                crossAxisSpacing: 15,
-                childAspectRatio: 1.05,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: 0.85, 
               ),
               itemCount: controller.categories.length,
               itemBuilder: (context, index) {
                 final cat = controller.categories[index];
                 final color = _getCategoryColor(cat.name);
                 
-                return AnimatedBuilder(
-                  animation: _floatController,
-                  builder: (context, child) {
-                    // Staggered sine wave for organic liquid floating effect!
-                    final dy = math.sin((_floatController.value * 2 * math.pi) + (index * 0.7)) * 5.0;
-                    return Transform.translate(
-                      offset: Offset(0, dy),
-                      child: child,
-                    );
+                return GestureDetector(
+                  onTap: () {
+                    final catName = cat.name.toLowerCase();
+                    final catProducts = controller.products.where((p) {
+                      final pCat = p.category.toLowerCase();
+                      bool isDairyMatch = (catName.contains("dairy") || catName.contains("diary")) && (pCat.contains("dairy") || pCat.contains("diary"));
+                      return isDairyMatch || pCat.contains(catName) || catName.contains(pCat);
+                    }).toList();
+                    Get.toNamed('/product-list', arguments: catProducts, parameters: {'title': cat.name});
                   },
-                  child: GestureDetector(
-                    onTap: () {
-                      final catName = cat.name.toLowerCase();
-                      final catProducts = controller.products.where((p) {
-                        final pCat = p.category.toLowerCase();
-                        bool isDairyMatch = (catName.contains("dairy") || catName.contains("diary")) && (pCat.contains("dairy") || pCat.contains("diary"));
-                        return isDairyMatch || pCat.contains(catName) || catName.contains(pCat);
-                      }).toList();
-                      Get.toNamed('/product-list', arguments: catProducts, parameters: {'title': cat.name});
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30), // Squircle Shape
-                        boxShadow: [
-                          BoxShadow(color: color.withOpacity(0.12), blurRadius: 15, offset: const Offset(0, 8)),
-                        ],
-                        border: Border.all(color: color.withOpacity(0.05), width: 1.5),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            height: 52, width: 52,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: color.withOpacity(0.1),
-                              shape: BoxShape.circle,
-                            ),
-                            child: cat.image.isNotEmpty 
-                              ? Image.network(cat.image, fit: BoxFit.contain, errorBuilder: (c,e,s) => _getCategoryIcon(cat.name))
-                              : _getCategoryIcon(cat.name),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20), 
+                      border: Border.all(color: color.withOpacity(0.15), width: 1),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          height: 54, width: 54,
+                          padding: const EdgeInsets.all(4),
+                          child: cat.image.isNotEmpty 
+                            ? Image.network(cat.image, fit: BoxFit.contain, errorBuilder: (c,e,s) => _getCategoryIcon(cat.name))
+                            : _getCategoryIcon(cat.name),
+                        ),
+                        const SizedBox(height: 6),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 6),
+                          child: Text(
+                            cat.name,
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black87),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 10),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            child: Text(
-                              cat.name,
-                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.black87),
-                              textAlign: TextAlign.center,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -583,15 +575,15 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       baseColor: Colors.grey[200]!,
       highlightColor: Colors.white,
       child: SizedBox(
-        height: 260,
+        height: 200,
         child: GridView.builder(
           scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, mainAxisSpacing: 15, crossAxisSpacing: 15, childAspectRatio: 1.05,
+            crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: 0.85,
           ),
           itemCount: 8,
-          itemBuilder: (context, index) => Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(30))),
+          itemBuilder: (context, index) => Container(decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20))),
         ),
       ),
     );
@@ -608,7 +600,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
           itemCount: controller.products.length,
           itemBuilder: (context, index) => Container(
-            width: 155,
+            width: 160,
             margin: const EdgeInsets.only(right: 16, bottom: 16), // space for drop shadow
             child: _buildProductCard(controller.products[index]),
           ),
@@ -639,41 +631,67 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white, width: 2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade100, width: 1.5),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 8)),
+            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Fixed Image Section
+            // Image Section
             Container(
               height: 110,
               width: double.infinity,
               padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF0F4F8), // Soft elegant blue-grey backing
-                borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
               ),
               child: Stack(
                 children: [
-                  Center(child: Image.network(product.image, fit: BoxFit.contain, errorBuilder: (c,e,s) => const Icon(Icons.shopping_bag_rounded, color: Colors.grey, size: 40))),
+                  Center(
+                    child: Image.network(
+                      product.image, 
+                      fit: BoxFit.contain, 
+                      errorBuilder: (c,e,s) => const Icon(Icons.shopping_bag_rounded, color: Colors.grey, size: 40)
+                    )
+                  ),
                   Positioned(
                     top: 0, left: 0,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFF8C00)]),
+                        color: Colors.white.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(8),
-                        boxShadow: [BoxShadow(color: const Color(0xFFFF8C00).withOpacity(0.4), blurRadius: 4, offset: const Offset(0, 2))],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          )
+                        ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.bolt_rounded, color: Colors.white, size: 10),
-                          Text("STANDARD", style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900)),
+                          Obx(() {
+                            final activeTheme = ThemeController.to.currentTheme;
+                            return Icon(Icons.bolt_rounded, color: activeTheme.primaryColor, size: 12);
+                          }),
+                          const SizedBox(width: 2),
+                          Obx(() {
+                            final activeTheme = ThemeController.to.currentTheme;
+                            return Text(
+                              "10 MINS",
+                              style: TextStyle(
+                                color: activeTheme.primaryColor,
+                                fontSize: 8,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -681,34 +699,44 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 ],
               ),
             ),
-            // Flexible Details Section
+            // Details Section
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                padding: const EdgeInsets.all(12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // Safely distributes space
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(product.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, height: 1.2), maxLines: 2, overflow: TextOverflow.ellipsis),
+                        Text(
+                          product.name, 
+                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, height: 1.2), 
+                          maxLines: 2, 
+                          overflow: TextOverflow.ellipsis
+                        ),
                         const SizedBox(height: 4),
-                        Text(product.unit, style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.w700)),
+                        Text(
+                          product.unit, 
+                          style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.w700)
+                        ),
                       ],
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text("₹${product.price}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Colors.black)),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: AddToCartButton(product: product),
+                        Expanded(
+                          child: Text(
+                            "₹${product.price}", 
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Colors.black),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        const SizedBox(width: 4),
+                        AddToCartButton(product: product),
                       ],
                     ),
                   ],
