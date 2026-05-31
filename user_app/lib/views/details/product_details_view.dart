@@ -44,7 +44,7 @@ class ProductDetailsView extends StatelessWidget {
                             color: AppColors.primaryColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.timer_outlined, color: AppColors.primaryColor, size: 16),
@@ -233,7 +233,7 @@ class ProductDetailsView extends StatelessWidget {
                           key: const ValueKey('counter_btn'),
                           height: 60,
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(colors: [AppColors.primaryColor, Color(0xFF6C5CE7)]),
+                            gradient: LinearGradient(colors: [AppColors.primaryColor, Color(0xFF6C5CE7)]),
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [BoxShadow(color: AppColors.primaryColor.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 4))],
                           ),

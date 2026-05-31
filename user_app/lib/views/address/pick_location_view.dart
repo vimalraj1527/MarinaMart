@@ -126,7 +126,7 @@ class _PickLocationViewState extends State<PickLocationView> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.location_city, color: AppColors.primaryColor, size: 24),
+                      Icon(Icons.location_city, color: AppColors.primaryColor, size: 24),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -175,7 +175,7 @@ class _PickLocationViewState extends State<PickLocationView> {
                 });
               },
               backgroundColor: Colors.white,
-              child: const Icon(Icons.my_location, color: AppColors.primaryColor),
+              child: Icon(Icons.my_location, color: AppColors.primaryColor),
             ),
           )
         ],

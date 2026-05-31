@@ -92,7 +92,7 @@ class OrdersView extends StatelessWidget {
             data: Theme.of(Get.context!).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
               tilePadding: EdgeInsets.zero,
-              title: const Text("View Order Details", style: TextStyle(fontSize: 12, color: AppColors.primaryColor, fontWeight: FontWeight.bold)),
+              title: Text("View Order Details", style: TextStyle(fontSize: 12, color: AppColors.primaryColor, fontWeight: FontWeight.bold)),
               children: [
                 ...order.items.map((item) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -147,7 +147,7 @@ class OrdersView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text("${order.items.length} Items", style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text("₹${order.totalAmount}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppColors.primaryColor)),
+              Text("₹${order.totalAmount}", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppColors.primaryColor)),
             ],
           ),
           const SizedBox(height: 8),

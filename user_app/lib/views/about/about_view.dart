@@ -13,7 +13,7 @@ class AboutView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Hero(
+            Hero(
               tag: 'logo',
               child: CircleAvatar(
                 radius: 60,
@@ -22,7 +22,7 @@ class AboutView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               "Bloomarina Instamart",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
             ),

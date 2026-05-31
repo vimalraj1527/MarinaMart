@@ -94,7 +94,7 @@ class _StickyCartBarState extends State<StickyCartBar> with SingleTickerProvider
                                   shape: BoxShape.circle,
                                   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
                                 ),
-                                child: const Icon(Icons.shopping_cart_checkout_rounded, color: AppColors.primaryColor, size: 18),
+                                child: Icon(Icons.shopping_cart_checkout_rounded, color: AppColors.primaryColor, size: 18),
                               ),
                             ],
                           ),

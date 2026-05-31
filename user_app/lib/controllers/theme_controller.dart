@@ -33,12 +33,12 @@ class AppTheme {
 class ThemeController extends GetxController {
   static ThemeController get to => Get.find<ThemeController>();
 
-  final _selectedThemeName = 'Blinkit'.obs;
+  final _selectedThemeName = 'Emerald'.obs;
   String get selectedThemeName => _selectedThemeName.value;
 
   final Map<String, AppTheme> themes = {
-    'Blinkit': const AppTheme(
-      name: 'Blinkit',
+    'Emerald': const AppTheme(
+      name: 'Emerald',
       primaryColor: Color(0xFF0C831F),
       primaryLight: Color(0xFFE8F5E9),
       secondaryColor: Color(0xFFF7D117),
@@ -49,32 +49,32 @@ class ThemeController extends GetxController {
       logoUrl: 'https://cdn-icons-png.flaticon.com/512/3724/3724720.png',
       loginBannerUrl: 'https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80',
     ),
-    'Zepto': const AppTheme(
-      name: 'Zepto',
+    'Amethyst': const AppTheme(
+      name: 'Amethyst',
       primaryColor: Color(0xFF5F25D9),
       primaryLight: Color(0xFFF2EEFD),
       secondaryColor: Color(0xFFFFD117),
       accentColor: Color(0xFFFF007F),
       backgroundColor: Color(0xFFF8F7FC),
       surfaceColor: Colors.white,
-      description: 'Vibrant purple with gold accents. Ultra-fast grocery experience.',
+      description: 'Vibrant purple with gold accents. Ultra-fast premium grocery experience.',
       logoUrl: 'https://cdn-icons-png.flaticon.com/512/9198/9198446.png',
       loginBannerUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=800&q=80',
     ),
-    'Swiggy Instamart': const AppTheme(
-      name: 'Swiggy Instamart',
+    'Amber': const AppTheme(
+      name: 'Amber',
       primaryColor: Color(0xFFFC8019),
       primaryLight: Color(0xFFFFF0E0),
       secondaryColor: Color(0xFF3D2E7C),
       accentColor: Color(0xFFE23744),
       backgroundColor: Color(0xFFFDFBF7),
       surfaceColor: Colors.white,
-      description: 'Bright orange and deep navy. The pioneer of instant deliveries.',
+      description: 'Bright orange and deep navy. Warm, vibrant, and energetic.',
       logoUrl: 'https://cdn-icons-png.flaticon.com/512/8201/8201726.png',
       loginBannerUrl: 'https://images.unsplash.com/photo-1583258292688-d0213dc5a3a8?auto=format&fit=crop&w=800&q=80',
     ),
-    'Zomato': const AppTheme(
-      name: 'Zomato',
+    'Ruby': const AppTheme(
+      name: 'Ruby',
       primaryColor: Color(0xFFE23744),
       primaryLight: Color(0xFFFFEBEC),
       secondaryColor: Color(0xFF1C1C1C),
@@ -87,7 +87,7 @@ class ThemeController extends GetxController {
     ),
   };
 
-  AppTheme get currentTheme => themes[_selectedThemeName.value] ?? themes['Blinkit']!;
+  AppTheme get currentTheme => themes[_selectedThemeName.value] ?? themes['Emerald']!;
 
   Color get primaryColor => currentTheme.primaryColor;
   Color get primaryLight => currentTheme.primaryLight;
@@ -115,8 +115,8 @@ class ThemeController extends GetxController {
       // Update system UI overlay style
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: (themeName == 'Blinkit') ? Brightness.dark : Brightness.light,
-        statusBarBrightness: (themeName == 'Blinkit') ? Brightness.light : Brightness.dark,
+        statusBarIconBrightness: (themeName == 'Emerald') ? Brightness.dark : Brightness.light,
+        statusBarBrightness: (themeName == 'Emerald') ? Brightness.light : Brightness.dark,
       ));
 
       // Update GetMaterialApp theme dynamically
@@ -211,7 +211,7 @@ class ThemeController extends GetxController {
                       "App rebranded to ${theme.name} style!",
                       snackPosition: SnackPosition.BOTTOM,
                       backgroundColor: theme.primaryColor,
-                      colorText: theme.name == 'Blinkit' ? Colors.black87 : Colors.white,
+                      colorText: theme.name == 'Emerald' ? Colors.black87 : Colors.white,
                       duration: const Duration(seconds: 2),
                     );
                   },
@@ -234,7 +234,7 @@ class ThemeController extends GetxController {
                       child: Text(
                         theme.name[0],
                         style: TextStyle(
-                          color: theme.name == 'Blinkit' ? Colors.black87 : Colors.white,
+                          color: theme.name == 'Emerald' ? Colors.black87 : Colors.white,
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
                         ),

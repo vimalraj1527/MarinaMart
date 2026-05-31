@@ -38,7 +38,7 @@ class _SplashViewState extends State<SplashView> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.primaryColor,
           gradient: AppColors.primaryGradient,
         ),

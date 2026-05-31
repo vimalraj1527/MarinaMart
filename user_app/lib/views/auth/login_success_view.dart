@@ -225,7 +225,7 @@ class _LoginSuccessViewState extends State<LoginSuccessView> with TickerProvider
                               width: 160,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
-                                child: const LinearProgressIndicator(
+                                child: LinearProgressIndicator(
                                   backgroundColor: Colors.white10,
                                   color: AppColors.primaryColor,
                                   minHeight: 4,

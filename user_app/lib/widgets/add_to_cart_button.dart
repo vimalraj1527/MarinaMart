@@ -90,7 +90,7 @@ class AddToCartButton extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -103,7 +103,7 @@ class AddToCartButton extends StatelessWidget {
                             letterSpacing: 1.0,
                           ),
                         ),
-                        SizedBox(width: 2),
+                        const SizedBox(width: 2),
                         Icon(
                           Icons.add_rounded,
                           color: AppColors.primaryColor,
@@ -120,7 +120,7 @@ class AddToCartButton extends StatelessWidget {
                 width: 86,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [Color(0xFF6C5CE7), AppColors.primaryColor],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,

@@ -25,7 +25,7 @@ class SignupView extends StatelessWidget {
         backgroundColor: AppColors.backgroundColor,
         appBar: AppBar(
           title: Text(
-            brandName == 'Blinkit' ? "Join Blinkit" : "Create Account", 
+            brandName == 'Emerald' ? "Join Emerald" : "Create Account", 
             style: const TextStyle(fontWeight: FontWeight.bold)
           ),
           backgroundColor: Colors.transparent,
@@ -43,7 +43,7 @@ class SignupView extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  brandName == "Zomato" 
+                  brandName == "Ruby" 
                       ? "Order delicious food & groceries instantly." 
                       : "Fresh groceries at your doorstep.",
                   style: const TextStyle(fontSize: 16, color: AppColors.grey),
@@ -74,7 +74,7 @@ class SignupView extends StatelessWidget {
                         ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
-                      foregroundColor: activeTheme.name == 'Blinkit' ? Colors.black87 : Colors.white,
+                      foregroundColor: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                       elevation: 0,
                     ),
@@ -85,7 +85,7 @@ class SignupView extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18, 
                             fontWeight: FontWeight.bold,
-                            color: activeTheme.name == 'Blinkit' ? Colors.black87 : Colors.white
+                            color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white
                           )
                         ),
                   ),

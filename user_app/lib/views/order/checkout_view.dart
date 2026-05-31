@@ -150,7 +150,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                                 Text(slot['display'], style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                               ],
                             ),
-                            if (isSelected) const Icon(Icons.check_circle, color: AppColors.primaryColor)
+                            if (isSelected) Icon(Icons.check_circle, color: AppColors.primaryColor)
                           ],
                         ),
                       ),
@@ -206,7 +206,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
                 child: Row(
                   children: [
-                     const Icon(Icons.location_on, color: AppColors.primaryColor, size: 30),
+                     Icon(Icons.location_on, color: AppColors.primaryColor, size: 30),
                      const SizedBox(width: 15),
                      Expanded(
                        child: Column(
@@ -322,7 +322,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                                color: AppColors.primaryColor.withOpacity(0.1),
                                borderRadius: BorderRadius.circular(6),
                              ),
-                             child: const Text("COMING SOON", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.primaryColor)),
+                             child: Text("COMING SOON", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.primaryColor)),
                            )
                          ],
                        ),

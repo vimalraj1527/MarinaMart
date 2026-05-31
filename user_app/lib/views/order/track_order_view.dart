@@ -80,7 +80,7 @@ class TrackOrderView extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(Icons.home_filled, color: AppColors.primaryColor, size: 20),
+                      Icon(Icons.home_filled, color: AppColors.primaryColor, size: 20),
                       const SizedBox(width: 10),
                       Expanded(child: Text(order.deliveryAddress, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold), maxLines: 2, overflow: TextOverflow.ellipsis)),
                     ],
@@ -114,7 +114,7 @@ class TrackOrderView extends StatelessWidget {
                           Text(order.status == "Pending" ? "Confirmed" : order.status, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.green.shade700)),
                         ],
                       ),
-                      const Icon(Icons.shopping_bag_outlined, color: AppColors.primaryColor, size: 30),
+                      Icon(Icons.shopping_bag_outlined, color: AppColors.primaryColor, size: 30),
                     ],
                   ),
                   const Divider(height: 40),

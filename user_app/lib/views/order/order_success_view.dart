@@ -57,7 +57,7 @@ class OrderSuccessView extends StatelessWidget {
               const SizedBox(height: 15),
               TextButton(
                 onPressed: () => Get.offNamed('/orders'),
-                child: const Text("View My Orders", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold)),
+                child: Text("View My Orders", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

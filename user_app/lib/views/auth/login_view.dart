@@ -70,18 +70,18 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
 
       final List<Map<String, String>> onboardingData = [
         {
-          "title": activeTheme.name == "Zepto"
-              ? "Zepto Instant"
-              : activeTheme.name == "Swiggy Instamart"
-                  ? "Instamart Delivery"
-                  : activeTheme.name == "Zomato"
-                      ? "Zomato Groceries"
-                      : "Groceries in 10 Mins",
-          "subtitle": activeTheme.name == "Zepto"
+          "title": activeTheme.name == "Amethyst"
+              ? "Amethyst Premium"
+              : activeTheme.name == "Amber"
+                  ? "Amber Express"
+                  : activeTheme.name == "Ruby"
+                      ? "Ruby Gourmet"
+                      : "Emerald Fresh",
+          "subtitle": activeTheme.name == "Amethyst"
               ? "Your favorite snacks & essentials delivered in 10 minutes."
-              : activeTheme.name == "Swiggy Instamart"
+              : activeTheme.name == "Amber"
                   ? "From fresh milk to party essentials, delivered in minutes."
-                  : activeTheme.name == "Zomato"
+                  : activeTheme.name == "Ruby"
                       ? "Craving food or needing groceries? We deliver both instantly."
                       : "Freshness delivered directly to your doorstep.",
           "image": activeTheme.loginBannerUrl,
@@ -181,20 +181,20 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                                   children: [
                                     Icon(
                                       Icons.bolt_rounded,
-                                      color: activeTheme.name == 'Blinkit' ? Colors.black87 : Colors.white,
+                                      color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
                                       size: 20,
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      activeTheme.name == "Zepto"
-                                          ? "ZEPTO INSTANT"
-                                          : activeTheme.name == "Swiggy Instamart"
-                                              ? "INSTAMART 10 MIN"
-                                              : activeTheme.name == "Zomato"
-                                                  ? "ZOMATO INSTANT"
-                                                  : "10 MIN DELIVERY",
+                                      activeTheme.name == "Amethyst"
+                                          ? "AMETHYST INSTANT"
+                                          : activeTheme.name == "Amber"
+                                              ? "AMBER EXPRESS"
+                                              : activeTheme.name == "Ruby"
+                                                  ? "RUBY INSTANT"
+                                                  : "EMERALD FRESH",
                                       style: TextStyle(
-                                        color: activeTheme.name == 'Blinkit' ? Colors.black87 : Colors.white,
+                                        color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w900,
                                         letterSpacing: 1.5,
@@ -376,13 +376,13 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                activeTheme.name == "Zepto"
-                                    ? "Hello Zepto!"
-                                    : activeTheme.name == "Swiggy Instamart"
-                                        ? "Welcome to Instamart!"
-                                        : activeTheme.name == "Zomato"
-                                            ? "Welcome to Zomato!"
-                                            : "Welcome to Blinkit!",
+                                activeTheme.name == "Amethyst"
+                                    ? "Hello Amethyst!"
+                                    : activeTheme.name == "Amber"
+                                        ? "Welcome to Amber!"
+                                        : activeTheme.name == "Ruby"
+                                            ? "Welcome to Ruby!"
+                                            : "Welcome to Emerald!",
                                 style: const TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.w900,
@@ -473,7 +473,7 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w800,
-                                    color: activeTheme.name == 'Blinkit' ? Colors.black87 : Colors.white,
+                                    color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
                                     letterSpacing: 0.5,
                                   ),
                                 ),

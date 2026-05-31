@@ -95,7 +95,7 @@ class _ProductListViewState extends State<ProductListView> with TickerProviderSt
           SafeArea(
             child: Obx(() {
               if (_controller.isLoading.value) {
-                return const Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
+                return Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
               }
               
               if (_controller.categoryProducts.isEmpty) {
@@ -106,7 +106,7 @@ class _ProductListViewState extends State<ProductListView> with TickerProviderSt
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15)]),
-                        child: const Icon(Icons.inventory_2_rounded, size: 60, color: AppColors.primaryColor),
+                        child: Icon(Icons.inventory_2_rounded, size: 60, color: AppColors.primaryColor),
                       ),
                       const SizedBox(height: 20),
                       const Text("No products found here.", style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w900)),

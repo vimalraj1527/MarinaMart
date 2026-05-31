@@ -81,7 +81,7 @@ class AddressListView extends StatelessWidget {
               ],
             ),
           ),
-          if (isSelected) const Icon(Icons.check_circle, color: AppColors.primaryColor),
+          if (isSelected) Icon(Icons.check_circle, color: AppColors.primaryColor),
         ],
       ),
     );

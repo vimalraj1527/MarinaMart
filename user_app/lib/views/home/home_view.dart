@@ -31,6 +31,21 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   late AnimationController _floatController;
   late AnimationController _pulseController;
 
+  Timer? _searchTickerTimer;
+  int _currentKeywordIndex = 0;
+  final List<String> _searchKeywords = [
+    'fresh milk & bread',
+    'farm fresh eggs',
+    'tender coconut water',
+    'crispy potato chips',
+    'juicy alphonso mangoes',
+    'chilled soft drinks',
+    'premium chocolates',
+    'paneer & curd',
+    'organic vegetables',
+    'cleaning essentials'
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -52,11 +67,20 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         );
       }
     });
+
+    _searchTickerTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentKeywordIndex = (_currentKeywordIndex + 1) % _searchKeywords.length;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _searchTickerTimer?.cancel();
     _bannerController.dispose();
     _floatController.dispose();
     _pulseController.dispose();
@@ -209,7 +233,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                   RichText(
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    text: const TextSpan(
+                    text: TextSpan(
                       children: [
                         TextSpan(text: "Standard ", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 19, color: Colors.black87, letterSpacing: -0.5, fontFamily: 'Outfit')),
                         TextSpan(text: "Delivery", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 19, color: AppColors.primaryColor, letterSpacing: -0.5, fontFamily: 'Outfit')),
@@ -265,48 +289,90 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   Widget _buildSearchBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppConstants.defaultPadding, 5, AppConstants.defaultPadding, 15),
-      child: GestureDetector(
-        onTap: () => Get.toNamed('/search'),
-        child: AnimatedBuilder(
-          animation: _pulseController,
-          builder: (context, child) {
-            return Container(
-              height: 58,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20), // Ultra rounded capsule
-                border: Border.all(
-                  color: AppColors.primaryColor.withOpacity(0.2 + (_pulseController.value * 0.3)), 
-                  width: 2
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primaryColor.withOpacity(0.05 + (_pulseController.value * 0.1)), 
-                    blurRadius: 20, 
-                    offset: const Offset(0, 8)
-                  ),
-                ],
+      child: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          return Container(
+            height: 58,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20), // Ultra rounded capsule
+              border: Border.all(
+                color: AppColors.primaryColor.withOpacity(0.2 + (_pulseController.value * 0.3)), 
+                width: 2
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.search_rounded, color: AppColors.primaryColor, size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryColor.withOpacity(0.05 + (_pulseController.value * 0.1)), 
+                  blurRadius: 20, 
+                  offset: const Offset(0, 8)
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => Get.toNamed('/search'),
+                  child: Icon(Icons.search_rounded, color: AppColors.primaryColor, size: 28),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => Get.toNamed('/search'),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Search anything...", style: TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.w800)),
-                        Text("Fresh milk, eggs, bread & more", style: TextStyle(color: Colors.black45, fontSize: 11, fontWeight: FontWeight.w600)),
+                        const Text("Search", style: TextStyle(color: Colors.black54, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                        const SizedBox(height: 1),
+                        ClipRect(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            switchInCurve: Curves.easeOutQuad,
+                            switchOutCurve: Curves.easeInQuad,
+                            transitionBuilder: (Widget child, Animation<double> animation) {
+                              return SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0.0, 1.2),
+                                  end: Offset.zero,
+                                ).animate(animation),
+                                child: FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: Text(
+                              _searchKeywords[_currentKeywordIndex],
+                              key: ValueKey<String>(_searchKeywords[_currentKeywordIndex]),
+                              style: TextStyle(color: Colors.grey.shade600, fontSize: 14, fontWeight: FontWeight.w700),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            );
-          }
-        ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => Get.toNamed('/search', arguments: {'triggerVoice': true}),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.mic_rounded, color: AppColors.primaryColor, size: 22),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
       ),
     );
   }
@@ -676,7 +742,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: AppColors.primaryColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                child: const Text("See all", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.w800, fontSize: 12)),
+                child: Text("See all", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.w800, fontSize: 12)),
               ),
             ),
         ],
