@@ -829,8 +829,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  elevation: 3,
+                  shadowColor: AppColors.primaryColor.withOpacity(0.35),
                 ),
               ),
             ),

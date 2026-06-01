@@ -217,10 +217,10 @@ class ProductDetailsView extends StatelessWidget {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primaryColor,
                               foregroundColor: Colors.white,
-                              minimumSize: const Size(double.infinity, 60),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                              elevation: 0,
-                              shadowColor: AppColors.primaryColor.withOpacity(0.5),
+                              minimumSize: const Size(double.infinity, 54),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                              elevation: 3,
+                              shadowColor: AppColors.primaryColor.withOpacity(0.35),
                             ),
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,

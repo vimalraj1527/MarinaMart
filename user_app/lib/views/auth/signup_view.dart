@@ -75,8 +75,9 @@ class SignupView extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       foregroundColor: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      elevation: 3,
+                      shadowColor: AppColors.primaryColor.withOpacity(0.35),
                     ),
                     child: controller.isLoading.value
                       ? const CircularProgressIndicator(color: Colors.white)

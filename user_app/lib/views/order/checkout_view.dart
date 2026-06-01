@@ -386,9 +386,10 @@ class _CheckoutViewState extends State<CheckoutView> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryColor,
               foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 56),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              elevation: 0,
+              minimumSize: const Size(double.infinity, 54),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              elevation: 3,
+              shadowColor: AppColors.primaryColor.withOpacity(0.35),
             ),
             child: _cartController.isLoading.value 
               ? const Center(child: CircularProgressIndicator(color: Colors.white))

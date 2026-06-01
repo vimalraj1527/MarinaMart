@@ -184,8 +184,9 @@ class _CartViewState extends State<CartView> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  elevation: 3,
+                  shadowColor: AppColors.primaryColor.withOpacity(0.35),
                 ),
                 child: controller.isLoading.value
                   ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))

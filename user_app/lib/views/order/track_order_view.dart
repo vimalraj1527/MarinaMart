@@ -130,7 +130,9 @@ class TrackOrderView extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                        elevation: 3,
+                        shadowColor: AppColors.primaryColor.withOpacity(0.35),
                         padding: const EdgeInsets.all(15),
                       ),
                       child: const Text("CLOSE", style: TextStyle(fontWeight: FontWeight.bold)),

@@ -47,8 +47,9 @@ class OrderSuccessView extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                    elevation: 3,
+                    shadowColor: AppColors.primaryColor.withOpacity(0.35),
                   ),
                   child: const Text("Keep Shopping", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),

@@ -67,6 +67,17 @@ class MyApp extends StatelessWidget {
           backgroundColor: AppColors.white,
           foregroundColor: AppColors.black,
         ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryColor,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            elevation: 3,
+            shadowColor: AppColors.primaryColor.withOpacity(0.35),
+            textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+        ),
         useMaterial3: true,
       ),
       initialBinding: InitialBinding(),

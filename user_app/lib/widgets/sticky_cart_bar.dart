@@ -39,66 +39,105 @@ class _StickyCartBarState extends State<StickyCartBar> with SingleTickerProvider
         builder: (context, child) {
           return Transform.scale(
             scale: _scaleAnimation.value,
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppColors.primaryColor,
-                boxShadow: [
-                  BoxShadow(color: AppColors.primaryColor.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, -4)),
-                ],
-              ),
-              child: SafeArea(
-                top: false,
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () => Get.toNamed('/cart'),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Left side: Items & Price only
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                "${cartController.totalItems} ITEM${cartController.totalItems > 1 ? 'S' : ''}",
-                                style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.5),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                "₹${cartController.totalAmount.toStringAsFixed(2)}",
-                                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
-                              ),
-                            ],
-                          ),
-                          // Right side: Animated View Cart action
-                          Row(
-                            children: [
-                              Shimmer.fromColors(
-                                baseColor: Colors.white,
-                                highlightColor: const Color(0xFFFFD700), // Premium gold highlight
-                                period: const Duration(seconds: 2),
-                                child: const Text(
-                                  "View Cart",
-                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primaryColor, AppColors.primaryColor.withBlue(180)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryColor.withOpacity(0.35),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => Get.toNamed('/cart'),
+                      borderRadius: BorderRadius.circular(18),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Left side: Icon, Items Count & Price (Very clean & compact)
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.shopping_bag_outlined,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white, 
-                                  shape: BoxShape.circle,
-                                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+                                const SizedBox(width: 12),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      "${cartController.totalItems} ITEM${cartController.totalItems > 1 ? 'S' : ''}",
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w900,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      "₹${cartController.totalAmount.toStringAsFixed(0)}",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                child: Icon(Icons.shopping_cart_checkout_rounded, color: AppColors.primaryColor, size: 18),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                            // Right side: View Cart action
+                            Row(
+                              children: [
+                                Shimmer.fromColors(
+                                  baseColor: Colors.white,
+                                  highlightColor: const Color(0xFFFFD700), // Premium gold highlight
+                                  period: const Duration(seconds: 2),
+                                  child: const Text(
+                                    "View Cart",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: Colors.white,
+                                  size: 12,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

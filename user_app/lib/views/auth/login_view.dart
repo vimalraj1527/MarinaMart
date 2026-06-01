@@ -456,10 +456,11 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryColor,
-                            shadowColor: AppColors.primaryColor.withOpacity(0.5),
-                            elevation: 6,
+                            foregroundColor: Colors.white,
+                            shadowColor: AppColors.primaryColor.withOpacity(0.35),
+                            elevation: 3,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                             ),
                           ),
                           child: controller.isLoading.value
