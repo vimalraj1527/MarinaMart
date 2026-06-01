@@ -429,12 +429,24 @@ class _CheckoutViewState extends State<CheckoutView> {
 
   void _confirmOrder(double total) {
      if (_nameController.text.isEmpty || _phoneController.text.isEmpty) {
-       Get.snackbar("Details Missing", "Please provide recipient contact information.");
+        Get.snackbar("Details Missing", "Please provide recipient contact information.",
+            backgroundColor: Colors.orange, colorText: Colors.white);
+        return;
+     }
+
+     String phoneVal = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+     if (phoneVal.length > 10) {
+       phoneVal = phoneVal.substring(phoneVal.length - 10);
+     }
+     if (phoneVal.length != 10) {
+       Get.snackbar("Invalid Mobile Number", "Mobile number must be exactly 10 digits.",
+           backgroundColor: Colors.orange, colorText: Colors.white);
        return;
      }
 
      if (_deliveryType == "Scheduled" && _scheduledDateTime == null) {
-       Get.snackbar("Select Slot", "A delivery time slot is required for scheduled orders.");
+       Get.snackbar("Select Slot", "A delivery time slot is required for scheduled orders.",
+           backgroundColor: Colors.orange, colorText: Colors.white);
        _showSlotPicker();
        return;
      }
@@ -442,7 +454,7 @@ class _CheckoutViewState extends State<CheckoutView> {
      _cartController.placeOrder(
        total, 
        _nameController.text, 
-       _phoneController.text,
+       phoneVal,
        deliveryType: _deliveryType,
        scheduledAt: _scheduledDateTime?.toIso8601String(),
      );

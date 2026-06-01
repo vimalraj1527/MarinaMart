@@ -66,12 +66,23 @@ class SignupView extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: controller.isLoading.value 
                       ? null 
-                      : () => controller.register(
-                          nameController.text,
-                          emailController.text,
-                          passwordController.text,
-                          phoneController.text,
-                        ),
+                      : () {
+                          String phoneVal = phoneController.text.replaceAll(RegExp(r'\D'), '');
+                          if (phoneVal.length > 10) {
+                            phoneVal = phoneVal.substring(phoneVal.length - 10);
+                          }
+                          if (phoneVal.length != 10) {
+                            Get.snackbar("Invalid Mobile Number", "Mobile number must be exactly 10 digits.",
+                                backgroundColor: Colors.orange, colorText: Colors.white);
+                            return;
+                          }
+                          controller.register(
+                            nameController.text,
+                            emailController.text,
+                            passwordController.text,
+                            phoneVal,
+                          );
+                        },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryColor,
                       foregroundColor: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,

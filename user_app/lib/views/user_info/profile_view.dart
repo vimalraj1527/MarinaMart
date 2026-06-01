@@ -12,14 +12,7 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Get.find<AuthController>();
-    final StorageService storage = Get.find<StorageService>();
     final ThemeController themeController = Get.find<ThemeController>();
-    
-    Map<String, dynamic> user = {};
-    String? userStr = storage.getUser();
-    if (userStr != null) {
-      user = jsonDecode(userStr);
-    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
@@ -35,54 +28,57 @@ class ProfileView extends StatelessWidget {
         child: Column(
           children: [
             // User Info Header
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 70, height: 70,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [Color(0xFF6C5CE7), Color(0xFFa29bfe)], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                      boxShadow: [BoxShadow(color: const Color(0xFF6C5CE7).withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
-                    ),
-                    child: Center(
-                      child: Text(
-                        (user['name']?.toString() ?? 'U').isNotEmpty ? (user['name']?.toString() ?? 'U')[0].toUpperCase() : 'U',
-                        style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
+            Obx(() {
+              final user = authController.currentUser;
+              return Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 70, height: 70,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFF6C5CE7), Color(0xFFa29bfe)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 3),
+                        boxShadow: [BoxShadow(color: const Color(0xFF6C5CE7).withOpacity(0.35), blurRadius: 12, offset: const Offset(0, 4))],
+                      ),
+                      child: Center(
+                        child: Text(
+                          (user['name']?.toString() ?? 'U').isNotEmpty ? (user['name']?.toString() ?? 'U')[0].toUpperCase() : 'U',
+                          style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user['name'] ?? "User",
-                          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.black87),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          user['email'] ?? "Email not provided",
-                          style: TextStyle(color: Colors.grey.shade600, fontSize: 14, fontWeight: FontWeight.w500),
-                        ),
-                      ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user['name'] ?? "User",
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.black87),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            user['email'] ?? "Email not provided",
+                            style: TextStyle(color: Colors.grey.shade600, fontSize: 14, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () {},
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.primaryColor,
-                      textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                    TextButton(
+                      onPressed: () => _showEditProfileDialog(context, authController),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.primaryColor,
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      child: const Text("EDIT"),
                     ),
-                    child: const Text("EDIT"),
-                  ),
-                ],
-              ),
-            ),
+                  ],
+                ),
+              );
+            }),
             
             const SizedBox(height: 12),
             
@@ -235,6 +231,137 @@ class ProfileView extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  void _showEditProfileDialog(BuildContext context, AuthController authController) {
+    final nameCtrl = TextEditingController(text: authController.currentUser['name']);
+    final emailCtrl = TextEditingController(text: authController.currentUser['email']);
+    final phoneCtrl = TextEditingController(text: authController.currentUser['phone']);
+
+    Get.bottomSheet(
+      Container(
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Edit Profile", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  IconButton(
+                    onPressed: () => Get.back(),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              const Text("Update your registered profile details", style: TextStyle(color: AppColors.grey)),
+              const SizedBox(height: 20),
+              
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(
+                  labelText: "Full Name",
+                  prefixIcon: const Icon(Icons.person_outline_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              TextField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: "Email Address",
+                  prefixIcon: const Icon(Icons.mail_outline_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              TextField(
+                controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  labelText: "Mobile Contact",
+                  prefixIcon: const Icon(Icons.phone_android_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              Obx(() => SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: authController.isLoading.value
+                      ? null
+                      : () async {
+                          if (nameCtrl.text.isEmpty || emailCtrl.text.isEmpty || phoneCtrl.text.isEmpty) {
+                            Get.snackbar("Incomplete Details", "Please fill in all fields.",
+                                backgroundColor: Colors.orange, colorText: Colors.white);
+                            return;
+                          }
+                          String phoneVal = phoneCtrl.text.replaceAll(RegExp(r'\D'), '');
+                          if (phoneVal.length > 10) {
+                            phoneVal = phoneVal.substring(phoneVal.length - 10);
+                          }
+                          if (phoneVal.length != 10) {
+                            Get.snackbar("Invalid Mobile Number", "Mobile number must be exactly 10 digits.",
+                                backgroundColor: Colors.orange, colorText: Colors.white);
+                            return;
+                          }
+                          bool success = await authController.updateProfile(
+                            nameCtrl.text,
+                            emailCtrl.text,
+                            phoneVal,
+                          );
+                          if (success) {
+                            Get.back();
+                            Get.snackbar(
+                              'Profile Updated',
+                              'Your profile details have been saved successfully!',
+                              backgroundColor: Colors.green,
+                              colorText: Colors.white,
+                              snackPosition: SnackPosition.TOP,
+                              duration: const Duration(seconds: 3),
+                              icon: const Icon(Icons.check_circle_outline_rounded, color: Colors.white),
+                            );
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                    elevation: 3,
+                    shadowColor: AppColors.primaryColor.withOpacity(0.35),
+                  ),
+                  child: authController.isLoading.value
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                        )
+                      : const Text("Save Changes", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              )),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 }

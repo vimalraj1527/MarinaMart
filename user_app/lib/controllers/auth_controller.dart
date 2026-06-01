@@ -16,6 +16,25 @@ class AuthController extends GetxController {
   final TextEditingController emailController = TextEditingController(text: 'rvimalrajravi@gmail.com');
   final TextEditingController passwordController = TextEditingController(text: 'User@2026');
 
+  final RxMap<String, dynamic> currentUser = <String, dynamic>{}.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadUser();
+  }
+
+  void _loadUser() {
+    String? userStr = _storage.getUser();
+    if (userStr != null) {
+      try {
+        currentUser.value = jsonDecode(userStr);
+      } catch (e) {
+        print("Error decoding user in AuthController: $e");
+      }
+    }
+  }
+
   Future<void> login() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -44,6 +63,7 @@ class AuthController extends GetxController {
         if (data.containsKey('access_token')) {
           await _storage.setToken(data['access_token']);
           await _storage.setUser(jsonEncode(data['user']));
+          currentUser.value = data['user'] ?? {};
           
           Get.offAllNamed('/login_success', arguments: data['user']?['name'] ?? 'Authorized User');
         } else {
@@ -106,6 +126,7 @@ class AuthController extends GetxController {
         final data = jsonDecode(response.body);
         await _storage.setToken(data['access_token']);
         await _storage.setUser(jsonEncode(data['user']));
+        currentUser.value = data['user'] ?? {};
         Get.offAllNamed('/home');
         Get.snackbar('Registry Complete', 'Welcome to the platform!', 
             backgroundColor: Colors.green, colorText: Colors.white);
@@ -130,6 +151,7 @@ class AuthController extends GetxController {
   void logout() async {
     try {
       await _storage.clearAll();
+      currentUser.clear();
       
       if (Get.isRegistered<OrdersController>()) {
         Get.delete<OrdersController>(force: true);
@@ -143,6 +165,38 @@ class AuthController extends GetxController {
     } catch (e) {
       print("[CRITICAL] LOGOUT_DATA_FAILURE: $e");
       Get.offAllNamed('/login'); 
+    }
+  }
+
+  Future<bool> updateProfile(String name, String email, String phone) async {
+    try {
+      isLoading.value = true;
+      final userId = currentUser['id'];
+      if (userId == null) return false;
+
+      final response = await _apiService.patchData('/users/$userId', {
+        'name': name.trim(),
+        'email': email.trim(),
+        'phone': phone.trim(),
+      });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final updatedUser = jsonDecode(response.body);
+        await _storage.setUser(jsonEncode(updatedUser));
+        currentUser.value = updatedUser;
+        return true;
+      } else {
+        final errData = jsonDecode(response.body);
+        Get.snackbar('Error', errData['message'] ?? 'Failed to update profile.', 
+            backgroundColor: Colors.red, colorText: Colors.white);
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Connection failed. Try again.', 
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return false;
+    } finally {
+      isLoading.value = false;
     }
   }
 

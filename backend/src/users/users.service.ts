@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './entities/user.entity';
@@ -65,5 +65,35 @@ export class UsersService {
       totalValue: totalOrderValue,
       orders: userOrders
     };
+  }
+
+  async update(id: string, updateUserDto: any) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    
+    if (updateUserDto.email !== undefined && updateUserDto.email !== user.email) {
+      const existingEmail = await this.userRepository.findOne({ where: { email: updateUserDto.email } });
+      if (existingEmail) {
+        throw new BadRequestException('Email address is already in use by another account');
+      }
+    }
+
+    if (updateUserDto.phone !== undefined && updateUserDto.phone !== user.phone) {
+      const existingPhone = await this.userRepository.findOne({ where: { phone: updateUserDto.phone } });
+      if (existingPhone) {
+        throw new BadRequestException('Phone number is already in use by another account');
+      }
+    }
+
+    if (updateUserDto.name !== undefined) user.name = updateUserDto.name;
+    if (updateUserDto.email !== undefined) user.email = updateUserDto.email;
+    if (updateUserDto.phone !== undefined) user.phone = updateUserDto.phone;
+    if (updateUserDto.password !== undefined && updateUserDto.password !== '') {
+      user.password = updateUserDto.password;
+    }
+    
+    const savedUser = await this.userRepository.save(user);
+    const { password, ...result } = savedUser;
+    return result;
   }
 }

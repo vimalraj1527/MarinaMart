@@ -65,6 +65,23 @@ class ApiService extends GetxService {
     }
   }
 
+  // PATCH Request
+  Future<http.Response> patchData(String uri, dynamic body) async {
+    try {
+      final fullUrl = AppConstants.baseUrl + uri;
+      print("[API] PATCH: $fullUrl");
+      final response = await http.patch(
+        Uri.parse(fullUrl),
+        body: jsonEncode(body),
+        headers: _getHeaders(),
+      ).timeout(const Duration(seconds: 15));
+      return response;
+    } catch (e) {
+      print("[CRITICAL] API_PATCH_ERROR: $e at $uri");
+      return http.Response(jsonEncode({'message': 'Unreachable: $e'}), 503);
+    }
+  }
+
   // DELETE Request
   Future<http.Response> deleteData(String uri) async {
     try {
