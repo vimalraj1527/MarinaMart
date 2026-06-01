@@ -10,10 +10,13 @@ import '../../widgets/sticky_cart_bar.dart';
 import '../../widgets/add_to_cart_button.dart';
 
 class ProductDetailsView extends StatelessWidget {
-  final Product product = Get.arguments;
+  final Product product;
+  final String heroTag;
   final CartController cartController = Get.find();
 
-  ProductDetailsView({super.key});
+  ProductDetailsView({super.key})
+      : product = Get.arguments is Map ? (Get.arguments as Map)['product'] as Product : Get.arguments as Product,
+        heroTag = Get.arguments is Map ? (Get.arguments as Map)['heroTag'] as String : 'product_${(Get.arguments as Product).id}';
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +139,7 @@ class ProductDetailsView extends StatelessWidget {
       ),
       flexibleSpace: FlexibleSpaceBar(
         background: Hero(
-          tag: 'product_${product.id}',
+          tag: heroTag,
           child: Container(
             color: Colors.white,
             child: Stack(

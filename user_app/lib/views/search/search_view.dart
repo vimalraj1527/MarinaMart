@@ -19,6 +19,7 @@ class _SearchViewState extends State<SearchView> {
   final ProductSearchController controller = Get.put(ProductSearchController());
   final TextEditingController textController = TextEditingController();
   final FocusNode focusNode = FocusNode();
+  bool _isNavigatingToDetails = false;
 
   final List<String> trendingSearches = [
     "Milk",
@@ -42,6 +43,9 @@ class _SearchViewState extends State<SearchView> {
 
     // Check if voice search should be triggered immediately
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Clear old search data to ensure it opens fresh
+      controller.clearSearch();
+      
       final args = Get.arguments;
       if (args != null && args is Map && args['triggerVoice'] == true) {
         _showVoiceSearchBottomSheet(context);
@@ -381,8 +385,22 @@ class _SearchViewState extends State<SearchView> {
           itemBuilder: (context, index) {
             final product = controller.searchResults[index];
             return GestureDetector(
-              onTap: () => Get.toNamed('/product-details', arguments: product),
-              child: _buildResultCard(product),
+              onTap: () {
+                setState(() {
+                  _isNavigatingToDetails = true;
+                });
+                Get.toNamed('/product-details', arguments: {
+                  'product': product,
+                  'heroTag': "search_prod_${product.id}",
+                })?.then((_) {
+                  if (mounted) {
+                    setState(() {
+                      _isNavigatingToDetails = false;
+                    });
+                  }
+                });
+              },
+              child: _buildResultCard(product, _isNavigatingToDetails),
             );
           },
         );
@@ -482,7 +500,7 @@ class _SearchViewState extends State<SearchView> {
     return AppColors.primaryColor;
   }
 
-  Widget _buildResultCard(Product product) {
+  Widget _buildResultCard(Product product, bool heroEnabled) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -510,12 +528,15 @@ class _SearchViewState extends State<SearchView> {
               child: Stack(
                 children: [
                   Center(
-                    child: Hero(
-                      tag: "search_prod_${product.id}",
-                      child: Image.network(
-                        product.image, 
-                        fit: BoxFit.contain, 
-                        errorBuilder: (c, e, s) => const Icon(Icons.shopping_bag_rounded, size: 40, color: Colors.grey)
+                    child: HeroMode(
+                      enabled: heroEnabled,
+                      child: Hero(
+                        tag: "search_prod_${product.id}",
+                        child: Image.network(
+                          product.image, 
+                          fit: BoxFit.contain, 
+                          errorBuilder: (c, e, s) => const Icon(Icons.shopping_bag_rounded, size: 40, color: Colors.grey)
+                        ),
                       ),
                     ),
                   ),
