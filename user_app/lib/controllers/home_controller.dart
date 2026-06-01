@@ -1,22 +1,39 @@
 import 'dart:convert';
 import 'package:get/get.dart';
 import '../services/api_service.dart';
+import '../services/storage_service.dart';
 import '../utils/app_constants.dart';
 import '../models/product_model.dart';
 import '../models/category_model.dart';
 
 class HomeController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
+  final StorageService _storage = Get.find<StorageService>();
 
   final RxList<Category> categories = <Category>[].obs;
   final RxList banners = [].obs;
   final RxList<Product> products = <Product>[].obs;
   final RxBool isLoading = false.obs;
+  final RxSet<String> favorites = <String>{}.obs;
 
   @override
   void onInit() {
     super.onInit();
+    favorites.addAll(_storage.getFavorites());
     fetchHomeData();
+  }
+
+  void toggleFavorite(String productId) {
+    if (favorites.contains(productId)) {
+      favorites.remove(productId);
+    } else {
+      favorites.add(productId);
+    }
+    _storage.saveFavorites(favorites.toList());
+  }
+
+  bool isFavorite(String productId) {
+    return favorites.contains(productId);
   }
 
   Future<void> fetchHomeData() async {

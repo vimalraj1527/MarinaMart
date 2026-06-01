@@ -71,4 +71,13 @@ class StorageService {
   List<String> getRecentSearches() {
     return _prefs.getStringList('recent_searches') ?? [];
   }
+
+  // Favorites Management
+  Future<void> saveFavorites(List<String> favIds) async {
+    await _prefs.setStringList('favorite_products', favIds);
+  }
+
+  List<String> getFavorites() {
+    return _prefs.getStringList('favorite_products') ?? [];
+  }
 }
