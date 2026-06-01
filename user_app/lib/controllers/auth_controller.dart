@@ -168,17 +168,22 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<bool> updateProfile(String name, String email, String phone) async {
+  Future<bool> updateProfile(String name, String email, String phone, {String? birthday}) async {
     try {
       isLoading.value = true;
       final userId = currentUser['id'];
       if (userId == null) return false;
 
-      final response = await _apiService.patchData('/users/$userId', {
+      final Map<String, dynamic> body = {
         'name': name.trim(),
         'email': email.trim(),
         'phone': phone.trim(),
-      });
+      };
+      if (birthday != null) {
+        body['birthday'] = birthday;
+      }
+
+      final response = await _apiService.patchData('/users/$userId', body);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final updatedUser = jsonDecode(response.body);
@@ -197,6 +202,21 @@ class AuthController extends GetxController {
       return false;
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> refreshUserProfile() async {
+    try {
+      final userId = currentUser['id'];
+      if (userId == null) return;
+      final response = await _apiService.getData('/users/$userId');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final userData = jsonDecode(response.body);
+        await _storage.setUser(jsonEncode(userData));
+        currentUser.value = userData;
+      }
+    } catch (e) {
+      print("Error refreshing user profile: $e");
     }
   }
 

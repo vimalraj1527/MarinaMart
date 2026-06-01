@@ -9,6 +9,7 @@ import 'views/splash/splash_view.dart';
 import 'views/auth/login_view.dart';
 import 'views/auth/login_success_view.dart';
 import 'views/user_info/profile_view.dart';
+import 'views/wallet/wallet_view.dart';
 import 'views/order/orders_view.dart';
 import 'views/address/address_list_view.dart';
 import 'views/payment/payment_methods_view.dart';
@@ -89,6 +90,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/login_success', page: () => const LoginSuccessView()),
         GetPage(name: '/home', page: () => const MainShellView()),
         GetPage(name: '/profile', page: () => const ProfileView()),
+        GetPage(name: '/wallet', page: () => const WalletView()),
         GetPage(name: '/orders', page: () => const OrdersView()),
         GetPage(name: '/addresses', page: () => const AddressListView()),
         GetPage(name: '/payments', page: () => const PaymentMethodsView()),

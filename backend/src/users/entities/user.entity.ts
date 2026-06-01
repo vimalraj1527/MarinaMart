@@ -39,6 +39,12 @@ export class User {
   @Column({ nullable: true })
   avatar: string;
 
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  walletBalance: number;
+
+  @Column({ nullable: true })
+  birthday: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

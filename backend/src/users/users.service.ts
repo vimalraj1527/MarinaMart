@@ -88,6 +88,7 @@ export class UsersService {
     if (updateUserDto.name !== undefined) user.name = updateUserDto.name;
     if (updateUserDto.email !== undefined) user.email = updateUserDto.email;
     if (updateUserDto.phone !== undefined) user.phone = updateUserDto.phone;
+    if (updateUserDto.birthday !== undefined) user.birthday = updateUserDto.birthday;
     if (updateUserDto.password !== undefined && updateUserDto.password !== '') {
       user.password = updateUserDto.password;
     }

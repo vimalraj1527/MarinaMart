@@ -1,9 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/theme_controller.dart';
-import '../../services/storage_service.dart';
 import '../../utils/app_colors.dart';
 
 class ProfileView extends StatelessWidget {
@@ -87,24 +85,36 @@ class ProfileView extends StatelessWidget {
               color: Colors.white,
               child: Column(
                 children: [
-                  _buildMenuItem(
-                    Icons.account_balance_wallet_outlined, 
-                    "My Wallet", 
-                    subtitle: "₹0.00 Balance",
-                    trailingText: "ADD MONEY",
-                    onTap: () {
-                      Get.snackbar("Wallet", "Wallet feature coming soon!", backgroundColor: Colors.black87, colorText: Colors.white);
-                    }
-                  ),
+                  Obx(() {
+                    final balance = double.tryParse(authController.currentUser['walletBalance']?.toString() ?? '0') ?? 0.0;
+                    return _buildMenuItem(
+                      Icons.account_balance_wallet_outlined, 
+                      "My Wallet", 
+                      subtitle: "₹${balance.toStringAsFixed(2)} Balance",
+                      trailingText: "ADD MONEY",
+                      onTap: () => Get.toNamed('/wallet'),
+                    );
+                  }),
                   const Divider(height: 1, indent: 60),
-                  _buildMenuItem(
-                    Icons.cake_outlined, 
-                    "Birthday Details", 
-                    subtitle: "Add birthday for special surprise gifts!",
-                    onTap: () {
-                      Get.snackbar("Birthday", "Birthday setup coming soon!", backgroundColor: Colors.black87, colorText: Colors.white);
+                  Obx(() {
+                    final birthday = authController.currentUser['birthday'];
+                    String subtitleText = "Add birthday for special surprise gifts!";
+                    if (birthday != null && birthday.toString().isNotEmpty) {
+                      try {
+                        final parsed = DateTime.parse(birthday.toString());
+                        final months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                        subtitleText = "Birthday: ${parsed.day} ${months[parsed.month - 1]} ${parsed.year}";
+                      } catch (_) {
+                        subtitleText = "Birthday: $birthday";
+                      }
                     }
-                  ),
+                    return _buildMenuItem(
+                      Icons.cake_outlined, 
+                      "Birthday Details", 
+                      subtitle: subtitleText,
+                      onTap: () => _showBirthdayPicker(context, authController),
+                    );
+                  }),
                 ],
               ),
             ),
@@ -363,5 +373,53 @@ class ProfileView extends StatelessWidget {
       ),
       isScrollControlled: true,
     );
+  }
+
+  void _showBirthdayPicker(BuildContext context, AuthController authController) async {
+    final birthdayStr = authController.currentUser['birthday'];
+    DateTime initialDate = DateTime.now().subtract(const Duration(days: 365 * 18));
+    if (birthdayStr != null && birthdayStr.toString().isNotEmpty) {
+      try {
+        initialDate = DateTime.parse(birthdayStr.toString());
+      } catch (_) {}
+    }
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF6C5CE7), // header background color
+              onPrimary: Colors.white, // header text color
+              onSurface: Colors.black87, // body text color
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      final formattedDate = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      bool success = await authController.updateProfile(
+        authController.currentUser['name'] ?? '',
+        authController.currentUser['email'] ?? '',
+        authController.currentUser['phone'] ?? '',
+        birthday: formattedDate,
+      );
+      if (success) {
+        Get.snackbar(
+          'Birthday Updated',
+          'Your birthday details have been saved for surprise gifts!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    }
   }
 }

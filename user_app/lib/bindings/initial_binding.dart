@@ -7,6 +7,7 @@ import '../controllers/settings_controller.dart';
 import '../controllers/theme_controller.dart';
 
 import '../controllers/main_shell_controller.dart';
+import '../controllers/wallet_controller.dart';
 
 class InitialBinding extends Bindings {
   @override
@@ -22,5 +23,6 @@ class InitialBinding extends Bindings {
     Get.put(CartController(), permanent: true);
     Get.put(AuthController(), permanent: true);
     Get.put(SettingsController(), permanent: true);
+    Get.put(WalletController(), permanent: true);
   }
 }

@@ -1,24 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft,
-  User,
   Phone,
   Mail,
   ShoppingBag,
   IndianRupee,
   Calendar,
-  Box,
-  MapPin,
   CreditCard,
-  CheckCircle2,
-  Clock,
   ShieldCheck,
   Ban,
   MessageSquare,
   Loader2,
   Package,
-  ExternalLink
+  Cake,
+  Wallet
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../services/api';
@@ -129,6 +125,28 @@ export default function CustomerDetailsPage() {
                     <div>
                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-loose">Mobile Contact</p>
                        <p className="font-bold text-slate-900 tracking-tight">{customer.phone || 'Not Linked'}</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-3xl border border-slate-100">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400">
+                       <Wallet className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <div>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-loose">Wallet Balance</p>
+                       <p className="font-bold text-slate-900 tracking-tight">₹{Number(customer.walletBalance || 0).toLocaleString()}</p>
+                    </div>
+                 </div>
+                 <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-3xl border border-slate-100">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400">
+                       <Cake className="w-5 h-5 text-emerald-500" />
+                    </div>
+                    <div>
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-loose">Birthday Details</p>
+                       <p className="font-bold text-slate-900 tracking-tight">
+                         {customer.birthday 
+                           ? new Date(customer.birthday).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) 
+                           : 'Not Provided'}
+                       </p>
                     </div>
                  </div>
                  <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-3xl border border-slate-100">

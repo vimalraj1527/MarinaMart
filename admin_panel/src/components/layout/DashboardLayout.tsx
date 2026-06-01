@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, Link } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -12,7 +12,9 @@ import {
   TrendingUp,
   ShoppingBag as OrderIcon,
   Bell,
-  Clock
+  Clock,
+  Wallet,
+  Gift
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
@@ -116,7 +118,7 @@ export default function DashboardLayout() {
           </div>
         </Link>
 
-        <nav className="flex-1 mt-6">
+        <nav className="flex-1 mt-6 overflow-y-auto">
           <SidebarItem icon={LayoutDashboard} label="Dashboard" path="/" />
           <SidebarItem icon={TrendingUp} label="Revenue" path="/revenue" />
           <SidebarItem icon={Package} label="Products" path="/products" />
@@ -124,6 +126,8 @@ export default function DashboardLayout() {
           <SidebarItem icon={Layers} label="Categories" path="/categories" />
           <SidebarItem icon={ShoppingBag} label="Orders" path="/orders" />
           <SidebarItem icon={Users} label="Customers" path="/customers" />
+          <SidebarItem icon={Wallet} label="Wallet Approvals" path="/wallet-requests" />
+          <SidebarItem icon={Gift} label="Wallet Coupons" path="/wallet-coupons" />
           <SidebarItem icon={Truck} label="Riders Fleet" path="/riders" />
           <SidebarItem icon={Settings} label="Settings" path="/settings" />
         </nav>
