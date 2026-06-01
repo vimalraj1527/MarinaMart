@@ -6,6 +6,8 @@ import '../controllers/auth_controller.dart';
 import '../controllers/settings_controller.dart';
 import '../controllers/theme_controller.dart';
 
+import '../controllers/main_shell_controller.dart';
+
 class InitialBinding extends Bindings {
   @override
   void dependencies() {
@@ -15,6 +17,7 @@ class InitialBinding extends Bindings {
     
     // Controllers setup
     Get.put(ThemeController(), permanent: true);
+    Get.put(MainShellController(), permanent: true);
     Get.put(LocationController(), permanent: true);
     Get.put(CartController(), permanent: true);
     Get.put(AuthController(), permanent: true);

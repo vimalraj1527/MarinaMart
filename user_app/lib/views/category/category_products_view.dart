@@ -21,7 +21,7 @@ class _CategoryProductsViewState extends State<CategoryProductsView> {
   void initState() {
     super.initState();
     category = Get.arguments;
-    controller.searchByCategory(category.id);
+    controller.searchByCategory(category.name);
   }
 
   @override

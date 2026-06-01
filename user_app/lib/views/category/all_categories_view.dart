@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/home_controller.dart';
+import '../../controllers/main_shell_controller.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 
@@ -42,7 +43,13 @@ class _AllCategoriesViewState extends State<AllCategoriesView> with TickerProvid
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 22),
-          onPressed: () => Get.back(),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Get.back();
+            } else {
+              Get.find<MainShellController>().changeTab(0);
+            }
+          },
         ),
         flexibleSpace: ClipRRect(
           child: BackdropFilter(

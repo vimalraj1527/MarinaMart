@@ -498,13 +498,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 
                 return GestureDetector(
                   onTap: () {
-                    final catName = cat.name.toLowerCase();
-                    final catProducts = controller.products.where((p) {
-                      final pCat = p.category.toLowerCase();
-                      bool isDairyMatch = (catName.contains("dairy") || catName.contains("diary")) && (pCat.contains("dairy") || pCat.contains("diary"));
-                      return isDairyMatch || pCat.contains(catName) || catName.contains(pCat);
-                    }).toList();
-                    Get.toNamed('/product-list', arguments: catProducts, parameters: {'title': cat.name});
+                    Get.toNamed('/product-list', parameters: {'title': cat.name});
                   },
                   child: Container(
                     decoration: BoxDecoration(

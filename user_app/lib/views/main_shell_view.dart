@@ -8,6 +8,8 @@ import 'category/all_categories_view.dart';
 import 'search/search_view.dart';
 import 'user_info/profile_view.dart';
 
+import '../controllers/main_shell_controller.dart';
+
 class MainShellView extends StatefulWidget {
   const MainShellView({super.key});
 
@@ -17,8 +19,8 @@ class MainShellView extends StatefulWidget {
 
 class _MainShellViewState extends State<MainShellView>
     with TickerProviderStateMixin {
-  int _selectedIndex = 0;
   final CartController _cartController = Get.find<CartController>();
+  final MainShellController _shellController = Get.find<MainShellController>();
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -50,8 +52,8 @@ class _MainShellViewState extends State<MainShellView>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _pages),
+    return Obx(() => Scaffold(
+      body: IndexedStack(index: _shellController.selectedIndex.value, children: _pages),
       floatingActionButton: ScaleTransition(
         scale: _pulseAnimation,
         child: Container(
@@ -75,58 +77,56 @@ class _MainShellViewState extends State<MainShellView>
             elevation: 0,
             highlightElevation: 0,
             shape: const CircleBorder(),
-            child: Obx(
-              () => Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Center(
-                    child: Lottie.network(
-                      'https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json',
-                      width: 32,
-                      height: 32,
-                      errorBuilder: (c, e, s) => const Icon(
-                        Icons.shopping_basket_rounded,
-                        color: Colors.white,
-                        size: 28,
-                      ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Center(
+                  child: Lottie.network(
+                    'https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json',
+                    width: 32,
+                    height: 32,
+                    errorBuilder: (c, e, s) => const Icon(
+                      Icons.shopping_basket_rounded,
+                      color: Colors.white,
+                      size: 28,
                     ),
                   ),
-                  if (_cartController.cartItems.isNotEmpty)
-                    Positioned(
-                      right: -4,
-                      top: -4,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 5,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 20,
-                          minHeight: 20,
-                        ),
-                        child: Center(
-                          child: Text(
-                            "${_cartController.totalItems}",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                            ),
+                ),
+                if (_cartController.cartItems.isNotEmpty)
+                  Positioned(
+                    right: -4,
+                    top: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 5,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 20,
+                        minHeight: 20,
+                      ),
+                      child: Center(
+                        child: Text(
+                          "${_cartController.totalItems}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
         ),
@@ -153,13 +153,13 @@ class _MainShellViewState extends State<MainShellView>
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildNavItem(int index, IconData icon, String label) {
-    bool isSelected = _selectedIndex == index;
+    bool isSelected = _shellController.selectedIndex.value == index;
     return InkWell(
-      onTap: () => setState(() => _selectedIndex = index),
+      onTap: () => _shellController.changeTab(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

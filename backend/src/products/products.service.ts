@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, ILike, Any } from 'typeorm';
+import { Repository, ILike } from 'typeorm';
 import { Product } from './entities/product.entity';
 
 @Injectable()
@@ -11,28 +11,47 @@ export class ProductsService {
   ) {}
 
   async findAll(category?: string, search?: string, trending?: boolean) {
-    const where: any = { isAvailable: true };
-    
+    const baseWhere: any = { isAvailable: true };
+    if (trending) baseWhere.isTrending = true;
+    if (search) baseWhere.name = ILike(`%${search}%`);
+
     if (category) {
       const cat = category.toLowerCase();
+      
       // Handle the common "Fruits & Vegetables" grouping vs individual "Fruits" or "Vegetables"
       if (cat.includes("fruit") || cat.includes("veg")) {
-         where.category = Any([ILike('%fruit%'), ILike('%veg%')]);
-      } else if (cat.includes("dairy") || cat.includes("diary") || cat.includes("milk")) {
-         where.category = Any([ILike('%dairy%'), ILike('%diary%'), ILike('%milk%'), ILike('%bread%'), ILike('%egg%')]);
-      } else {
-         where.category = ILike(`%${category}%`);
+        return await this.productRepository.find({
+          where: [
+            { ...baseWhere, category: ILike('%fruit%') },
+            { ...baseWhere, category: ILike('%veg%') }
+          ],
+          order: { createdAt: 'DESC' },
+        });
       }
-    }
-    
-    if (trending) where.isTrending = true;
-    
-    if (search) {
-      where.name = ILike(`%${search}%`);
+      
+      // Handle Dairy, Bread & Eggs grouping
+      if (cat.includes("dairy") || cat.includes("diary") || cat.includes("milk")) {
+        return await this.productRepository.find({
+          where: [
+            { ...baseWhere, category: ILike('%dairy%') },
+            { ...baseWhere, category: ILike('%diary%') },
+            { ...baseWhere, category: ILike('%milk%') },
+            { ...baseWhere, category: ILike('%bread%') },
+            { ...baseWhere, category: ILike('%egg%') }
+          ],
+          order: { createdAt: 'DESC' },
+        });
+      }
+
+      // Default single category match
+      return await this.productRepository.find({
+        where: { ...baseWhere, category: ILike(`%${category}%`) },
+        order: { createdAt: 'DESC' },
+      });
     }
 
     return await this.productRepository.find({
-      where,
+      where: baseWhere,
       order: { createdAt: 'DESC' },
     });
   }

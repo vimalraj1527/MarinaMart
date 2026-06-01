@@ -116,7 +116,7 @@ class ProductSearchController extends GetxController {
       // Save query to recent searches
       addRecentSearch(query);
       
-      final response = await _apiService.getData('/products?search=$query');
+      final response = await _apiService.getData('/products?search=${Uri.encodeComponent(query)}');
       
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body);
@@ -131,11 +131,11 @@ class ProductSearchController extends GetxController {
     }
   }
 
-  void searchByCategory(String categoryId) async {
+  void searchByCategory(String categoryName) async {
     try {
       isLoading(true);
       searchQuery(''); // Clear general search query
-      final response = await _apiService.getData('/products?categoryId=$categoryId');
+      final response = await _apiService.getData('/products?category=${Uri.encodeComponent(categoryName)}');
       
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body);

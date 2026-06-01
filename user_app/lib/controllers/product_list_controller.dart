@@ -18,7 +18,7 @@ class ProductListController extends GetxController {
       // We pass the category name as a query param to the backend
       final query = category.toLowerCase().contains("dairy") || category.toLowerCase().contains("diary") ? "dairy" : category;
       
-      final response = await _apiService.getData("${AppConstants.productsUrl}?category=$query");
+      final response = await _apiService.getData("${AppConstants.productsUrl}?category=${Uri.encodeComponent(query)}");
       
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
