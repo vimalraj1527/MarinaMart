@@ -27,7 +27,7 @@ class _CheckoutViewState extends State<CheckoutView> {
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   String _paymentMethod = "Cash on Delivery";
-  String _deliveryType = "Instant";
+  String _deliveryType = "Scheduled";
   DateTime? _scheduledDateTime;
   String? _selectedSlotLabel;
   bool _useWallet = false;
@@ -51,6 +51,13 @@ class _CheckoutViewState extends State<CheckoutView> {
 
     _nameController = TextEditingController(text: name);
     _phoneController = TextEditingController(text: phone);
+
+    // Automatically pre-select the first available slot for scheduled delivery
+    final availableSlots = _generateAvailableSlots();
+    if (availableSlots.isNotEmpty) {
+      _scheduledDateTime = availableSlots[0]['dateTime'];
+      _selectedSlotLabel = availableSlots[0]['label'];
+    }
 
     // Ensure we have the absolute latest pricing from backend
     _settings.fetchRemoteSettings();
@@ -209,6 +216,54 @@ class _CheckoutViewState extends State<CheckoutView> {
     );
   }
 
+  void _showInstantConfirmationDialog() {
+    Get.dialog(
+      AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.bolt, color: Colors.amber, size: 28),
+            SizedBox(width: 8),
+            Text(
+              "Switch to Instant?",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: const Text(
+          "Instant delivery has a delivery charge of ₹50 + ₹5/km. Free delivery thresholds do not apply to Instant delivery.\n\nAre you sure you want to proceed?",
+          style: TextStyle(height: 1.4),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+            },
+            child: const Text(
+              "Cancel",
+              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _deliveryType = "Instant";
+              });
+              Get.back();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text("Yes, Switch"),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
+  }
+
   double _calculateDeliveryFee(double subtotal) {
     if (_deliveryType == "Instant") {
       double distance = _locationController.getDistanceFromStore();
@@ -320,26 +375,6 @@ class _CheckoutViewState extends State<CheckoutView> {
                 child: Column(
                   children: [
                     RadioListTile(
-                      value: "Instant",
-                      groupValue: _deliveryType,
-                      title: const Text(
-                        "Instant Delivery",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        "₹${_settings.instantBaseFee.value.toInt()} + ₹${_settings.perKmCharge.value.toInt()}/km • Nearby: ${distance.toStringAsFixed(1)} KM",
-                      ),
-                      secondary: const Icon(
-                        Icons.bolt,
-                        color: Colors.amber,
-                        size: 32,
-                      ),
-                      activeColor: AppColors.primaryColor,
-                      onChanged: (val) =>
-                          setState(() => _deliveryType = val.toString()),
-                    ),
-                    const Divider(indent: 72),
-                    RadioListTile(
                       value: "Scheduled",
                       groupValue: _deliveryType,
                       title: const Text(
@@ -382,6 +417,29 @@ class _CheckoutViewState extends State<CheckoutView> {
                           ),
                         ),
                       ),
+                    const Divider(indent: 72),
+                    RadioListTile(
+                      value: "Instant",
+                      groupValue: _deliveryType,
+                      title: const Text(
+                        "Instant Delivery",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        "₹${_settings.instantBaseFee.value.toInt()} + ₹${_settings.perKmCharge.value.toInt()}/km • Nearby: ${distance.toStringAsFixed(1)} KM",
+                      ),
+                      secondary: const Icon(
+                        Icons.bolt,
+                        color: Colors.amber,
+                        size: 32,
+                      ),
+                      activeColor: AppColors.primaryColor,
+                      onChanged: (val) {
+                        if (_deliveryType != "Instant") {
+                          _showInstantConfirmationDialog();
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),
