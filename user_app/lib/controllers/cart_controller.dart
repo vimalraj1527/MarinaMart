@@ -96,33 +96,39 @@ class CartController extends GetxController {
       final response = await _apiService.postData(AppConstants.ordersUrl, orderData);
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        clearCart();
+        Get.offNamed('/order-success');
+        Future.delayed(const Duration(milliseconds: 500), () {
+          clearCart();
+        });
         try {
           final AuthController authController = Get.find<AuthController>();
-          await authController.refreshUserProfile();
+          authController.refreshUserProfile();
         } catch (e) {
           print("Error refreshing user profile after order placement: $e");
         }
-        Get.offNamed('/order-success');
       } else {
         // Even if server fails, we'll simulate success for today's demo if it's a 4xx error (offline/dev mode)
         if (response.statusCode >= 400 && response.statusCode < 500) {
-           clearCart();
+           Get.offNamed('/order-success');
+           Future.delayed(const Duration(milliseconds: 500), () {
+             clearCart();
+           });
            try {
              final AuthController authController = Get.find<AuthController>();
-             await authController.refreshUserProfile();
+             authController.refreshUserProfile();
            } catch (e) {
              print("Error refreshing user profile after order placement: $e");
            }
-           Get.offNamed('/order-success');
         } else {
            Get.snackbar("Error", "Unable to place order. Try again later.", snackPosition: SnackPosition.BOTTOM);
         }
       }
     } catch (e) {
       Get.snackbar("Notice", "Order placed locally (Offline Mode)");
-      clearCart();
       Get.offNamed('/order-success');
+      Future.delayed(const Duration(milliseconds: 500), () {
+        clearCart();
+      });
     } finally {
       isLoading.value = false;
     }

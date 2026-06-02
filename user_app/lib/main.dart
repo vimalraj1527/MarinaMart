@@ -108,7 +108,12 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/product-list', page: () => const ProductListView(title: "Products")),
         GetPage(name: '/checkout', page: () => const CheckoutView()),
         GetPage(name: '/track-order', page: () => const TrackOrderView()),
-        GetPage(name: '/order-success', page: () => const OrderSuccessView()),
+        GetPage(
+          name: '/order-success',
+          page: () => const OrderSuccessView(),
+          transition: Transition.fadeIn,
+          transitionDuration: const Duration(milliseconds: 350),
+        ),
       ],
     );
   }

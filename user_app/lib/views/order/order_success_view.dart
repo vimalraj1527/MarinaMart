@@ -135,6 +135,8 @@ class SuccessCheckPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
+    if (radius <= 8) return;
+
     // Draw the green background circle
     final circlePaint = Paint()
       ..color = const Color(0xFF10B981) // Premium Emerald Green
