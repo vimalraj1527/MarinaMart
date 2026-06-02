@@ -16,6 +16,7 @@ class SignupView extends StatelessWidget {
     final TextEditingController emailController = TextEditingController();
     final TextEditingController phoneController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
+    final TextEditingController birthdayController = TextEditingController();
 
     return Obx(() {
       final activeTheme = themeController.currentTheme;
@@ -57,6 +58,37 @@ class SignupView extends StatelessWidget {
                 _buildTextField(phoneController, "Phone Number", Icons.phone_android_outlined),
                 const SizedBox(height: 16),
                 _buildTextField(passwordController, "Password", Icons.lock_outline, isPassword: true),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  birthdayController, 
+                  "Birthday (YYYY-MM-DD)", 
+                  Icons.cake_outlined, 
+                  readOnly: true,
+                  onTap: () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: ColorScheme.light(
+                              primary: AppColors.primaryColor,
+                              onPrimary: Colors.white,
+                              onSurface: Colors.black87,
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (pickedDate != null) {
+                      birthdayController.text = 
+                          "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
+                    }
+                  },
+                ),
                 
                 const SizedBox(height: 40),
                 
@@ -76,11 +108,17 @@ class SignupView extends StatelessWidget {
                                 backgroundColor: Colors.orange, colorText: Colors.white);
                             return;
                           }
+                          if (birthdayController.text.isEmpty) {
+                            Get.snackbar("Birthday Required", "Please select your birthday.",
+                                backgroundColor: Colors.orange, colorText: Colors.white);
+                            return;
+                          }
                           controller.register(
                             nameController.text,
                             emailController.text,
                             passwordController.text,
                             phoneVal,
+                            birthdayController.text,
                           );
                         },
                     style: ElevatedButton.styleFrom(
@@ -126,10 +164,19 @@ class SignupView extends StatelessWidget {
     });
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {bool isPassword = false}) {
+  Widget _buildTextField(
+    TextEditingController controller, 
+    hint, 
+    IconData icon, {
+    bool isPassword = false,
+    bool readOnly = false,
+    VoidCallback? onTap,
+  }) {
     return TextField(
       controller: controller,
       obscureText: isPassword,
+      readOnly: readOnly,
+      onTap: onTap,
       decoration: InputDecoration(
         hintText: hint,
         prefixIcon: Icon(icon, color: AppColors.primaryColor),

@@ -7,14 +7,18 @@ import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../controllers/auth_controller.dart';
 import '../../controllers/home_controller.dart';
 import '../../controllers/location_controller.dart';
+import '../../controllers/orders_controller.dart';
 import '../../controllers/settings_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../models/product_model.dart';
 import '../../widgets/add_to_cart_button.dart';
+import '../../widgets/birthday_greeting_overlay.dart';
+import '../../widgets/live_order_tracker.dart';
 import '../../services/storage_service.dart';
 
 class HomeView extends StatefulWidget {
@@ -28,7 +32,8 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   final PageController _bannerController = PageController();
   int _currentBanner = 0;
   Timer? _timer;
-  
+  bool _showBirthdayOverlay = false;
+
   late AnimationController _floatController;
   late AnimationController _pulseController;
 
@@ -50,10 +55,10 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    
+
     // Liquid Floating Animation for Categories
     _floatController = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
-    
+
     // Heartbeat Pulse Animation for Search Bar
     _pulseController = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
 
@@ -62,9 +67,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         _currentBanner++;
         if (_currentBanner > 2) _currentBanner = 0;
         _bannerController.animateToPage(
-          _currentBanner, 
-          duration: const Duration(milliseconds: 1200), 
-          curve: Curves.elasticOut, // Amazing springy bounce!
+          _currentBanner,
+          duration: const Duration(milliseconds: 1200),
+          curve: Curves.elasticOut,
         );
       }
     });
@@ -74,6 +79,15 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         setState(() {
           _currentKeywordIndex = (_currentKeywordIndex + 1) % _searchKeywords.length;
         });
+      }
+    });
+
+    // Check birthday and show greeting after a short delay
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      final authController = Get.find<AuthController>();
+      if (authController.isBirthdayToday) {
+        setState(() => _showBirthdayOverlay = true);
       }
     });
   }
@@ -92,9 +106,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final HomeController controller = Get.put(HomeController());
     final LocationController locationController = Get.find<LocationController>();
+    // Ensure OrdersController is registered so LiveOrderTracker can find it
+    if (!Get.isRegistered<OrdersController>()) Get.put(OrdersController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC), // Ultra premium soft background
+      backgroundColor: const Color(0xFFF7F9FC),
       body: Stack(
         children: [
           // Top Brand Header Background Gradient
@@ -117,7 +133,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               );
             }),
           ),
-          
+
           SafeArea(
             child: Column(
               children: [
@@ -139,6 +155,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         children: [
                           const SizedBox(height: 10),
                           _buildBanners(controller),
+                          // ── Swiggy-style live order tracker ──────────────
+                          const LiveOrderTracker(),
+                          // ─────────────────────────────────────────────────
                           _buildCategories(controller),
                           _buildSectionHeader("Trending Near You", onSeeAll: () => Get.toNamed('/product-list', arguments: controller.products, parameters: {'title': 'Trending Near You'}), icon: Icons.local_fire_department_rounded),
                           _buildHorizontalProducts(controller),
@@ -153,6 +172,15 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               ],
             ),
           ),
+
+          // ── Birthday Greeting Overlay ─────────────────────────────────────
+          if (_showBirthdayOverlay)
+            Positioned.fill(
+              child: BirthdayGreetingOverlay(
+                userName: Get.find<AuthController>().currentUser['name']?.toString() ?? 'Friend',
+                onClose: () => setState(() => _showBirthdayOverlay = false),
+              ),
+            ),
         ],
       ),
     );

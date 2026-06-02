@@ -15,6 +15,7 @@ class HomeController extends GetxController {
   final RxList<Product> products = <Product>[].obs;
   final RxBool isLoading = false.obs;
   final RxSet<String> favorites = <String>{}.obs;
+  final RxBool birthdayWishesShown = false.obs;
 
   @override
   void onInit() {

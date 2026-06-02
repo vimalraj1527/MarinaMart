@@ -18,6 +18,23 @@ class AuthController extends GetxController {
 
   final RxMap<String, dynamic> currentUser = <String, dynamic>{}.obs;
 
+  bool get isBirthdayToday {
+    final birthdayStr = currentUser['birthday']?.toString();
+    if (birthdayStr == null || birthdayStr.isEmpty) return false;
+    try {
+      final parts = birthdayStr.split('-');
+      if (parts.length < 3) return false;
+      final birthMonth = int.tryParse(parts[1]);
+      final birthDay = int.tryParse(parts[2]);
+      if (birthMonth == null || birthDay == null) return false;
+
+      final now = DateTime.now();
+      return now.month == birthMonth && now.day == birthDay;
+    } catch (e) {
+      return false;
+    }
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -106,8 +123,8 @@ class AuthController extends GetxController {
       ));
   }
 
-  Future<void> register(String name, String email, String password, String phone) async {
-    if (name.isEmpty || email.isEmpty || password.isEmpty || phone.isEmpty) {
+  Future<void> register(String name, String email, String password, String phone, String birthday) async {
+    if (name.isEmpty || email.isEmpty || password.isEmpty || phone.isEmpty || birthday.isEmpty) {
       Get.snackbar('Data Incomplete', 'Registry requirements not met.', 
           backgroundColor: Colors.orange, colorText: Colors.white);
       return;
@@ -120,6 +137,7 @@ class AuthController extends GetxController {
         'email': email.trim(),
         'password': password.trim(),
         'phone': phone.trim(),
+        'birthday': birthday.trim(),
       });
 
       if (response.statusCode == 201 || response.statusCode == 200) {

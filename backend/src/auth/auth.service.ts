@@ -42,6 +42,7 @@ export class AuthService {
         phone: user.phone,
         role: user.role,
         avatar: user.avatar,
+        birthday: user.birthday,
       },
     };
   }
