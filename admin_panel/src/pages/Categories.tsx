@@ -45,7 +45,8 @@ export default function CategoriesPage() {
   // Form State
   const [categoryForm, setCategoryForm] = useState({
     name: '',
-    image: 'https://placehold.co/400'
+    image: 'https://placehold.co/400',
+    isActive: true
   });
 
   const fetchCategories = async () => {
@@ -97,14 +98,15 @@ export default function CategoriesPage() {
     setEditingCategory(category);
     setCategoryForm({
       name: category.name,
-      image: category.image || 'https://placehold.co/400'
+      image: category.image || 'https://placehold.co/400',
+      isActive: category.isActive !== undefined ? category.isActive : true
     });
     setIsModalOpen(true);
   };
 
   const resetForm = () => {
     setEditingCategory(null);
-    setCategoryForm({ name: '', image: 'https://placehold.co/400' });
+    setCategoryForm({ name: '', image: 'https://placehold.co/400', isActive: true });
     setUploading(false);
   };
 
@@ -161,8 +163,10 @@ export default function CategoriesPage() {
              <div className="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center mb-6 overflow-hidden border border-slate-100">
                 <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
              </div>
-             <h3 className="text-xl font-bold text-slate-900 mb-1">{category.name}</h3>
-             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Active Category</p>
+             <h3 className="text-xl font-bold text-slate-900 mb-2">{category.name}</h3>
+             <span className={`inline-block text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-xl ${category.isActive ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400 bg-slate-100'}`}>
+               {category.isActive ? 'Active' : 'Inactive (Off)'}
+             </span>
           </motion.div>
         ))}
       </div>
@@ -206,6 +210,22 @@ export default function CategoriesPage() {
               label="Image URL (e.g. AWS S3)" icon={ImageIcon} placeholder="https://s3.aws.com/category-icon.png" 
               value={categoryForm.image} onChange={(e: any) => setCategoryForm({...categoryForm, image: e.target.value})}
             />
+            
+            {/* Active Switch Toggle */}
+            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+              <div>
+                <p className="text-sm font-bold text-slate-800">Active Status</p>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">Show or Hide this Category</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCategoryForm({...categoryForm, isActive: !categoryForm.isActive})}
+                className={`w-14 h-8 rounded-full transition-colors relative focus:outline-none ${categoryForm.isActive ? 'bg-emerald-600' : 'bg-slate-300'}`}
+              >
+                <span className={`absolute top-1 left-1 bg-white w-6 h-6 rounded-full transition-transform ${categoryForm.isActive ? 'translate-x-6' : ''}`} />
+              </button>
+            </div>
+
             {categoryForm.image && (
               <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 flex flex-col items-center gap-4">
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Photo Preview</p>

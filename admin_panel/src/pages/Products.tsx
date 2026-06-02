@@ -8,7 +8,8 @@ import {
   Archive, 
   Loader2,
   Image as ImageIcon,
-  UploadCloud
+  UploadCloud,
+  Edit2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Modal, Input, Select } from '../components/ui/LayoutComponents';
@@ -23,6 +24,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
   
   const categoryFilter = searchParams.get('category');
   
@@ -34,12 +36,12 @@ export default function ProductsPage() {
     try {
       setLoading(true);
       const [prodRes, catRes] = await Promise.all([
-        api.get('/products'),
+        api.get('/products?all=true'), // Fetch all products including disabled/Off ones
         api.get('/categories')
       ]);
       setProducts(prodRes.data);
       setCategories(catRes.data);
-      if (catRes.data.length > 0) {
+      if (catRes.data.length > 0 && !editingProduct) {
         setNewProduct(prev => ({...prev, category: catRes.data[0].name }));
       }
     } catch (err) {
@@ -58,10 +60,12 @@ export default function ProductsPage() {
     name: '',
     description: '',
     price: 0,
+    originalPrice: 0,
     category: '',
     unit: '1 kg',
     stock: 100,
-    images: [] as string[]
+    images: [] as string[],
+    isAvailable: true
   });
 
   useEffect(() => {
@@ -102,35 +106,45 @@ export default function ProductsPage() {
   };
 
   const resetForm = () => {
+    setEditingProduct(null);
     setNewProduct({
       name: '',
       description: '',
       price: 0,
+      originalPrice: 0,
       category: categories.length > 0 ? categories[0].name : '',
       unit: '1 kg',
       stock: 100,
-      images: []
+      images: [],
+      isAvailable: true
     });
     setImagePreview(null);
     setUploading(false);
   };
 
-  // Handle Add Product
-  const handleAddProduct = async () => {
+  // Handle Add/Edit Product
+  const handleSaveProduct = async () => {
     try {
       const payload = {
         ...newProduct,
         price: Number(newProduct.price),
-        stock: Number(newProduct.stock)
+        originalPrice: Number(newProduct.originalPrice || newProduct.price),
+        stock: Number(newProduct.stock),
+        isAvailable: Boolean(newProduct.isAvailable)
       };
       
-      await api.post('/products', payload);
+      if (editingProduct) {
+        await api.put(`/products/${editingProduct.id}`, payload);
+      } else {
+        await api.post('/products', payload);
+      }
+      
       setIsAddModalOpen(false);
       fetchData(); // Refresh List
       resetForm();
     } catch (err) {
-      console.error('Error adding product:', err);
-      alert('Failed to add product. Check backend connection.');
+      console.error('Error saving product:', err);
+      alert('Failed to save product. Check backend connection.');
     }
   };
 
@@ -143,6 +157,24 @@ export default function ProductsPage() {
     } catch (err) {
       console.error('Error deleting product:', err);
     }
+  };
+
+  // Open modal to edit product details
+  const openEditModal = (product: any) => {
+    setEditingProduct(product);
+    setNewProduct({
+      name: product.name,
+      description: product.description || '',
+      price: product.price,
+      originalPrice: product.originalPrice || product.price,
+      category: product.category,
+      unit: product.unit,
+      stock: product.stock,
+      images: product.images || [],
+      isAvailable: product.isAvailable !== undefined ? product.isAvailable : true
+    });
+    setImagePreview(product.images?.[0] || null);
+    setIsAddModalOpen(true);
   };
 
   return (
@@ -197,7 +229,7 @@ export default function ProductsPage() {
             <thead className="bg-slate-50 border-b border-slate-50">
                <tr>
                  <th className="px-8 py-6 text-xs font-bold uppercase tracking-wider text-slate-400">Product</th>
-                 <th className="px-8 py-6 text-xs font-bold uppercase tracking-wider text-slate-400">Price</th>
+                 <th className="px-8 py-6 text-xs font-bold uppercase tracking-wider text-slate-400">Price Details</th>
                  <th className="px-8 py-6 text-xs font-bold uppercase tracking-wider text-slate-400">Inventory</th>
                  <th className="px-8 py-6 text-xs font-bold uppercase tracking-wider text-slate-400">Actions</th>
                </tr>
@@ -217,17 +249,37 @@ export default function ProductsPage() {
                        </div>
                        <div>
                          <p className="font-bold text-slate-900">{product.name}</p>
-                         <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{product.category}</p>
+                         <div className="flex items-center gap-2 mt-1">
+                           <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{product.category}</p>
+                           <span className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${product.isAvailable ? 'text-emerald-600 bg-emerald-50' : 'text-rose-500 bg-rose-50'}`}>
+                             {product.isAvailable ? 'Active' : 'Off / Inactive'}
+                           </span>
+                         </div>
                        </div>
                     </div>
                   </td>
-                  <td className="px-8 py-6 font-bold text-slate-900">₹{product.price}</td>
+                  <td className="px-8 py-6">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-900">₹{product.price}</span>
+                      {product.originalPrice && product.originalPrice > product.price && (
+                        <span className="text-xs text-slate-400 line-through">₹{product.originalPrice}</span>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-8 py-6 font-bold text-slate-600">{product.stock} Units</td>
                   <td className="px-8 py-6">
                      <div className="flex gap-2">
                         <button 
+                          onClick={() => openEditModal(product)}
+                          className="p-3 hover:bg-emerald-50 text-slate-300 hover:text-emerald-600 rounded-2xl transition-all"
+                          title="Edit Product"
+                        >
+                           <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button 
                           onClick={() => handleDeleteProduct(product.id)}
                           className="p-3 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-2xl transition-all"
+                          title="Delete Product"
                         >
                            <Trash2 className="w-4 h-4" />
                         </button>
@@ -240,27 +292,48 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* --- ADD PRODUCT MODAL --- */}
-      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Create New Product">
+      {/* --- ADD / EDIT PRODUCT MODAL --- */}
+      <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={editingProduct ? "Modify Product Catalog" : "Create New Product"}>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
                <Input 
                  label="Product Name" icon={Type} placeholder="Organic Apples" 
                  value={newProduct.name} onChange={(e: any) => setNewProduct({...newProduct, name: e.target.value})}
                />
-               <Input 
-                 label="Description" icon={Type} placeholder="Fresh apples from the farm..." 
-                 value={newProduct.description} onChange={(e: any) => setNewProduct({...newProduct, description: e.target.value})}
-               />
+               <div className="space-y-2">
+                 <label className="text-sm font-bold text-slate-700 ml-1">Product Description</label>
+                 <textarea 
+                   rows={3}
+                   placeholder="Fresh apples from the farm..."
+                   className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-emerald-500 focus:bg-white text-sm font-medium transition-all"
+                   value={newProduct.description}
+                   onChange={(e: any) => setNewProduct({...newProduct, description: e.target.value})}
+                 />
+               </div>
                <div className="grid grid-cols-2 gap-4">
                   <Input 
-                    label="Price (₹)" icon={DollarSign} type="number" 
+                    label="Sale Price (₹)" icon={DollarSign} type="number" 
                     value={newProduct.price} onChange={(e: any) => setNewProduct({...newProduct, price: e.target.value})}
                   />
                   <Input 
-                    label="Unit" icon={Archive} placeholder="1 kg" 
-                    value={newProduct.unit} onChange={(e: any) => setNewProduct({...newProduct, unit: e.target.value})}
+                    label="Original Price (₹)" icon={DollarSign} type="number" 
+                    value={newProduct.originalPrice} onChange={(e: any) => setNewProduct({...newProduct, originalPrice: e.target.value})}
                   />
+               </div>
+
+               {/* Availability Toggle Switch */}
+               <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                 <div>
+                   <p className="text-sm font-bold text-slate-800">Available Status (On/Off)</p>
+                   <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">Show or Hide in User Catalog</p>
+                 </div>
+                 <button
+                   type="button"
+                   onClick={() => setNewProduct({...newProduct, isAvailable: !newProduct.isAvailable})}
+                   className={`w-14 h-8 rounded-full transition-colors relative focus:outline-none ${newProduct.isAvailable ? 'bg-emerald-600' : 'bg-slate-300'}`}
+                 >
+                   <span className={`absolute top-1 left-1 bg-white w-6 h-6 rounded-full transition-transform ${newProduct.isAvailable ? 'translate-x-6' : ''}`} />
+                 </button>
                </div>
             </div>
             <div className="space-y-6">
@@ -269,10 +342,16 @@ export default function ProductsPage() {
                  value={newProduct.category} onChange={(e: any) => setNewProduct({...newProduct, category: e.target.value})}
                  options={categories.map(cat => ({ label: cat.name, value: cat.name }))}
                />
-               <Input 
-                 label="Initial Stock" icon={Archive} type="number" 
-                 value={newProduct.stock} onChange={(e: any) => setNewProduct({...newProduct, stock: e.target.value})}
-               />
+               <div className="grid grid-cols-2 gap-4">
+                 <Input 
+                   label="Initial Stock" icon={Archive} type="number" 
+                   value={newProduct.stock} onChange={(e: any) => setNewProduct({...newProduct, stock: e.target.value})}
+                 />
+                 <Input 
+                   label="Unit" icon={Archive} placeholder="1 kg" 
+                   value={newProduct.unit} onChange={(e: any) => setNewProduct({...newProduct, unit: e.target.value})}
+                 />
+               </div>
                
                {/* Image Options */}
                <div className="space-y-4">
@@ -335,11 +414,11 @@ export default function ProductsPage() {
                </div>
 
                <button 
-                 onClick={handleAddProduct}
+                 onClick={handleSaveProduct}
                  disabled={uploading || !imagePreview || !newProduct.images[0]}
                  className="w-full py-5 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-100 mt-auto hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
                >
-                 {uploading ? 'Processing...' : 'Create Listing'}
+                 {uploading ? 'Processing...' : editingProduct ? 'Save Product Changes' : 'Create Listing'}
                </button>
             </div>
          </div>

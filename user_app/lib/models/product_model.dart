@@ -3,6 +3,7 @@ class Product {
   final String name;
   final String category;
   final double price;
+  final double? originalPrice;
   final String unit;
   final String image;
   final String? description;
@@ -13,6 +14,7 @@ class Product {
     required this.name,
     required this.category,
     required this.price,
+    this.originalPrice,
     required this.unit,
     required this.image,
     this.description,
@@ -31,6 +33,14 @@ class Product {
       parsedPrice = 0.0;
     }
 
+    double? parsedOriginalPrice;
+    var originalPriceValue = json['originalPrice'];
+    if (originalPriceValue is String) {
+      parsedOriginalPrice = double.tryParse(originalPriceValue);
+    } else if (originalPriceValue is num) {
+      parsedOriginalPrice = originalPriceValue.toDouble();
+    }
+
     // Image URL determination
     String imageUrl = '';
     if (json['images'] != null && json['images'] is List && json['images'].isNotEmpty) {
@@ -47,6 +57,7 @@ class Product {
       name: json['name'] ?? 'Catalogue Product',
       category: json['category'] ?? 'Uncategorized',
       price: parsedPrice,
+      originalPrice: parsedOriginalPrice,
       unit: json['unit'] ?? 'pcs',
       image: imageUrl,
       description: json['description'],

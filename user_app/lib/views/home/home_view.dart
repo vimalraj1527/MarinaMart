@@ -888,7 +888,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   }
 
   Widget _buildProductCard(Product product) {
-    final originalPrice = (product.price * 1.25).round();
+    final hasDiscount = product.originalPrice != null && product.originalPrice! > product.price;
+    final discountPercent = hasDiscount
+        ? ((product.originalPrice! - product.price) / product.originalPrice! * 100).round()
+        : 20; // fallback to default vibrant discount
+    final displayOriginalPrice = hasDiscount ? product.originalPrice!.round() : (product.price * 1.25).round();
     return GestureDetector(
       onTap: () => Get.toNamed('/product-details', arguments: product),
       child: Container(
@@ -898,7 +902,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.025),
+              color: Colors.black.withValues(alpha: 0.025),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -947,9 +951,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                           bottomRight: Radius.circular(8),
                         ),
                       ),
-                      child: const Text(
-                        "20% OFF",
-                        style: TextStyle(
+                      child: Text(
+                        "$discountPercent% OFF",
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 9,
                           fontWeight: FontWeight.w900,
@@ -972,7 +976,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         border: Border.all(color: const Color(0xFFF1F5F9), width: 0.5),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 2,
                             offset: const Offset(0, 1),
                           ),
@@ -1052,7 +1056,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                                 ),
                               ),
                               Text(
-                                "₹$originalPrice",
+                                "₹$displayOriginalPrice",
                                 style: TextStyle(
                                   fontSize: 10,
                                   color: Colors.grey.shade400,

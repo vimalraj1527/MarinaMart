@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Query, UseInterceptors, ClassSerializerInterceptor, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, Delete, Query, UseInterceptors, ClassSerializerInterceptor, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -14,8 +14,9 @@ export class ProductsController {
     @Query('category') category?: string,
     @Query('search') search?: string,
     @Query('trending') trending?: string,
+    @Query('all') all?: string,
   ) {
-    return await this.productsService.findAll(category, search, trending === 'true');
+    return await this.productsService.findAll(category, search, trending === 'true', all === 'true');
   }
 
   @Get(':id')
@@ -50,6 +51,11 @@ export class ProductsController {
   @Post()
   async create(@Body() createProductDto: any) {
     return await this.productsService.create(createProductDto);
+  }
+
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateProductDto: any) {
+    return await this.productsService.update(id, updateProductDto);
   }
 
   @Delete(':id')

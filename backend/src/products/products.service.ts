@@ -10,8 +10,11 @@ export class ProductsService {
     private readonly productRepository: Repository<Product>,
   ) {}
 
-  async findAll(category?: string, search?: string, trending?: boolean) {
-    const baseWhere: any = { isAvailable: true };
+  async findAll(category?: string, search?: string, trending?: boolean, allProducts = false) {
+    const baseWhere: any = {};
+    if (!allProducts) {
+      baseWhere.isAvailable = true;
+    }
     if (trending) baseWhere.isTrending = true;
     if (search) baseWhere.name = ILike(`%${search}%`);
 
@@ -65,8 +68,14 @@ export class ProductsService {
   async create(createProductDto: any) {
     const product = this.productRepository.create({
       ...createProductDto,
-      isAvailable: true // Ensure new products are visible by default
+      isAvailable: createProductDto.isAvailable !== undefined ? createProductDto.isAvailable : true
     });
+    return await this.productRepository.save(product);
+  }
+
+  async update(id: string, updateProductDto: any) {
+    const product = await this.findOne(id);
+    Object.assign(product, updateProductDto);
     return await this.productRepository.save(product);
   }
 
