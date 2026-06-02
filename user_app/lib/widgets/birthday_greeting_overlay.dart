@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import '../utils/app_colors.dart';
 
 // ─── Confetti Particle Model ───────────────────────────────────────────────────
 class _Particle {
@@ -130,22 +129,20 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
   late Animation<double> _starSpin;
 
   final List<Color> _confettiColors = const [
-    Color(0xFFFF6B6B),
-    Color(0xFFFFE66D),
-    Color(0xFF4ECDC4),
-    Color(0xFF45B7D1),
-    Color(0xFF96CEB4),
-    Color(0xFFFF8B94),
-    Color(0xFFA8E6CF),
-    Color(0xFFDDA0DD),
+    Color(0xFFD4AF37), // Metallic Gold
+    Color(0xFFFFDF00), // Bright Gold
+    Color(0xFFF3E5AB), // Mellow Champagne
+    Color(0xFFC0C0C0), // Silver
+    Color(0xFFFFFFFF), // White
+    Color(0xFFE5D3B3), // Champagne Gold
   ];
 
   final List<Color> _balloonColors = const [
-    Color(0xFFFF6B6B),
-    Color(0xFFFFAB40),
-    Color(0xFF66BB6A),
-    Color(0xFF42A5F5),
-    Color(0xFFAB47BC),
+    Color(0xFFD4AF37), // Gold
+    Color(0xFFE5D3B3), // Champagne
+    Color(0xFFB8860B), // Dark Goldenrod
+    Color(0xFFF3E5AB), // Soft Yellow Gold
+    Color(0xFFCD7F32), // Bronze
   ];
 
   @override
@@ -327,14 +324,15 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
 
   List<Widget> _buildRotatingStars() {
     final positions = [
-      const Offset(20, 120),
-      const Offset(40, 200),
-      const Offset(-30, 280),
+      const Offset(25, 130),
+      const Offset(50, 220),
+      const Offset(-40, 290),
+      const Offset(-20, 160),
     ];
 
     return positions.asMap().entries.map((e) {
       final offset = e.value;
-      final delay = e.key * 0.33;
+      final delay = e.key * 0.25;
       return Positioned(
         left: offset.dx < 0 ? null : offset.dx,
         right: offset.dx < 0 ? -offset.dx : null,
@@ -344,9 +342,9 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
           builder: (_, __) => Transform.rotate(
             angle: _starSpin.value + delay * 2 * math.pi,
             child: Icon(
-              Icons.star_rounded,
-              color: _confettiColors[e.key % _confettiColors.length].withOpacity(0.7),
-              size: 22 + e.key * 5.0,
+              Icons.auto_awesome_rounded,
+              color: _confettiColors[e.key % _confettiColors.length].withOpacity(0.85),
+              size: 24 + e.key * 6.0,
             ),
           ),
         ),
@@ -357,16 +355,15 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
   Widget _buildCard(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: const Color(0xFFFFD700), width: 2.5),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFFD700).withOpacity(0.3),
-            blurRadius: 40,
-            spreadRadius: 4,
-            offset: const Offset(0, 15),
+            color: const Color(0xFFD4AF37).withOpacity(0.25),
+            blurRadius: 30,
+            spreadRadius: 2,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -375,163 +372,242 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
         child: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFFFFFDF2), Color(0xFFFFF9E6)],
+              colors: [
+                Color(0xFFFFFDF6),
+                Color(0xFFFFF5E1),
+              ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
           ),
           child: Stack(
             children: [
-              // Decorative top arc
+              // Top Right Decorative Glowing Orb
               Positioned(
-                top: -40,
-                left: -40,
+                top: -60,
+                right: -60,
                 child: Container(
-                  width: 180,
-                  height: 180,
+                  width: 150,
+                  height: 150,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFFFD700).withOpacity(0.12),
+                    color: const Color(0xFFD4AF37).withOpacity(0.08),
                   ),
                 ),
               ),
+              // Bottom Left Decorative Glowing Orb
               Positioned(
-                top: -20,
-                right: -30,
+                bottom: -60,
+                left: -60,
                 child: Container(
-                  width: 130,
-                  height: 130,
+                  width: 150,
+                  height: 150,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFFFA500).withOpacity(0.08),
+                    color: const Color(0xFFD4AF37).withOpacity(0.08),
                   ),
                 ),
               ),
-
+              // Close button at top right
+              Positioned(
+                top: 16,
+                right: 16,
+                child: GestureDetector(
+                  onTap: widget.onClose,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD4AF37).withOpacity(0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.25)),
+                    ),
+                    child: const Icon(Icons.close_rounded, color: Color(0xFF805A00), size: 16),
+                  ),
+                ),
+              ),
               // Content
               Padding(
-                padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
+                padding: const EdgeInsets.fromLTRB(28, 36, 28, 32),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Cake emoji with glow
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFFFA500).withOpacity(0.4),
-                            blurRadius: 20,
-                            spreadRadius: 2,
+                    // Floating gold seal / cake holder
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          width: 110,
+                          height: 110,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFFD4AF37).withOpacity(0.08),
+                            border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.25), width: 1.5),
                           ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text('🎂', style: TextStyle(fontSize: 44)),
-                      ),
+                        ),
+                        Container(
+                          width: 90,
+                          height: 90,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: const Color(0xFFD4AF37).withOpacity(0.15),
+                            border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.4), width: 2),
+                          ),
+                        ),
+                        Container(
+                          width: 76,
+                          height: 76,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [Color(0xFFF3E5AB), Color(0xFFD4AF37)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                          ),
+                          child: const Center(
+                            child: Text('🎂', style: TextStyle(fontSize: 36)),
+                          ),
+                        ),
+                      ],
                     ),
-
-                    const SizedBox(height: 20),
-
-                    // Happy Birthday headline
+                    const SizedBox(height: 24),
+                    // Happy Birthday Text & Headline
                     FadeTransition(
                       opacity: _textFade,
                       child: Column(
                         children: [
-                          ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xFF8B6508), Color(0xFFB8860B), Color(0xFFCD9B1D)],
-                            ).createShader(bounds),
-                            child: const Text(
-                              '🎉 Happy Birthday!',
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
-                                fontFamily: 'Outfit',
-                              ),
-                              textAlign: TextAlign.center,
+                          const Text(
+                            "BLOOMARINA CELEBRATES YOU",
+                            style: TextStyle(
+                              color: Color(0xFF996515),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 3.0,
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            _firstName,
-                            style: const TextStyle(
-                              fontSize: 34,
+                          const Text(
+                            'Happy Birthday',
+                            style: TextStyle(
+                              fontSize: 32,
                               fontWeight: FontWeight.w900,
-                              color: Colors.black87,
+                              color: Color(0xFF2C220E),
                               letterSpacing: -0.5,
                               fontFamily: 'Outfit',
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 2),
+                          ShaderMask(
+                            shaderCallback: (bounds) => const LinearGradient(
+                              colors: [Color(0xFFD4AF37), Color(0xFFAA771C), Color(0xFFF3E5AB)],
+                            ).createShader(bounds),
+                            child: Text(
+                              _firstName,
+                              style: const TextStyle(
+                                fontSize: 42,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                                fontFamily: 'Outfit',
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
                           Container(
                             height: 1.5,
+                            width: 140,
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [Colors.transparent, Color(0xFFFFD700), Colors.transparent],
+                                colors: [
+                                  Colors.transparent,
+                                  Color(0xFFD4AF37),
+                                  Colors.transparent,
+                                ],
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
                           Text(
-                            'Wishing you a day filled with\nfreshness, happiness & amazing deals! 🛒✨',
+                            'Wishing you a spectacular year ahead filled\nwith health, joy & wonderful discoveries! ✨',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey.shade800,
+                              color: const Color(0xFF5D4A27),
                               fontWeight: FontWeight.w600,
                               height: 1.6,
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 8),
-                          // Sparkle row
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: ['🎁', '🎈', '🎊', '🎈', '🎁']
-                                .map((e) => Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                                      child: Text(e, style: const TextStyle(fontSize: 20)),
-                                    ))
-                                .toList(),
+                          const SizedBox(height: 20),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD4AF37).withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.3)),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text("🎁 ", style: TextStyle(fontSize: 16)),
+                                Text(
+                                  "Your Special Birthday Offer is Live!",
+                                  style: TextStyle(
+                                    color: Color(0xFF805A00),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: 24),
-
-                    // Close button
+                    const SizedBox(height: 28),
+                    // Action Button
                     SizedBox(
                       width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: widget.onClose,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryColor,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                          elevation: 6,
-                          shadowColor: AppColors.primaryColor.withOpacity(0.4),
-                        ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('🛍️ ', style: TextStyle(fontSize: 18)),
-                            Text(
-                              'Shop Birthday Treats!',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.3),
+                      height: 54,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFD4AF37), Color(0xFF996515)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF996515).withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
                             ),
                           ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: widget.onClose,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('🛍️  ', style: TextStyle(fontSize: 18)),
+                              Text(
+                                'Shop Birthday Treats',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
@@ -87,7 +88,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       }
     });
 
-    // Check birthday and show greeting after a short delay (limit to once per hour)
+    // Check birthday and show greeting after a short delay (limit to once per hour, bypass in debug mode)
     Future.delayed(const Duration(milliseconds: 800), () {
       if (!mounted) return;
       final authController = Get.find<AuthController>();
@@ -96,7 +97,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         final lastShown = storage.getLastBirthdayGreetingTime();
         final now = DateTime.now().millisecondsSinceEpoch;
         
-        if (lastShown == null || (now - lastShown) >= 3600000) {
+        if (kDebugMode || lastShown == null || (now - lastShown) >= 3600000) {
           setState(() => _showBirthdayOverlay = true);
           storage.setLastBirthdayGreetingTime(now);
         }
