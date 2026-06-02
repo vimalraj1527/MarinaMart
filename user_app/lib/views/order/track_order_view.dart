@@ -522,7 +522,7 @@ class _TrackOrderViewState extends State<TrackOrderView>
       children: [
         Expanded(
           child: GestureDetector(
-            onTap: () => Get.snackbar('Support', 'Connecting to support...', backgroundColor: Colors.white, colorText: Colors.black87, snackPosition: SnackPosition.BOTTOM),
+            onTap: () => Get.toNamed('/direct-chat', arguments: order.orderNumber),
             child: Container(
               height: 52,
               decoration: BoxDecoration(

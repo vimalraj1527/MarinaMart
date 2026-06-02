@@ -20,6 +20,12 @@ class _DirectChatViewState extends State<DirectChatView> {
   void initState() {
     super.initState();
     _controller.startPolling();
+    if (Get.arguments != null && Get.arguments is String) {
+      final String orderNumber = Get.arguments as String;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _controller.sendMessage("I need help with my Order $orderNumber");
+      });
+    }
     // Scroll to bottom after layout
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }

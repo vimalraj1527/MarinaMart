@@ -171,7 +171,7 @@ class OrdersView extends StatelessWidget {
           const SizedBox(height: 12),
           
           if (order.status == "Delivered")
-             _buildActionBtn("REPORT PROBLEM", Colors.red, () => Get.snackbar("Support", "Connecting to support...") )
+             _buildActionBtn("REPORT PROBLEM", Colors.red, () => Get.toNamed('/direct-chat', arguments: order.orderNumber) )
           else
              _buildActionBtn("TRACK ORDER", AppColors.primaryColor, () => Get.toNamed('/track-order', arguments: order)),
         ],
