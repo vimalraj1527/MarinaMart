@@ -308,16 +308,37 @@ class ProductDetailsView extends StatelessWidget {
               ],
             ),
           ),
-          
-          // Sticky Cart Bar (View Cart)
-          const StickyCartBar(),
-          
-          // Dynamic padding for bottom of screen depending on whether sticky cart is empty
           Obx(() {
             if (cartController.cartItems.isEmpty) {
               return SizedBox(height: MediaQuery.of(context).padding.bottom + 8);
             }
-            return const SizedBox.shrink();
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () => Get.toNamed('/cart'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                        elevation: 3,
+                        shadowColor: AppColors.primaryColor.withValues(alpha: 0.35),
+                      ),
+                      child: const Text(
+                        "View Cart",
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+              ],
+            );
           }),
         ],
       ),

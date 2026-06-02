@@ -210,14 +210,14 @@ class _CheckoutViewState extends State<CheckoutView> {
   }
 
   double _calculateDeliveryFee(double subtotal) {
-    if (subtotal >= 501) {
-      return 0.0;
-    }
-
     if (_deliveryType == "Instant") {
       double distance = _locationController.getDistanceFromStore();
-      return _settings.instantBaseFee.value +
-          (distance * _settings.perKmCharge.value);
+      return 50.0 + (distance * 5.0);
+    }
+
+    // Free delivery for Scheduled delivery if subtotal reaches ₹501 or more
+    if (subtotal >= 501.0) {
+      return 0.0;
     }
 
     if (subtotal >= _settings.freeDeliveryThreshold.value) {
@@ -532,11 +532,12 @@ class _CheckoutViewState extends State<CheckoutView> {
                       isFree: deliveryFee == 0,
                     ),
                     if (deliveryFee > 0 &&
-                        subtotal < _settings.freeDeliveryThreshold.value)
+                        _deliveryType != "Instant" &&
+                        subtotal < 501.0)
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          "Add ₹${(_settings.freeDeliveryThreshold.value - subtotal).toStringAsFixed(0)} more for FREE delivery",
+                          "Add ₹${(501.0 - subtotal).toStringAsFixed(0)} more for FREE delivery",
                           style: const TextStyle(
                             color: Colors.green,
                             fontSize: 11,
