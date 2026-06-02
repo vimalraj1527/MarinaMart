@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../services/api_service.dart';
 import '../utils/app_constants.dart';
 import '../controllers/location_controller.dart';
 import 'auth_controller.dart';
+import '../widgets/free_delivery_celebration_dialog.dart';
 
 class CartItem {
   final Product product;
@@ -18,12 +20,29 @@ class CartController extends GetxController {
   
   var cartItems = <CartItem>[].obs;
   var isLoading = false.obs;
+  bool hasShownFreeDeliveryPopup = false;
 
   @override
   void onInit() {
     super.onInit();
     _apiService = Get.find<ApiService>();
     _locationController = Get.find<LocationController>();
+  }
+
+  void _checkFreeDeliveryPopup() {
+    double subtotal = totalAmount;
+    if (subtotal >= 501.0) {
+      if (!hasShownFreeDeliveryPopup) {
+        hasShownFreeDeliveryPopup = true;
+        Get.dialog(
+          const FreeDeliveryCelebrationDialog(),
+          barrierDismissible: true,
+          barrierColor: Colors.black.withValues(alpha: 0.5),
+        );
+      }
+    } else {
+      hasShownFreeDeliveryPopup = false;
+    }
   }
 
   void addToCart(Product product) {
@@ -34,6 +53,7 @@ class CartController extends GetxController {
     } else {
       cartItems.add(CartItem(product: product));
     }
+    _checkFreeDeliveryPopup();
   }
 
   void removeFromCart(Product product) {
@@ -46,6 +66,7 @@ class CartController extends GetxController {
       }
       cartItems.refresh();
     }
+    _checkFreeDeliveryPopup();
   }
 
   Future<void> placeOrder(double targetTotal, String customerName, String customerPhone, {String deliveryType = 'Instant', String? scheduledAt, double walletAmountUsed = 0.0}) async {
@@ -110,6 +131,7 @@ class CartController extends GetxController {
   void clearCart() {
     cartItems.clear();
     cartItems.refresh();
+    hasShownFreeDeliveryPopup = false;
   }
 
   double get totalAmount {
