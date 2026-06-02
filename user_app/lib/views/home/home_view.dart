@@ -322,37 +322,34 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Obx(() {
-                    final activeTheme = ThemeController.to.currentTheme;
-                    return RichText(
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      text: TextSpan(
-                        children: [
-                          const TextSpan(
-                            text: "Instant ",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 19,
-                              color: Colors.black87,
-                              letterSpacing: -0.5,
-                              fontFamily: 'Outfit',
-                            ),
-                          ),
-                          TextSpan(
-                            text: "Delivery",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 19,
-                              color: activeTheme.primaryColor,
-                              letterSpacing: -0.5,
-                              fontFamily: 'Outfit',
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
+                   Obx(() {
+                     final activeTheme = ThemeController.to.currentTheme;
+                     return Row(
+                       mainAxisSize: MainAxisSize.min,
+                       children: [
+                         const Text(
+                           "Bloomarina ",
+                           style: TextStyle(
+                             fontWeight: FontWeight.w900,
+                             fontSize: 18,
+                             color: Colors.black87,
+                             letterSpacing: -0.5,
+                             fontFamily: 'Outfit',
+                           ),
+                         ),
+                         Text(
+                           "Instamart",
+                           style: TextStyle(
+                             fontWeight: FontWeight.w900,
+                             fontSize: 18,
+                             color: activeTheme.primaryColor,
+                             letterSpacing: -0.5,
+                             fontFamily: 'Outfit',
+                           ),
+                         ),
+                       ],
+                     );
+                   }),
                   const SizedBox(height: 2),
                   Row(
                     children: [
