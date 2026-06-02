@@ -840,7 +840,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   Widget _buildHorizontalProducts(HomeController controller) {
     return SizedBox(
-      height: 240, // Elegant height for horizontal list
+      height: 215, // Compact height for horizontal list to match Swiggy style
       child: Obx(() {
         if (controller.isLoading.value && controller.products.isEmpty)
           return const SizedBox();
@@ -876,7 +876,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         ),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.70, // Optimized aspect ratio for Swiggy style compact cards
+          childAspectRatio: 0.83, // Optimized aspect ratio to remove empty white space
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
         ),
