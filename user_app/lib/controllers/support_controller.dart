@@ -87,6 +87,20 @@ class SupportController extends GetxController {
     }
   }
 
+  Future<void> launchEmail() async {
+    final emailUrl = Uri.parse("mailto:tech@bloomarina.com?subject=Support%20Request&body=Hello%20Bloomarina%20Team,");
+    try {
+      // Direct external application mode launch bypasses packages lookup restrictions
+      await launchUrl(emailUrl, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      Get.snackbar(
+        "Email Info", 
+        "Please email us at tech@bloomarina.com\n(Could not open email client automatically)",
+        duration: const Duration(seconds: 5),
+      );
+    }
+  }
+
   @override
   void onClose() {
     stopPolling();

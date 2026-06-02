@@ -73,9 +73,7 @@ class SupportView extends StatelessWidget {
               title: "Email Support",
               subtitle: "Write to us and get replies within 24 hours",
               color: Colors.orange,
-              onTap: () {
-                Get.snackbar("Email Support", "Please email support at support@bloomarina.com");
-              },
+              onTap: () => supportController.launchEmail(),
             ),
           ],
         ),
