@@ -418,60 +418,39 @@ class _CheckoutViewState extends State<CheckoutView> {
 
               _buildSectionHeader("Payment Mode"),
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Column(
+                child: Row(
                   children: [
-                    RadioListTile(
-                      value: "Cash on Delivery",
-                      groupValue: _paymentMethod,
-                      title: const Text("Cash on Delivery (COD)"),
-                      subtitle: const Text("Physical payment at doorstep"),
-                      activeColor: AppColors.primaryColor,
-                      onChanged: (val) =>
-                          setState(() => _paymentMethod = val.toString()),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.handshake_outlined, color: AppColors.primaryColor, size: 20),
                     ),
-                    RadioListTile(
-                      value: "Online",
-                      groupValue: _paymentMethod,
-                      title: Row(
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Secure Online Payment"),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              "COMING SOON",
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primaryColor,
-                              ),
-                            ),
+                          Text(
+                            "Cash on Delivery (COD)",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            "Pay with cash/UPI at delivery doorstep",
+                            style: TextStyle(color: AppColors.grey, fontSize: 12),
                           ),
                         ],
                       ),
-                      subtitle: const Text("UPI, Cards, & Wallets"),
-                      activeColor: AppColors.primaryColor,
-                      onChanged: (val) {
-                        Get.snackbar(
-                          "Coming Soon",
-                          "Online payments will be available shortly!",
-                          backgroundColor: Colors.black87,
-                          colorText: Colors.white,
-                        );
-                      },
                     ),
+                    Icon(Icons.check_circle, color: AppColors.primaryColor, size: 22),
                   ],
                 ),
               ),
