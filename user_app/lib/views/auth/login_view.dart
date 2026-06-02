@@ -372,35 +372,32 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                activeTheme.name == "Amethyst"
-                                    ? "Hello Amethyst!"
-                                    : activeTheme.name == "Amber"
-                                        ? "Welcome to Amber!"
-                                        : activeTheme.name == "Ruby"
-                                            ? "Welcome to Ruby!"
-                                            : "Welcome to Emerald!",
-                                style: const TextStyle(
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.black,
-                                  letterSpacing: -0.5,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Welcome to Bloomarina Instamart",
+                                  style: TextStyle(
+                                    fontSize: 26,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.black,
+                                    letterSpacing: -0.5,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                "Login to access your orders & exclusive offers",
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.grey,
-                                  fontWeight: FontWeight.w600,
+                                const SizedBox(height: 4),
+                                const Text(
+                                  "Login to access your orders & exclusive offers",
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.grey,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 16),
                           Image.network(
                             activeTheme.logoUrl,
                             height: 48,
