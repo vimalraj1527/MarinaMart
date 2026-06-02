@@ -74,16 +74,57 @@ class LocationController extends GetxController {
         return;
       }
 
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.bestForNavigation,
-        timeLimit: const Duration(seconds: 5), // Added 5-second limit
-      );
+      Position? position;
+      
+      // Step 1: Try to get the current position with high accuracy
+      try {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 7),
+        );
+      } catch (e) {
+        print("Location getCurrentPosition high accuracy failed: $e");
+      }
+
+      // Step 2: Fallback to last known position if first attempt failed/timed out
+      if (position == null) {
+        try {
+          position = await Geolocator.getLastKnownPosition();
+          print("Location fallback to last known position: $position");
+        } catch (e) {
+          print("Location getLastKnownPosition failed: $e");
+        }
+      }
+
+      // Step 3: Try getting current position with lower accuracy if still null
+      if (position == null) {
+        try {
+          position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.low,
+            timeLimit: const Duration(seconds: 5),
+          );
+          print("Location fallback to low accuracy: $position");
+        } catch (e) {
+          print("Location low accuracy failed: $e");
+        }
+      }
+
+      if (position == null) {
+        throw Exception("All location retrieval attempts failed");
+      }
+
       currentPosition.value = position;
 
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude, 
-        position.longitude
-      );
+      // Geocoding with timeout and fallback
+      List<Placemark> placemarks = [];
+      try {
+        placemarks = await placemarkFromCoordinates(
+          position.latitude, 
+          position.longitude
+        ).timeout(const Duration(seconds: 5));
+      } catch (e) {
+        print("Geocoding failed: $e");
+      }
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
@@ -92,8 +133,9 @@ class LocationController extends GetxController {
         currentAddress.value = "${place.name ?? ""}, $sub, $loc, ${place.postalCode ?? ""}";
         shortAddress.value = "${sub.isEmpty ? loc : sub}, $loc";
       } else {
-        currentAddress.value = "Address not found";
-        shortAddress.value = "Unknown Location";
+        // Fallback to lat/long string if geocoding failed/timed out
+        currentAddress.value = "${position.latitude.toStringAsFixed(6)}, ${position.longitude.toStringAsFixed(6)}";
+        shortAddress.value = "Lat: ${position.latitude.toStringAsFixed(4)}";
       }
 
     } catch (e) {
