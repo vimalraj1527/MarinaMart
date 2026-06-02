@@ -24,9 +24,19 @@ class OrderModel {
   factory OrderModel.fromJson(Map<String, dynamic> json) {
     DateTime parsedDate;
     try {
-      parsedDate = DateTime.parse(json['createdAt'] ?? DateTime.now().toIso8601String());
+      String dateStr = (json['createdAt'] ?? '').toString();
+      if (dateStr.isNotEmpty) {
+        // Force treat as UTC if no timezone offset or Z suffix is present
+        final hasTimezone = dateStr.endsWith('Z') || RegExp(r'[+-]\d{2}:?\d{2}$').hasMatch(dateStr);
+        if (!hasTimezone) {
+          dateStr = '${dateStr}Z';
+        }
+        parsedDate = DateTime.parse(dateStr).toUtc();
+      } else {
+        parsedDate = DateTime.now().toUtc();
+      }
     } catch (e) {
-      parsedDate = DateTime.now();
+      parsedDate = DateTime.now().toUtc();
     }
 
     return OrderModel(

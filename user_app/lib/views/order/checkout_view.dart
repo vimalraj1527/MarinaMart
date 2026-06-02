@@ -66,7 +66,8 @@ class _CheckoutViewState extends State<CheckoutView> {
   // Generates 2 slots per day for the next 7 days
   List<Map<String, dynamic>> _generateAvailableSlots() {
     List<Map<String, dynamic>> slots = [];
-    DateTime now = DateTime.now();
+    // Convert current UTC time to Indian Chennai Time (IST)
+    DateTime now = DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
 
     for (int i = 0; i < 7; i++) {
       DateTime date = now.add(Duration(days: i));
@@ -76,25 +77,29 @@ class _CheckoutViewState extends State<CheckoutView> {
           ? "Tomorrow"
           : DateFormat('EEE, MMM d').format(date);
 
-      DateTime morningStart = DateTime(date.year, date.month, date.day, 8, 0);
-      DateTime morningCutoff = DateTime(date.year, date.month, date.day, 7, 0);
+      DateTime morningCutoff = DateTime.utc(date.year, date.month, date.day, 7, 0);
 
       if (now.isBefore(morningCutoff)) {
+        // 8:00 AM Chennai time is 2:30 AM UTC
+        DateTime morningStartUtc = DateTime.utc(date.year, date.month, date.day, 8, 0)
+            .subtract(const Duration(hours: 5, minutes: 30));
         slots.add({
           'label': '$dayLabel (Morning 8AM-12PM)',
-          'dateTime': morningStart,
+          'dateTime': morningStartUtc,
           'display': 'Morning Slot (8 AM - 12 PM)',
           'dateLabel': dayLabel,
         });
       }
 
-      DateTime eveningStart = DateTime(date.year, date.month, date.day, 16, 0);
-      DateTime eveningCutoff = DateTime(date.year, date.month, date.day, 15, 0);
+      DateTime eveningCutoff = DateTime.utc(date.year, date.month, date.day, 15, 0);
 
       if (now.isBefore(eveningCutoff)) {
+        // 4:00 PM (16:00) Chennai time is 10:30 AM UTC
+        DateTime eveningStartUtc = DateTime.utc(date.year, date.month, date.day, 16, 0)
+            .subtract(const Duration(hours: 5, minutes: 30));
         slots.add({
           'label': '$dayLabel (Evening 4PM-8PM)',
-          'dateTime': eveningStart,
+          'dateTime': eveningStartUtc,
           'display': 'Evening Slot (4 PM - 8 PM)',
           'dateLabel': dayLabel,
         });

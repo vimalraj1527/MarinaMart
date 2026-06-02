@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
+import { formatToISTTimeOnly } from '../../services/dateUtils';
 
 const SidebarItem = ({ icon: Icon, label, path }: any) => (
   <NavLink 
@@ -56,7 +57,7 @@ export default function DashboardLayout() {
         id: order.id,
         title: 'New Order Received',
         message: `Order ${order.orderNumber} placed by ${order.customerName}`,
-        time: new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        time: formatToISTTimeOnly(order.createdAt),
         type: 'order',
         isRead: false
       }));

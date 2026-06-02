@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/wallet_controller.dart';
 
@@ -440,8 +441,15 @@ class WalletView extends StatelessWidget {
                           final req = walletController.requests[index];
                           final amount = double.tryParse(req['amount']?.toString() ?? '0') ?? 0.0;
                           final status = req['status']?.toString() ?? 'Pending';
-                          final dateStr = req['createdAt'] != null 
-                              ? DateTime.parse(req['createdAt'].toString()).toLocal().toString().substring(0, 16)
+                           String rawCreated = req['createdAt']?.toString() ?? '';
+                           if (rawCreated.isNotEmpty) {
+                             final hasTimezone = rawCreated.endsWith('Z') || RegExp(r'[+-]\d{2}:?\d{2}$').hasMatch(rawCreated);
+                             if (!hasTimezone) {
+                               rawCreated = '${rawCreated}Z';
+                             }
+                           }
+                          final dateStr = rawCreated.isNotEmpty 
+                              ? DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.parse(rawCreated).toUtc().add(const Duration(hours: 5, minutes: 30)))
                               : '';
 
                           Color statusColor = Colors.amber;

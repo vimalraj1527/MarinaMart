@@ -15,6 +15,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import api from '../services/api';
+import { formatToIST, formatToISTTimeOnly } from '../services/dateUtils';
 
 export default function OrderDetailsPage() {
   const { id } = useParams();
@@ -84,7 +85,7 @@ export default function OrderDetailsPage() {
                <h1 className="text-3xl font-black text-slate-900 font-outfit tracking-tight">{order.orderNumber}</h1>
                <StatusBadge status={order.status} />
             </div>
-            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-1 ml-1">Placed on {new Date(order.createdAt).toLocaleString()}</p>
+            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-1 ml-1">Placed on {formatToIST(order.createdAt)}</p>
           </div>
         </div>
         <div className="flex gap-4">
@@ -166,12 +167,12 @@ export default function OrderDetailsPage() {
                           {order.deliveryType === 'Scheduled' && order.scheduledAt && (
                             <div className="mt-2 space-y-1">
                               <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">
-                                Target: {new Date(order.scheduledAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                                Target: {formatToIST(order.scheduledAt)}
                               </p>
                               <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                                 <Clock className="w-3 h-3 text-emerald-400" />
                                 <span className="text-[10px] font-black uppercase tracking-tighter text-emerald-400">
-                                  {new Date(order.scheduledAt).getHours() < 12 ? 'MORNING SLOT (8AM-12PM)' : 'EVENING SLOT (4PM-8PM)'}
+                                  {parseInt(new Date(order.scheduledAt.endsWith('Z') || order.scheduledAt.includes('+') || order.scheduledAt.includes('-') ? order.scheduledAt : order.scheduledAt + 'Z').toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: '2-digit', hour12: false })) < 12 ? 'MORNING SLOT (8AM-12PM)' : 'EVENING SLOT (4PM-8PM)'}
                                 </span>
                               </div>
                             </div>
@@ -254,7 +255,7 @@ export default function OrderDetailsPage() {
               </h2>
               <div className="space-y-8 relative before:absolute before:left-[11px] before:top-2 before:bottom-0 before:w-0.5 before:bg-slate-100">
                  {[
-                   { label: 'Order Confirmed', time: new Date(order.createdAt).toLocaleTimeString(), active: true },
+                   { label: 'Order Confirmed', time: formatToISTTimeOnly(order.createdAt), active: true },
                    { label: 'Merchant Acknowledged', time: 'Syncing...', active: order.status !== 'Pending' },
                    { label: 'Courier Dispatched', time: 'Processing', active: ['Out for Delivery', 'Delivered'].includes(order.status) },
                    { label: 'Consignment Handover', time: '--:--', active: order.status === 'Delivered' }

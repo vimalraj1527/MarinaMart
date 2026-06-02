@@ -67,7 +67,7 @@ class OrdersView extends StatelessWidget {
 
   Widget _buildOrderCard(dynamic order) {
     // FIX: Convert to Local Time for accurate display
-    final dateStr = DateFormat('dd MMM yyyy, hh:mm a').format(order.createdAt.toLocal());
+    final dateStr = DateFormat('dd MMM yyyy, hh:mm a').format(order.createdAt.toUtc().add(const Duration(hours: 5, minutes: 30)));
 
     // FIX: If totalAmount is 0 (old orders with wallet deduction), compute from items
     double displayTotal = order.totalAmount;

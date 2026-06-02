@@ -11,6 +11,7 @@ import {
 import { motion } from 'framer-motion';
 import { Modal } from '../components/ui/LayoutComponents';
 import api from '../services/api';
+import { formatToIST } from '../services/dateUtils';
 
 
 export default function OrdersPage() {
@@ -172,7 +173,7 @@ export default function OrdersPage() {
                        </span>
                        {order.deliveryType === 'Scheduled' && order.scheduledAt && (
                          <span className="text-[10px] text-slate-500 font-bold tracking-tight mt-1">
-                            {new Date(order.scheduledAt).toLocaleDateString()} {new Date(order.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {formatToIST(order.scheduledAt)}
                          </span>
                        )}
                     </div>

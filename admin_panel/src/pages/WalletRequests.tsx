@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../services/api';
+import { formatToIST } from '../services/dateUtils';
 
 export default function WalletRequestsPage() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -203,10 +204,7 @@ export default function WalletRequestsPage() {
                     <td className="px-8 py-6">
                       <div className="flex items-center gap-2 font-semibold text-slate-500 text-sm">
                         <Calendar className="w-4 h-4 text-slate-400" />
-                        {new Date(req.createdAt).toLocaleString(undefined, {
-                          dateStyle: 'medium',
-                          timeStyle: 'short'
-                        })}
+                        {formatToIST(req.createdAt)}
                       </div>
                     </td>
                     <td className="px-8 py-6">

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../services/api';
+import { formatToISTDateOnly } from '../services/dateUtils';
 
 export default function CustomerDetailsPage() {
   const { id } = useParams();
@@ -144,7 +145,7 @@ export default function CustomerDetailsPage() {
                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-loose">Birthday Details</p>
                        <p className="font-bold text-slate-900 tracking-tight">
                          {customer.birthday 
-                           ? new Date(customer.birthday).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }) 
+                           ? formatToISTDateOnly(customer.birthday) 
                            : 'Not Provided'}
                        </p>
                     </div>
@@ -155,7 +156,7 @@ export default function CustomerDetailsPage() {
                     </div>
                     <div>
                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-loose">Onboarded Since</p>
-                       <p className="font-bold text-slate-900 tracking-tight">{customer.createdAt ? new Date(customer.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) : 'Unknown'}</p>
+                       <p className="font-bold text-slate-900 tracking-tight">{customer.createdAt ? formatToISTDateOnly(customer.createdAt, { month: 'long', year: 'numeric' }) : 'Unknown'}</p>
                     </div>
                  </div>
               </div>
@@ -223,7 +224,7 @@ export default function CustomerDetailsPage() {
                              <p className="font-black text-slate-900 text-lg uppercase tracking-tight group-hover:text-emerald-700 transition-colors">{order.orderNumber}</p>
                              <div className="flex items-center gap-3 mt-1">
                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                   <Calendar className="w-3 h-3 text-emerald-500" /> {new Date(order.createdAt).toLocaleDateString()}
+                                   <Calendar className="w-3 h-3 text-emerald-500" /> {formatToISTDateOnly(order.createdAt)}
                                 </div>
                                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                    <CreditCard className="w-3 h-3 text-emerald-500" /> {order.paymentMethod}
