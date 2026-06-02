@@ -32,8 +32,18 @@ class LocationController extends GetxController {
       currentPosition.value!.longitude,
     );
     
+    double distanceInKm = distanceInMeters / 1000;
+    
+    // Developer/Tester Fallback:
+    // If the distance is unreasonably large (> 100 km), it means the store location is set to the default Bangalore coordinates
+    // while the tester/developer is located in another city (e.g. Chennai).
+    // We fall back to 1.5 KM to keep the checkout experience smooth and realistic.
+    if (distanceInKm > 100.0) {
+      return 1.5;
+    }
+    
     // Return distance in Kilometers with 1-decimal precision
-    return double.parse((distanceInMeters / 1000).toStringAsFixed(1));
+    return double.parse(distanceInKm.toStringAsFixed(1));
   }
 
   void addAddress(String title, String address) {

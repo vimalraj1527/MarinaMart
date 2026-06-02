@@ -210,6 +210,10 @@ class _CheckoutViewState extends State<CheckoutView> {
   }
 
   double _calculateDeliveryFee(double subtotal) {
+    if (subtotal >= 501) {
+      return 0.0;
+    }
+
     if (_deliveryType == "Instant") {
       double distance = _locationController.getDistanceFromStore();
       return _settings.instantBaseFee.value +
