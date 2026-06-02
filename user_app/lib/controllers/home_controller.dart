@@ -6,6 +6,8 @@ import '../utils/app_constants.dart';
 import '../models/product_model.dart';
 import '../models/category_model.dart';
 
+import 'auth_controller.dart';
+
 class HomeController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
   final StorageService _storage = Get.find<StorageService>();
@@ -22,6 +24,17 @@ class HomeController extends GetxController {
     super.onInit();
     favorites.addAll(_storage.getFavorites());
     fetchHomeData();
+    _refreshProfileBackground();
+  }
+
+  void _refreshProfileBackground() {
+    try {
+      if (Get.isRegistered<AuthController>()) {
+        Get.find<AuthController>().refreshUserProfile();
+      }
+    } catch (e) {
+      print("Error refreshing user profile in home init: $e");
+    }
   }
 
   void toggleFavorite(String productId) {

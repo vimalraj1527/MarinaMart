@@ -12,6 +12,11 @@ class ProfileView extends StatelessWidget {
     final AuthController authController = Get.find<AuthController>();
     final ThemeController themeController = Get.find<ThemeController>();
 
+    // Refresh user profile when ProfileView opens to ensure latest wallet balance is shown
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      authController.refreshUserProfile();
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(

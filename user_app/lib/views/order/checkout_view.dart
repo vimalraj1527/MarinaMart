@@ -54,6 +54,7 @@ class _CheckoutViewState extends State<CheckoutView> {
 
     // Ensure we have the absolute latest pricing from backend
     _settings.fetchRemoteSettings();
+    _authController.refreshUserProfile();
   }
 
   @override
