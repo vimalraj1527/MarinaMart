@@ -495,14 +495,24 @@ class _TrackOrderViewState extends State<TrackOrderView>
     );
   }
 
-  // ── Order Summary ──────────────────────────────────────────────────────
   Widget _buildOrderSummary(OrderModel order) {
-    // FIX: If totalAmount is 0 (old orders with wallet deduction), compute from items
+    double itemsTotal = 0;
+    for (var item in order.items) {
+      itemsTotal += (item.price * item.quantity);
+    }
+
+    double gst = itemsTotal * 0.05;
+
+    // Mathematically reconstruct the delivery fee: TotalPaid + WalletApplied - ItemsTotal - GST
+    double deliveryFee = order.totalAmount + order.walletAmountUsed - itemsTotal - gst;
+    if (deliveryFee < 0.01) {
+      deliveryFee = 0.0;
+    }
+
     double displayTotal = order.totalAmount;
-    if (displayTotal <= 0 && order.items.isNotEmpty) {
-      for (var item in order.items) {
-        displayTotal += (item.price * item.quantity);
-      }
+    if (displayTotal <= 0) {
+      displayTotal = itemsTotal + gst + deliveryFee - order.walletAmountUsed;
+      if (displayTotal < 0) displayTotal = 0;
     }
 
     return Container(
@@ -529,7 +539,7 @@ class _TrackOrderViewState extends State<TrackOrderView>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(child: Text(item.productName, style: const TextStyle(color: Color(0xFF3A3A3A), fontSize: 13, fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                Text('${item.quantity} × ₹${item.price}', style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 12, fontWeight: FontWeight.w600)),
+                Text('${item.quantity} × ₹${item.price.toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFF8E8E93), fontSize: 12, fontWeight: FontWeight.w600)),
               ],
             ),
           )),
@@ -537,11 +547,52 @@ class _TrackOrderViewState extends State<TrackOrderView>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total', style: TextStyle(color: Color(0xFF8E8E93), fontSize: 14, fontWeight: FontWeight.w700)),
-              Text('₹${displayTotal.toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 20, fontWeight: FontWeight.w900)),
+              const Text('Subtotal', style: TextStyle(color: Color(0xFF8E8E93), fontSize: 13, fontWeight: FontWeight.w600)),
+              Text('₹${itemsTotal.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF3A3A3A), fontSize: 13, fontWeight: FontWeight.w700)),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Taxes & GST (5%)', style: TextStyle(color: Color(0xFF8E8E93), fontSize: 13, fontWeight: FontWeight.w600)),
+              Text('₹${gst.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF3A3A3A), fontSize: 13, fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Delivery Fee', style: TextStyle(color: Color(0xFF8E8E93), fontSize: 13, fontWeight: FontWeight.w600)),
+              Text(
+                deliveryFee == 0 ? 'FREE' : '₹${deliveryFee.toStringAsFixed(2)}',
+                style: TextStyle(
+                  color: deliveryFee == 0 ? AppColors.primaryColor : const Color(0xFF3A3A3A),
+                  fontSize: 13,
+                  fontWeight: deliveryFee == 0 ? FontWeight.w900 : FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          if (order.walletAmountUsed > 0) ...[
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Wallet Applied', style: TextStyle(color: Color(0xFF8E8E93), fontSize: 13, fontWeight: FontWeight.w600)),
+                Text('-₹${order.walletAmountUsed.toStringAsFixed(2)}', style: TextStyle(color: Colors.orange.shade700, fontSize: 13, fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ],
+          const Divider(color: Color(0xFFE8E8ED), height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Total Paid', style: TextStyle(color: Color(0xFF1A1A1A), fontSize: 14, fontWeight: FontWeight.w800)),
+              Text('₹${displayTotal.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 20, fontWeight: FontWeight.w900)),
+            ],
+          ),
+          const SizedBox(height: 16),
           Row(
             children: [
               const Icon(Icons.location_on_outlined, color: Color(0xFFB0B0B5), size: 14),

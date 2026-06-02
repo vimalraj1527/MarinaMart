@@ -8,6 +8,7 @@ class OrderModel {
   final String deliveryAddress;
   final List<OrderItem> items;
   final DateTime createdAt;
+  final double walletAmountUsed;
 
   OrderModel({
     required this.id,
@@ -19,6 +20,7 @@ class OrderModel {
     required this.deliveryAddress,
     required this.items,
     required this.createdAt,
+    required this.walletAmountUsed,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,7 @@ class OrderModel {
         }
       }).toList() ?? [],
       createdAt: parsedDate,
+      walletAmountUsed: double.tryParse(json['walletAmountUsed']?.toString() ?? '0') ?? 0.0,
     );
   }
 }
