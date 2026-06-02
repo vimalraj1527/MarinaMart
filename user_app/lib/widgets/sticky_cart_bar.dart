@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/cart_controller.dart';
 import '../utils/app_colors.dart';
-import 'package:shimmer/shimmer.dart';
 
 class StickyCartBar extends StatefulWidget {
-  const StickyCartBar({super.key});
+  final bool isFloating;
+  const StickyCartBar({super.key, this.isFloating = false});
+
   @override
   State<StickyCartBar> createState() => _StickyCartBarState();
 }
@@ -34,119 +35,147 @@ class _StickyCartBarState extends State<StickyCartBar> with SingleTickerProvider
     return Obx(() {
       if (cartController.cartItems.isEmpty) return const SizedBox.shrink();
 
-      return AnimatedBuilder(
-        animation: _pulseController,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.primaryColor, AppColors.primaryColor.withBlue(180)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primaryColor.withOpacity(0.35),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
+      final double subtotal = cartController.totalAmount;
+      final double remaining = 501.0 - subtotal;
+      final double progress = (subtotal / 501.0).clamp(0.0, 1.0);
+
+      Widget content = Padding(
+        padding: EdgeInsets.fromLTRB(16, 4, 16, widget.isFloating ? 4 : 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Free Delivery Hint strip & Progress Track (Swiggy / Zepto style)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5), // Light emerald green
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFA7F3D0), width: 1),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.delivery_dining_rounded,
+                        color: Color(0xFF059669),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          remaining > 0
+                              ? "Add ₹${remaining.toStringAsFixed(0)} more for FREE Scheduled Delivery"
+                              : "Eligible for FREE Scheduled Delivery!",
+                          style: const TextStyle(
+                            color: Color(0xFF065F46),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => Get.toNamed('/cart'),
-                      borderRadius: BorderRadius.circular(18),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Left side: Icon, Items Count & Price (Very clean & compact)
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.15),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.shopping_bag_outlined,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: const Color(0xFFD1FAE5), // Duller track background
+                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)), // Active emerald indicator
+                      minHeight: 5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Proceed to Checkout / View Cart Button
+            AnimatedBuilder(
+              animation: _pulseController,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () => Get.toNamed('/cart'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                        elevation: 3,
+                        shadowColor: AppColors.primaryColor.withValues(alpha: 0.35),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Left side: small size value & items count
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "${cartController.totalItems} ITEM${cartController.totalItems > 1 ? 'S' : ''}",
+                                style: const TextStyle(
+                                  fontSize: 9.5,
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
                                 ),
-                                const SizedBox(width: 12),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      "${cartController.totalItems} ITEM${cartController.totalItems > 1 ? 'S' : ''}",
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 1.0,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 1),
-                                    Text(
-                                      "₹${cartController.totalAmount.toStringAsFixed(0)}",
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            // Right side: View Cart action
-                            Row(
-                              children: [
-                                Shimmer.fromColors(
-                                  baseColor: Colors.white,
-                                  highlightColor: const Color(0xFFFFD700), // Premium gold highlight
-                                  period: const Duration(seconds: 2),
-                                  child: const Text(
-                                    "View Cart",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                const Icon(
-                                  Icons.arrow_forward_ios_rounded,
+                              ),
+                              Text(
+                                "₹${cartController.totalAmount.toStringAsFixed(0)}",
+                                style: const TextStyle(
+                                  fontSize: 15,
                                   color: Colors.white,
-                                  size: 12,
+                                  fontWeight: FontWeight.w900,
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
+                              ),
+                            ],
+                          ),
+                          // Right side: View Cart action text
+                          const Row(
+                            children: [
+                               Text(
+                                "View Cart",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Icon(
+                                Icons.arrow_right_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
-              ),
+                );
+              },
             ),
-          );
-        }
+          ],
+        ),
       );
+
+      if (widget.isFloating) {
+        return content;
+      } else {
+        return SafeArea(
+          top: false,
+          child: content,
+        );
+      }
     });
   }
 }
