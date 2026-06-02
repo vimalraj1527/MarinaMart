@@ -15,6 +15,7 @@ import 'views/address/address_list_view.dart';
 import 'views/payment/payment_methods_view.dart';
 import 'views/notifications/notifications_view.dart';
 import 'views/support/support_view.dart';
+import 'views/support/direct_chat_view.dart';
 import 'views/about/about_view.dart';
 import 'views/address/pick_location_view.dart';
 import 'views/details/product_details_view.dart';
@@ -96,6 +97,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/payments', page: () => const PaymentMethodsView()),
         GetPage(name: '/notifications', page: () => const NotificationsView()),
         GetPage(name: '/support', page: () => const SupportView()),
+        GetPage(name: '/direct-chat', page: () => const DirectChatView()),
         GetPage(name: '/about', page: () => const AboutView()),
         GetPage(name: '/pick-location', page: () => const PickLocationView()),
         GetPage(name: '/product-details', page: () => ProductDetailsView()),

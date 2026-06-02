@@ -17,6 +17,7 @@ import { Setting } from './settings/entities/setting.entity';
 import { BannersModule } from './banners/banners.module';
 import { Banner } from './banners/entities/banner.entity';
 import { WalletModule } from './wallet/wallet.module';
+import { SupportModule } from './support/support.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { WalletModule } from './wallet/wallet.module';
     SettingsModule,
     BannersModule,
     WalletModule,
+    SupportModule,
   ],
 })
 export class AppModule {}

@@ -20,6 +20,8 @@ class AppConstants {
   static const String ordersUrl = '/orders';
   static const String bannersUrl = '/banners';
   static const String cartUrl = '/cart';
+  static const String supportMessagesUrl = '/support/messages';
+  static const String supportSendUrl = '/support/message';
 
   // Storage Keys
   static const String tokenKey = 'auth_token';

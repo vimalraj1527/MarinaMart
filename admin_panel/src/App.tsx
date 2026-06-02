@@ -15,6 +15,7 @@ import Banners from './pages/Banners';
 import Login from './pages/Login';
 import WalletRequests from './pages/WalletRequests';
 import WalletCoupons from './pages/WalletCoupons';
+import Support from './pages/Support';
 
 // --- Protective Auth Wrapper ---
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="revenue" element={<Revenue />} />
           <Route path="wallet-requests" element={<WalletRequests />} />
           <Route path="wallet-coupons" element={<WalletCoupons />} />
+          <Route path="support" element={<Support />} />
           <Route path="settings" element={<Settings />} />
         </Route>
 

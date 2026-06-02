@@ -14,7 +14,8 @@ import {
   Bell,
   Clock,
   Wallet,
-  Gift
+  Gift,
+  MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
@@ -130,6 +131,7 @@ export default function DashboardLayout() {
           <SidebarItem icon={Wallet} label="Wallet Approvals" path="/wallet-requests" />
           <SidebarItem icon={Gift} label="Wallet Coupons" path="/wallet-coupons" />
           <SidebarItem icon={Truck} label="Riders Fleet" path="/riders" />
+          <SidebarItem icon={MessageSquare} label="Support Chats" path="/support" />
           <SidebarItem icon={Settings} label="Settings" path="/settings" />
         </nav>
 
