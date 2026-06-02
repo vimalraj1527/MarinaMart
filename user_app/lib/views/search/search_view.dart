@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/product_search_controller.dart';
 import '../../controllers/home_controller.dart';
+import '../../controllers/main_shell_controller.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../widgets/add_to_cart_button.dart';
@@ -114,7 +115,18 @@ class _SearchViewState extends State<SearchView> {
           padding: const EdgeInsets.only(left: 12),
           child: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87, size: 20),
-            onPressed: () => Get.back(),
+            onPressed: () {
+              if (Navigator.canPop(context)) {
+                Get.back();
+              } else {
+                try {
+                  final MainShellController shellController = Get.find<MainShellController>();
+                  shellController.changeTab(0);
+                } catch (_) {
+                  Get.back();
+                }
+              }
+            },
           ),
         ),
         titleSpacing: 8,
