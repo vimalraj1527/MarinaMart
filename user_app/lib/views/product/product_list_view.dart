@@ -29,11 +29,16 @@ class _ProductListViewState extends State<ProductListView> with TickerProviderSt
     _floatController = AnimationController(vsync: this, duration: const Duration(seconds: 4))..repeat();
     _controller = Get.put(ProductListController());
     
-    if (widget.products == null || widget.products!.isEmpty) {
+    final args = Get.arguments;
+    if (args is List<Product> && args.isNotEmpty) {
+      _controller.categoryProducts.assignAll(args);
+    } else if (args is List && args.isNotEmpty && args.first is Product) {
+      _controller.categoryProducts.assignAll(args.cast<Product>());
+    } else if (widget.products != null && widget.products!.isNotEmpty) {
+      _controller.categoryProducts.assignAll(widget.products!);
+    } else {
       final categoryTitle = Get.parameters['title'] ?? widget.title;
       _controller.fetchProductsByCategory(categoryTitle);
-    } else {
-      _controller.categoryProducts.assignAll(widget.products!);
     }
   }
 
