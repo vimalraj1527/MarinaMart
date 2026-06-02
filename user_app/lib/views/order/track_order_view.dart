@@ -1,4 +1,6 @@
 import 'dart:math' as math;
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -6,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import '../../models/order_model.dart';
 import '../../controllers/location_controller.dart';
 import '../../utils/app_colors.dart';
+import '../../services/api_service.dart';
 
 // ─── Status Helpers ──────────────────────────────────────────────────────────
 int _statusIndex(String s) {
@@ -26,12 +29,7 @@ class _StepData {
   const _StepData(this.title, this.subtitle, this.icon, this.color);
 }
 
-const _steps = [
-  _StepData('Order Confirmed', 'Your order has been placed & verified', Icons.check_circle_rounded, Color(0xFF4CAF50)),
-  _StepData('Preparing', 'Store is packing your items with care', Icons.inventory_2_rounded, Color(0xFF2196F3)),
-  _StepData('On the Way', 'Rider is heading to your location', Icons.delivery_dining_rounded, Color(0xFFFF9800)),
-  _StepData('Delivered', 'Enjoy your fresh groceries!', Icons.home_rounded, Color(0xFF4CAF50)),
-];
+
 
 // ─── Main View ───────────────────────────────────────────────────────────────
 class TrackOrderView extends StatefulWidget {
@@ -46,20 +44,61 @@ class _TrackOrderViewState extends State<TrackOrderView>
   late AnimationController _pulseCtrl;
   late AnimationController _shimmerCtrl;
   late AnimationController _riderCtrl;
+  late OrderModel order;
+  Timer? _refreshTimer;
+
+  List<_StepData> get steps {
+    final isPending = order.status == 'Pending';
+    return [
+      _StepData(
+        isPending ? 'Order Pending' : 'Order Confirmed',
+        isPending ? 'Waiting for admin approval' : 'Your order has been placed & verified',
+        isPending ? Icons.hourglass_empty_rounded : Icons.check_circle_rounded,
+        isPending ? Colors.orange : const Color(0xFF4CAF50),
+      ),
+      const _StepData('Preparing', 'Store is packing your items with care', Icons.inventory_2_rounded, Color(0xFF2196F3)),
+      const _StepData('On the Way', 'Rider is heading to your location', Icons.delivery_dining_rounded, Color(0xFFFF9800)),
+      const _StepData('Delivered', 'Enjoy your fresh groceries!', Icons.home_rounded, Color(0xFF4CAF50)),
+    ];
+  }
 
   @override
   void initState() {
     super.initState();
+    order = Get.arguments;
     _pulseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))
       ..repeat(reverse: true);
     _shimmerCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2000))
       ..repeat();
     _riderCtrl = AnimationController(vsync: this, duration: const Duration(seconds: 3))
       ..repeat(reverse: true);
+
+    // Setup periodic polling every 3 seconds for real-time status tracking
+    _refreshTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      _refreshOrder();
+    });
+  }
+
+  Future<void> _refreshOrder() async {
+    try {
+      final apiService = Get.find<ApiService>();
+      final response = await apiService.getData('/orders/${order.id}');
+      if (response.statusCode == 200) {
+        final updatedOrder = OrderModel.fromJson(jsonDecode(response.body));
+        if (mounted && updatedOrder.status != order.status) {
+          setState(() {
+            order = updatedOrder;
+          });
+        }
+      }
+    } catch (e) {
+      print("Error polling track order status: $e");
+    }
   }
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     _pulseCtrl.dispose();
     _shimmerCtrl.dispose();
     _riderCtrl.dispose();
@@ -68,7 +107,6 @@ class _TrackOrderViewState extends State<TrackOrderView>
 
   @override
   Widget build(BuildContext context) {
-    final OrderModel order = Get.arguments;
     final LocationController locCtrl = Get.find<LocationController>();
     final int activeStep = _statusIndex(order.status);
 
@@ -77,7 +115,7 @@ class _TrackOrderViewState extends State<TrackOrderView>
         : const LatLng(12.9716, 77.5946);
 
     final primary = AppColors.primaryColor;
-    final stepColor = _steps[activeStep].color;
+    final stepColor = steps[activeStep].color;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
@@ -192,7 +230,7 @@ class _TrackOrderViewState extends State<TrackOrderView>
 
   // ── Status Hero Card ───────────────────────────────────────────────────
   Widget _buildStatusHero(OrderModel order, int activeStep, Color stepColor) {
-    final step = _steps[activeStep];
+    final step = steps[activeStep];
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -246,7 +284,7 @@ class _TrackOrderViewState extends State<TrackOrderView>
 
   // ── Progress Bar ───────────────────────────────────────────────────────
   Widget _buildProgressBar(int activeStep, Color stepColor) {
-    final progress = (activeStep + 1) / _steps.length;
+    final progress = (activeStep + 1) / steps.length;
     return Column(
       children: [
         Row(
@@ -311,11 +349,11 @@ class _TrackOrderViewState extends State<TrackOrderView>
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 12, offset: const Offset(0, 3))],
       ),
       child: Column(
-        children: List.generate(_steps.length, (i) {
-          final step = _steps[i];
+        children: List.generate(steps.length, (i) {
+          final step = steps[i];
           final isCompleted = i <= activeStep;
           final isCurrent = i == activeStep;
-          final isLast = i == _steps.length - 1;
+          final isLast = i == steps.length - 1;
 
           return Row(
             crossAxisAlignment: CrossAxisAlignment.start,

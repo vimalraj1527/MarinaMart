@@ -35,6 +35,15 @@ export default function OrderDetailsPage() {
     }
   };
 
+  const handleStatusUpdate = async (newStatus: string) => {
+    try {
+      await api.patch(`/orders/${id}/status`, { status: newStatus });
+      fetchDetails();
+    } catch (err) {
+      console.error('Failed to update status:', err);
+    }
+  };
+
   useEffect(() => {
     fetchDetails();
   }, [id]);
@@ -88,12 +97,44 @@ export default function OrderDetailsPage() {
             <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-1 ml-1">Placed on {formatToIST(order.createdAt)}</p>
           </div>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4 no-print">
+           {order.status === 'Pending' && (
+             <>
+               <button 
+                 onClick={() => handleStatusUpdate('Processing')}
+                 className="px-6 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-emerald-100/50"
+               >
+                 Confirm Order
+               </button>
+               <button 
+                 onClick={() => handleStatusUpdate('Cancelled')}
+                 className="px-6 py-4 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 font-bold rounded-2xl transition-all"
+               >
+                 Cancel Order
+               </button>
+             </>
+           )}
+           {order.status === 'Processing' && (
+             <button 
+               onClick={() => handleStatusUpdate('Out for Delivery')}
+               className="px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-indigo-100/50"
+             >
+               Dispatch Order
+             </button>
+           )}
+           {order.status === 'Out for Delivery' && (
+             <button 
+               onClick={() => handleStatusUpdate('Delivered')}
+               className="px-6 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-emerald-100/50"
+             >
+               Mark as Delivered
+             </button>
+           )}
            <button 
              onClick={() => window.print()}
-             className="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
+             className="px-6 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all shadow-xl shadow-slate-200"
            >
-              Generate Invoice
+              Print Invoice
            </button>
         </div>
       </div>
