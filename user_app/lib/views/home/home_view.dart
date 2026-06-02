@@ -840,7 +840,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   Widget _buildHorizontalProducts(HomeController controller) {
     return SizedBox(
-      height: 270, // Accommodate shadow and highly flexible card
+      height: 240, // Elegant height for horizontal list
       child: Obx(() {
         if (controller.isLoading.value && controller.products.isEmpty)
           return const SizedBox();
@@ -852,11 +852,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           ),
           itemCount: controller.products.length,
           itemBuilder: (context, index) => Container(
-            width: 160,
+            width: 142,
             margin: const EdgeInsets.only(
-              right: 16,
-              bottom: 16,
-            ), // space for drop shadow
+              right: 12,
+              bottom: 12,
+            ),
             child: _buildProductCard(controller.products[index]),
           ),
         );
@@ -876,9 +876,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         ),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.58,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16, // Plenty of vertical room to prevent overflow
+          childAspectRatio: 0.70, // Optimized aspect ratio for Swiggy style compact cards
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
         ),
         itemCount: controller.products.length,
         itemBuilder: (context, index) =>
@@ -888,18 +888,19 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   }
 
   Widget _buildProductCard(Product product) {
+    final originalPrice = (product.price * 1.25).round();
     return GestureDetector(
       onTap: () => Get.toNamed('/product-details', arguments: product),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade100, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.025),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -908,13 +909,13 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           children: [
             // Image Section
             Container(
-              height: 110,
+              height: 115,
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(18),
+              padding: const EdgeInsets.all(10),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(11),
                 ),
               ),
               child: Stack(
@@ -926,10 +927,11 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       errorBuilder: (c, e, s) => const Icon(
                         Icons.shopping_bag_rounded,
                         color: Colors.grey,
-                        size: 40,
+                        size: 36,
                       ),
                     ),
                   ),
+                  // Swiggy discount badge top-left
                   Positioned(
                     top: 0,
                     left: 0,
@@ -938,40 +940,61 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         horizontal: 6,
                         vertical: 3,
                       ),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF6E28E9), // Authentic Swiggy Instamart Violet
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(11),
+                          bottomRight: Radius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        "20% OFF",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Swiggy delivery speed badge bottom-left
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: const Color(0xFFF1F5F9), width: 0.5),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.04),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
                           ),
                         ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Obx(() {
-                            final activeTheme = ThemeController.to.currentTheme;
-                            return Icon(
-                              Icons.bolt_rounded,
-                              color: activeTheme.primaryColor,
-                              size: 12,
-                            );
-                          }),
-                          const SizedBox(width: 2),
-                          Obx(() {
-                            final activeTheme = ThemeController.to.currentTheme;
-                            return Text(
-                              "10 MINS",
-                              style: TextStyle(
-                                color: activeTheme.primaryColor,
-                                fontSize: 8,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            );
-                          }),
+                          const Icon(
+                            Icons.bolt_rounded,
+                            color: Color(0xFFFF5722), // Swiggy Orange
+                            size: 11,
+                          ),
+                          const SizedBox(width: 1),
+                          Text(
+                            "9 MINS",
+                            style: TextStyle(
+                              color: Colors.grey.shade800,
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -982,7 +1005,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             // Details Section
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -993,20 +1016,21 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         Text(
                           product.name,
                           style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 13,
-                            height: 1.2,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            height: 1.25,
+                            color: Colors.black87,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 3),
                         Text(
                           product.unit,
                           style: TextStyle(
                             color: Colors.grey.shade500,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ],
@@ -1016,15 +1040,27 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Expanded(
-                          child: Text(
-                            "₹${product.price}",
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 14,
-                              color: Colors.black,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "₹${product.price.toStringAsFixed(0)}",
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 13,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              Text(
+                                "₹$originalPrice",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey.shade400,
+                                  decoration: TextDecoration.lineThrough,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 4),
