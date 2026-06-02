@@ -129,92 +129,190 @@ class WalletView extends StatelessWidget {
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: Colors.grey.shade100),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Request Wallet Load",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.black87),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            "Funds will be added post admin approval",
-                            style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: walletController.amountController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                            decoration: InputDecoration(
-                              labelText: "Enter Amount (₹)",
-                              prefixIcon: const Icon(Icons.currency_rupee, color: Color(0xFF6C5CE7)),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(color: Colors.grey.shade200),
+                      child: Obx(() {
+                        if (walletController.hasPendingRequest) {
+                          final pendingReq = walletController.requests.firstWhere(
+                            (req) => req['status']?.toString() == 'Pending',
+                            orElse: () => null,
+                          );
+                          final pendingAmount = pendingReq != null
+                              ? (double.tryParse(pendingReq['amount']?.toString() ?? '0') ?? 0.0)
+                              : 0.0;
+                          final pendingId = pendingReq != null ? pendingReq['id']?.toString() ?? '' : '';
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Request Wallet Load",
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.black87),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(color: Colors.grey.shade200),
+                              const SizedBox(height: 4),
+                              const Text(
+                                "You have a pending load request",
+                                style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(color: Color(0xFF6C5CE7), width: 1.5),
+                              const SizedBox(height: 16),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.amber.shade50,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.amber.shade200),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Icons.hourglass_empty_rounded, color: Colors.amber.shade800, size: 24),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Pending Request: ₹${pendingAmount.toStringAsFixed(2)}",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                  color: Colors.amber.shade900,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              const Text(
+                                                "Only one pending request is allowed. Cancel it to submit a new one.",
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: Colors.black54,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 45,
+                                      child: OutlinedButton.icon(
+                                        onPressed: walletController.isLoading.value
+                                            ? null
+                                            : () => walletController.cancelRequest(pendingId),
+                                        icon: walletController.isLoading.value
+                                            ? const SizedBox(
+                                                width: 16,
+                                                height: 16,
+                                                child: CircularProgressIndicator(color: Colors.red, strokeWidth: 2),
+                                              )
+                                            : const Icon(Icons.cancel_outlined, size: 18),
+                                        label: const Text(
+                                          "Cancel Current Request",
+                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.red,
+                                          side: BorderSide(color: Colors.red.shade200),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Request Wallet Load",
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.black87),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              "Funds will be added post admin approval",
+                              style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
+                            ),
+                            const SizedBox(height: 16),
+                            TextField(
+                              controller: walletController.amountController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                              decoration: InputDecoration(
+                                labelText: "Enter Amount (₹)",
+                                prefixIcon: const Icon(Icons.currency_rupee, color: Color(0xFF6C5CE7)),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(color: Colors.grey.shade200),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(color: Colors.grey.shade200),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(color: Color(0xFF6C5CE7), width: 1.5),
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                          // Preset Buttons
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [100, 500, 1000].map((val) {
-                              return Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  child: OutlinedButton(
-                                    onPressed: () {
-                                      walletController.amountController.text = val.toString();
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      side: BorderSide(color: const Color(0xFF6C5CE7).withOpacity(0.3)),
-                                      foregroundColor: const Color(0xFF6C5CE7),
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                    ),
-                                    child: Text(
-                                      "+₹$val",
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            const SizedBox(height: 12),
+                            // Preset Buttons
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [100, 500, 1000].map((val) {
+                                return Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                                    child: OutlinedButton(
+                                      onPressed: () {
+                                        walletController.amountController.text = val.toString();
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        side: BorderSide(color: const Color(0xFF6C5CE7).withOpacity(0.3)),
+                                        foregroundColor: const Color(0xFF6C5CE7),
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                      ),
+                                      child: Text(
+                                        "+₹$val",
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 16),
-                          Obx(() => SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: walletController.isLoading.value
-                                  ? null
-                                  : () => walletController.requestAddMoney(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF6C5CE7),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                elevation: 2,
-                              ),
-                              child: walletController.isLoading.value
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                    )
-                                  : const Text("Submit Request", style: TextStyle(fontWeight: FontWeight.bold)),
+                                );
+                              }).toList(),
                             ),
-                          )),
-                        ],
-                      ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed: walletController.isLoading.value
+                                    ? null
+                                    : () => walletController.requestAddMoney(),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF6C5CE7),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  elevation: 2,
+                                ),
+                                child: walletController.isLoading.value
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                      )
+                                    : const Text("Submit Request", style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
                     ),
 
                     const SizedBox(height: 16),
@@ -369,16 +467,39 @@ class WalletView extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: statusColor.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    status,
-                                    style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11),
-                                  ),
+                                Row(
+                                  children: [
+                                    if (status == 'Pending') ...[
+                                      TextButton(
+                                        onPressed: walletController.isLoading.value
+                                            ? null
+                                            : () => walletController.cancelRequest(req['id']?.toString() ?? ''),
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          minimumSize: Size.zero,
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: Text(
+                                          "Cancel",
+                                          style: TextStyle(color: Colors.red.shade700, fontWeight: FontWeight.bold, fontSize: 11),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: statusColor.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        status == 'Rejected' && req['rejectedBy'] != null
+                                            ? 'Rejected (by ${req['rejectedBy']})'
+                                            : status,
+                                        style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

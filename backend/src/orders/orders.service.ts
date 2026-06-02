@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { Product } from '../products/entities/product.entity';
-import { UserRole } from '../users/entities/user.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 import { In } from 'typeorm';
 
 @Injectable()
@@ -13,6 +13,8 @@ export class OrdersService {
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async create(createOrderDto: any) {
@@ -27,10 +29,27 @@ export class OrdersService {
       return { ...item, productName: prod ? prod.name : 'Unknown Product' };
     });
 
+    const walletAmountUsed = createOrderDto.walletAmountUsed ? Number(createOrderDto.walletAmountUsed) : 0;
+    if (walletAmountUsed > 0 && createOrderDto.customerId) {
+      const user = await this.userRepository.findOne({ where: { id: createOrderDto.customerId } });
+      if (user) {
+        const currentBalance = typeof user.walletBalance === 'string'
+          ? parseFloat(user.walletBalance)
+          : Number(user.walletBalance || 0);
+
+        if (currentBalance < walletAmountUsed) {
+          throw new Error('Insufficient wallet balance');
+        }
+
+        user.walletBalance = currentBalance - walletAmountUsed;
+        await this.userRepository.save(user);
+      }
+    }
+
     const orderData = {
       customerName: 'Bloomarina Customer',
       customerPhone: '+91 9999999999',
-      paymentStatus: 'Pending',
+      paymentStatus: (walletAmountUsed > 0 && Number(createOrderDto.totalAmount) === 0) ? 'Paid' : 'Pending',
       ...createOrderDto,
       orderNumber: orderNum,
     };

@@ -48,9 +48,9 @@ export default function WalletRequestsPage() {
 
   const handleReject = async (id: string) => {
     try {
-      await api.post(`/wallet/request/${id}/reject`);
+      await api.post(`/wallet/request/${id}/reject`, { rejectedBy: 'Admin' });
       // Update local state
-      setRequests(prev => prev.map(req => req.id === id ? { ...req, status: 'Rejected' } : req));
+      setRequests(prev => prev.map(req => req.id === id ? { ...req, status: 'Rejected', rejectedBy: 'Admin' } : req));
     } catch (err) {
       console.error('Error rejecting request:', err);
       alert('Failed to reject request. Please try again.');
@@ -217,7 +217,9 @@ export default function WalletRequestsPage() {
                           ? 'bg-red-50 text-red-600 border-red-100'
                           : 'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'
                       }`}>
-                        {req.status}
+                        {req.status === 'Rejected' && req.rejectedBy 
+                          ? `Rejected (by ${req.rejectedBy})` 
+                          : req.status}
                       </span>
                     </td>
                     <td className="px-8 py-6">

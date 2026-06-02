@@ -124,14 +124,20 @@ export default function OrderDetailsPage() {
               <div className="bg-slate-50/50 p-8 space-y-4">
                  <div className="flex justify-between text-sm font-bold text-slate-500 px-2">
                     <span>Subtotal</span>
-                    <span>₹{Number(order.totalAmount).toFixed(2)}</span>
+                    <span>₹{(Number(order.totalAmount) + Number(order.walletAmountUsed || 0)).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm font-bold text-emerald-500 px-2">
                     <span>Delivery Fee</span>
                     <span>₹0.00</span>
                   </div>
+                  {Number(order.walletAmountUsed || 0) > 0 && (
+                    <div className="flex justify-between text-sm font-bold text-amber-600 px-2">
+                      <span>Wallet Balance Applied</span>
+                      <span>-₹{Number(order.walletAmountUsed).toFixed(2)}</span>
+                    </div>
+                  )}
                   <div className="pt-4 mt-4 border-t border-slate-200 flex justify-between items-center px-2">
-                    <span className="text-lg font-bold text-slate-900 font-outfit">Total Paid</span>
+                    <span className="text-lg font-bold text-slate-900 font-outfit">Total Payable</span>
                     <span className="text-3xl font-black text-slate-900 font-outfit">₹{Number(order.totalAmount).toFixed(2)}</span>
                   </div>
               </div>

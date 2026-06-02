@@ -43,8 +43,8 @@ export class WalletController {
 
   @Post('request/:id/reject')
   @ApiOperation({ summary: 'Reject wallet request' })
-  rejectRequest(@Param('id') id: string) {
-    return this.walletService.rejectRequest(id);
+  rejectRequest(@Param('id') id: string, @Body() body: { rejectedBy?: string }) {
+    return this.walletService.rejectRequest(id, body.rejectedBy);
   }
 
   @Post('coupon')

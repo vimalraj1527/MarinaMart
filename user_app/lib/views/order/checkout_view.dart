@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../controllers/cart_controller.dart';
 import '../../controllers/location_controller.dart';
 import '../../controllers/settings_controller.dart';
+import '../../controllers/auth_controller.dart';
 import '../../services/storage_service.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
@@ -21,13 +22,15 @@ class _CheckoutViewState extends State<CheckoutView> {
   final LocationController _locationController = Get.find<LocationController>();
   final SettingsController _settings = Get.find<SettingsController>();
   final StorageService _storage = Get.find<StorageService>();
-  
+  final AuthController _authController = Get.find<AuthController>();
+
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
   String _paymentMethod = "Cash on Delivery";
   String _deliveryType = "Instant";
   DateTime? _scheduledDateTime;
   String? _selectedSlotLabel;
+  bool _useWallet = false;
 
   @override
   void initState() {
@@ -35,7 +38,7 @@ class _CheckoutViewState extends State<CheckoutView> {
     String? userStr = _storage.getUser();
     String name = "Bloomarina Customer";
     String phone = "+91 9999999999";
-    
+
     if (userStr != null) {
       try {
         final userData = jsonDecode(userStr);
@@ -45,7 +48,7 @@ class _CheckoutViewState extends State<CheckoutView> {
         debugPrint("Error decoding user for checkout: $e");
       }
     }
-    
+
     _nameController = TextEditingController(text: name);
     _phoneController = TextEditingController(text: phone);
 
@@ -64,41 +67,45 @@ class _CheckoutViewState extends State<CheckoutView> {
   List<Map<String, dynamic>> _generateAvailableSlots() {
     List<Map<String, dynamic>> slots = [];
     DateTime now = DateTime.now();
-    
+
     for (int i = 0; i < 7; i++) {
-       DateTime date = now.add(Duration(days: i));
-       String dayLabel = i == 0 ? "Today" : i == 1 ? "Tomorrow" : DateFormat('EEE, MMM d').format(date);
-       
-       DateTime morningStart = DateTime(date.year, date.month, date.day, 8, 0);
-       DateTime morningCutoff = DateTime(date.year, date.month, date.day, 7, 0);
-       
-       if (now.isBefore(morningCutoff)) {
-          slots.add({
-            'label': '$dayLabel (Morning 8AM-12PM)',
-            'dateTime': morningStart,
-            'display': 'Morning Slot (8 AM - 12 PM)',
-            'dateLabel': dayLabel,
-          });
-       }
+      DateTime date = now.add(Duration(days: i));
+      String dayLabel = i == 0
+          ? "Today"
+          : i == 1
+          ? "Tomorrow"
+          : DateFormat('EEE, MMM d').format(date);
 
-       DateTime eveningStart = DateTime(date.year, date.month, date.day, 16, 0);
-       DateTime eveningCutoff = DateTime(date.year, date.month, date.day, 15, 0);
+      DateTime morningStart = DateTime(date.year, date.month, date.day, 8, 0);
+      DateTime morningCutoff = DateTime(date.year, date.month, date.day, 7, 0);
 
-       if (now.isBefore(eveningCutoff)) {
-          slots.add({
-            'label': '$dayLabel (Evening 4PM-8PM)',
-            'dateTime': eveningStart,
-            'display': 'Evening Slot (4 PM - 8 PM)',
-            'dateLabel': dayLabel,
-          });
-       }
+      if (now.isBefore(morningCutoff)) {
+        slots.add({
+          'label': '$dayLabel (Morning 8AM-12PM)',
+          'dateTime': morningStart,
+          'display': 'Morning Slot (8 AM - 12 PM)',
+          'dateLabel': dayLabel,
+        });
+      }
+
+      DateTime eveningStart = DateTime(date.year, date.month, date.day, 16, 0);
+      DateTime eveningCutoff = DateTime(date.year, date.month, date.day, 15, 0);
+
+      if (now.isBefore(eveningCutoff)) {
+        slots.add({
+          'label': '$dayLabel (Evening 4PM-8PM)',
+          'dateTime': eveningStart,
+          'display': 'Evening Slot (4 PM - 8 PM)',
+          'dateLabel': dayLabel,
+        });
+      }
     }
     return slots;
   }
 
   void _showSlotPicker() {
     final availableSlots = _generateAvailableSlots();
-    
+
     Get.bottomSheet(
       Container(
         padding: const EdgeInsets.all(24),
@@ -110,9 +117,15 @@ class _CheckoutViewState extends State<CheckoutView> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Select Delivery Slot", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              "Select Delivery Slot",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 4),
-            const Text("Choose a convenient time for your delivery", style: TextStyle(color: AppColors.grey)),
+            const Text(
+              "Choose a convenient time for your delivery",
+              style: TextStyle(color: AppColors.grey),
+            ),
             const SizedBox(height: 20),
             Flexible(
               child: ListView.builder(
@@ -121,7 +134,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                 itemBuilder: (context, index) {
                   final slot = availableSlots[index];
                   bool isSelected = _selectedSlotLabel == slot['label'];
-                  
+
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: InkWell(
@@ -135,8 +148,14 @@ class _CheckoutViewState extends State<CheckoutView> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppColors.primaryColor.withOpacity(0.05) : Colors.white,
-                          border: Border.all(color: isSelected ? AppColors.primaryColor : Colors.grey.shade200),
+                          color: isSelected
+                              ? AppColors.primaryColor.withOpacity(0.05)
+                              : Colors.white,
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColors.primaryColor
+                                : Colors.grey.shade200,
+                          ),
                           borderRadius: BorderRadius.circular(15),
                         ),
                         child: Row(
@@ -145,12 +164,30 @@ class _CheckoutViewState extends State<CheckoutView> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(slot['dateLabel'], style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? AppColors.primaryColor : Colors.black87)),
+                                Text(
+                                  slot['dateLabel'],
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected
+                                        ? AppColors.primaryColor
+                                        : Colors.black87,
+                                  ),
+                                ),
                                 const SizedBox(height: 2),
-                                Text(slot['display'], style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                                Text(
+                                  slot['display'],
+                                  style: TextStyle(
+                                    color: Colors.grey.shade600,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ],
                             ),
-                            if (isSelected) Icon(Icons.check_circle, color: AppColors.primaryColor)
+                            if (isSelected)
+                              Icon(
+                                Icons.check_circle,
+                                color: AppColors.primaryColor,
+                              ),
                           ],
                         ),
                       ),
@@ -169,13 +206,14 @@ class _CheckoutViewState extends State<CheckoutView> {
   double _calculateDeliveryFee(double subtotal) {
     if (_deliveryType == "Instant") {
       double distance = _locationController.getDistanceFromStore();
-      return _settings.instantBaseFee.value + (distance * _settings.perKmCharge.value);
+      return _settings.instantBaseFee.value +
+          (distance * _settings.perKmCharge.value);
     }
 
     if (subtotal >= _settings.freeDeliveryThreshold.value) {
       return 0.0;
     }
-    
+
     return _settings.baseDeliveryCharge.value;
   }
 
@@ -184,7 +222,10 @@ class _CheckoutViewState extends State<CheckoutView> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text("Final Checkout", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Final Checkout",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.white,
         centerTitle: true,
       ),
@@ -192,8 +233,18 @@ class _CheckoutViewState extends State<CheckoutView> {
         double subtotal = _cartController.totalAmount;
         double gst = subtotal * 0.05;
         double deliveryFee = _calculateDeliveryFee(subtotal);
-        double total = subtotal + gst + deliveryFee;
+        double orderTotal = subtotal + gst + deliveryFee;
         double distance = _locationController.getDistanceFromStore();
+
+        double walletBalance =
+            double.tryParse(
+              _authController.currentUser['walletBalance']?.toString() ?? '0',
+            ) ??
+            0.0;
+        double appliedWalletAmount = _useWallet
+            ? (walletBalance >= orderTotal ? orderTotal : walletBalance)
+            : 0.0;
+        double finalTotal = orderTotal - appliedWalletAmount;
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -203,91 +254,156 @@ class _CheckoutViewState extends State<CheckoutView> {
               _buildSectionHeader("Deliver To"),
               Container(
                 padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
                 child: Row(
                   children: [
-                     Icon(Icons.location_on, color: AppColors.primaryColor, size: 30),
-                     const SizedBox(width: 15),
-                     Expanded(
-                       child: Column(
-                         crossAxisAlignment: CrossAxisAlignment.start,
-                         children: [
-                           Text(_locationController.shortAddress.value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                           const SizedBox(height: 4),
-                           Text(_locationController.currentAddress.value, style: const TextStyle(color: AppColors.grey, fontSize: 13), maxLines: 2, overflow: TextOverflow.ellipsis),
-                         ],
-                       ),
-                     ),
-                     TextButton(onPressed: () => Get.toNamed('/addresses'), child: const Text("CHANGE")),
+                    Icon(
+                      Icons.location_on,
+                      color: AppColors.primaryColor,
+                      size: 30,
+                    ),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _locationController.shortAddress.value,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _locationController.currentAddress.value,
+                            style: const TextStyle(
+                              color: AppColors.grey,
+                              fontSize: 13,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Get.toNamed('/addresses'),
+                      child: const Text("CHANGE"),
+                    ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 25),
 
               _buildSectionHeader("Delivery Strategy"),
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
                 child: Column(
                   children: [
-                     RadioListTile(
-                       value: "Instant",
-                       groupValue: _deliveryType,
-                       title: const Text("Instant Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
-                       subtitle: Text("₹${_settings.instantBaseFee.value.toInt()} + ₹${_settings.perKmCharge.value.toInt()}/km • Nearby: ${distance.toStringAsFixed(1)} KM"),
-                       secondary: const Icon(Icons.bolt, color: Colors.amber, size: 32),
-                       activeColor: AppColors.primaryColor,
-                       onChanged: (val) => setState(() => _deliveryType = val.toString()),
-                     ),
-                     const Divider(indent: 72),
-                     RadioListTile(
-                       value: "Scheduled",
-                       groupValue: _deliveryType,
-                       title: const Text("Scheduled Delivery", style: TextStyle(fontWeight: FontWeight.bold)),
-                       subtitle: Text(_selectedSlotLabel ?? "Flat ₹${_settings.baseDeliveryCharge.value.toInt()} • Choose window"),
-                       secondary: const Icon(Icons.calendar_month, color: Colors.blue, size: 32),
-                       activeColor: AppColors.primaryColor,
-                       onChanged: (val) {
-                          setState(() => _deliveryType = val.toString());
-                          if (_scheduledDateTime == null) _showSlotPicker();
-                       },
-                     ),
-                     if (_deliveryType == "Scheduled")
-                       Padding(
-                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                         child: OutlinedButton.icon(
-                           onPressed: _showSlotPicker,
-                           icon: const Icon(Icons.edit_calendar, size: 18),
-                           label: const Text("Change Delivery Slot"),
-                           style: OutlinedButton.styleFrom(
-                             minimumSize: const Size(double.infinity, 45),
-                             side: BorderSide(color: AppColors.primaryColor.withOpacity(0.3)),
-                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                           ),
-                         ),
-                       ),
+                    RadioListTile(
+                      value: "Instant",
+                      groupValue: _deliveryType,
+                      title: const Text(
+                        "Instant Delivery",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        "₹${_settings.instantBaseFee.value.toInt()} + ₹${_settings.perKmCharge.value.toInt()}/km • Nearby: ${distance.toStringAsFixed(1)} KM",
+                      ),
+                      secondary: const Icon(
+                        Icons.bolt,
+                        color: Colors.amber,
+                        size: 32,
+                      ),
+                      activeColor: AppColors.primaryColor,
+                      onChanged: (val) =>
+                          setState(() => _deliveryType = val.toString()),
+                    ),
+                    const Divider(indent: 72),
+                    RadioListTile(
+                      value: "Scheduled",
+                      groupValue: _deliveryType,
+                      title: const Text(
+                        "Scheduled Delivery",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        _selectedSlotLabel ??
+                            "Flat ₹${_settings.baseDeliveryCharge.value.toInt()} • Choose window",
+                      ),
+                      secondary: const Icon(
+                        Icons.calendar_month,
+                        color: Colors.blue,
+                        size: 32,
+                      ),
+                      activeColor: AppColors.primaryColor,
+                      onChanged: (val) {
+                        setState(() => _deliveryType = val.toString());
+                        if (_scheduledDateTime == null) _showSlotPicker();
+                      },
+                    ),
+                    if (_deliveryType == "Scheduled")
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
+                        child: OutlinedButton.icon(
+                          onPressed: _showSlotPicker,
+                          icon: const Icon(Icons.edit_calendar, size: 18),
+                          label: const Text("Change Delivery Slot"),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 45),
+                            side: BorderSide(
+                              color: AppColors.primaryColor.withOpacity(0.3),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 25),
-              
+
               _buildSectionHeader("Contact Details"),
               Container(
                 padding: const EdgeInsets.all(15),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
                 child: Column(
                   children: [
                     TextField(
                       controller: _nameController,
-                      decoration: const InputDecoration(labelText: "Recipient Name", border: InputBorder.none, prefixIcon: Icon(Icons.person_outline)),
+                      decoration: const InputDecoration(
+                        labelText: "Recipient Name",
+                        border: InputBorder.none,
+                        prefixIcon: Icon(Icons.person_outline),
+                      ),
                     ),
                     const Divider(),
                     TextField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(labelText: "Mobile Contact", border: InputBorder.none, prefixIcon: Icon(Icons.phone_iphone_outlined)),
+                      decoration: const InputDecoration(
+                        labelText: "Mobile Contact",
+                        border: InputBorder.none,
+                        prefixIcon: Icon(Icons.phone_iphone_outlined),
+                      ),
                     ),
                   ],
                 ),
@@ -298,41 +414,103 @@ class _CheckoutViewState extends State<CheckoutView> {
               _buildSectionHeader("Payment Mode"),
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
                 child: Column(
                   children: [
-                     RadioListTile(
-                       value: "Cash on Delivery",
-                       groupValue: _paymentMethod,
-                       title: const Text("Cash on Delivery (COD)"),
-                       subtitle: const Text("Physical payment at doorstep"),
-                       activeColor: AppColors.primaryColor,
-                       onChanged: (val) => setState(() => _paymentMethod = val.toString()),
-                     ),
-                     RadioListTile(
-                       value: "Online",
-                       groupValue: _paymentMethod,
-                       title: Row(
-                         children: [
-                           const Text("Secure Online Payment"),
-                           const SizedBox(width: 8),
-                           Container(
-                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                             decoration: BoxDecoration(
-                               color: AppColors.primaryColor.withOpacity(0.1),
-                               borderRadius: BorderRadius.circular(6),
-                             ),
-                             child: Text("COMING SOON", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.primaryColor)),
-                           )
-                         ],
-                       ),
-                       subtitle: const Text("UPI, Cards, & Wallets"),
-                       activeColor: AppColors.primaryColor,
-                       onChanged: (val) {
-                         Get.snackbar("Coming Soon", "Online payments will be available shortly!", backgroundColor: Colors.black87, colorText: Colors.white);
-                       },
-                     ),
+                    RadioListTile(
+                      value: "Cash on Delivery",
+                      groupValue: _paymentMethod,
+                      title: const Text("Cash on Delivery (COD)"),
+                      subtitle: const Text("Physical payment at doorstep"),
+                      activeColor: AppColors.primaryColor,
+                      onChanged: (val) =>
+                          setState(() => _paymentMethod = val.toString()),
+                    ),
+                    RadioListTile(
+                      value: "Online",
+                      groupValue: _paymentMethod,
+                      title: Row(
+                        children: [
+                          const Text("Secure Online Payment"),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              "COMING SOON",
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      subtitle: const Text("UPI, Cards, & Wallets"),
+                      activeColor: AppColors.primaryColor,
+                      onChanged: (val) {
+                        Get.snackbar(
+                          "Coming Soon",
+                          "Online payments will be available shortly!",
+                          backgroundColor: Colors.black87,
+                          colorText: Colors.white,
+                        );
+                      },
+                    ),
                   ],
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              _buildSectionHeader("Wallet Balance"),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: SwitchListTile(
+                  value: _useWallet,
+                  onChanged: walletBalance > 0
+                      ? (val) => setState(() => _useWallet = val)
+                      : null,
+                  activeThumbColor: AppColors.primaryColor,
+                  title: const Text(
+                    "Apply Wallet Balance",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    walletBalance > 0
+                        ? "Use ₹${walletBalance.toStringAsFixed(2)} to reduce payment"
+                        : "Balance: ₹0.00 (Go to profile to add money)",
+                    style: TextStyle(
+                      color: walletBalance > 0
+                          ? Colors.green.shade700
+                          : AppColors.grey,
+                      fontSize: 13,
+                    ),
+                  ),
+                  secondary: Icon(
+                    Icons.wallet,
+                    color: walletBalance > 0
+                        ? AppColors.primaryColor
+                        : AppColors.grey,
+                    size: 32,
+                  ),
                 ),
               ),
 
@@ -341,30 +519,64 @@ class _CheckoutViewState extends State<CheckoutView> {
               _buildSectionHeader("Financial Summary"),
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(15)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
                 child: Column(
                   children: [
-                    _buildBillRow("Subtotal", "₹${subtotal.toStringAsFixed(2)}"),
-                    _buildBillRow("Taxes & GST (5%)", "₹${gst.toStringAsFixed(2)}"),
                     _buildBillRow(
-                      _deliveryType == "Instant" ? "Rapid Delivery Fee (${distance.toStringAsFixed(1)} KM)" : "Value Delivery Fee (Slot)", 
-                      deliveryFee == 0 ? "FREE" : "₹${deliveryFee.toStringAsFixed(2)}", 
-                      isFree: deliveryFee == 0
+                      "Subtotal",
+                      "₹${subtotal.toStringAsFixed(2)}",
                     ),
-                    if (deliveryFee > 0 && subtotal < _settings.freeDeliveryThreshold.value)
-                       Padding(
-                         padding: const EdgeInsets.only(top: 8),
-                         child: Text(
-                           "Add ₹${(_settings.freeDeliveryThreshold.value - subtotal).toStringAsFixed(0)} more for FREE delivery", 
-                           style: const TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)
-                         ),
-                       ),
+                    _buildBillRow(
+                      "Taxes & GST (5%)",
+                      "₹${gst.toStringAsFixed(2)}",
+                    ),
+                    _buildBillRow(
+                      _deliveryType == "Instant"
+                          ? "Rapid Delivery Fee (${distance.toStringAsFixed(1)} KM)"
+                          : "Value Delivery Fee (Slot)",
+                      deliveryFee == 0
+                          ? "FREE"
+                          : "₹${deliveryFee.toStringAsFixed(2)}",
+                      isFree: deliveryFee == 0,
+                    ),
+                    if (deliveryFee > 0 &&
+                        subtotal < _settings.freeDeliveryThreshold.value)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          "Add ₹${(_settings.freeDeliveryThreshold.value - subtotal).toStringAsFixed(0)} more for FREE delivery",
+                          style: const TextStyle(
+                            color: Colors.green,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    if (_useWallet && appliedWalletAmount > 0) ...[
+                      const Divider(),
+                      _buildBillRow(
+                        "Order Total",
+                        "₹${orderTotal.toStringAsFixed(2)}",
+                      ),
+                      _buildBillRow(
+                        "Wallet Balance Applied",
+                        "-₹${appliedWalletAmount.toStringAsFixed(2)}",
+                        isFree: true,
+                      ),
+                    ],
                     const Divider(height: 30),
-                    _buildBillRow("TOTAL PAYABLE", "₹${total.toStringAsFixed(2)}", isBold: true),
+                    _buildBillRow(
+                      "TOTAL PAYABLE",
+                      "₹${finalTotal.toStringAsFixed(2)}",
+                      isBold: true,
+                    ),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 120),
             ],
           ),
@@ -372,35 +584,64 @@ class _CheckoutViewState extends State<CheckoutView> {
       }),
       bottomSheet: Obx(() {
         double subtotal = _cartController.totalAmount;
+        double gst = subtotal * 0.05;
         double deliveryFee = _calculateDeliveryFee(subtotal);
-        double total = subtotal + (subtotal * 0.05) + deliveryFee;
+        double orderTotal = subtotal + gst + deliveryFee;
+
+        double walletBalance =
+            double.tryParse(
+              _authController.currentUser['walletBalance']?.toString() ?? '0',
+            ) ??
+            0.0;
+        double appliedWalletAmount = _useWallet
+            ? (walletBalance >= orderTotal ? orderTotal : walletBalance)
+            : 0.0;
+        double finalTotal = orderTotal - appliedWalletAmount;
 
         return Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: const Offset(0, -2))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
           ),
           child: ElevatedButton(
-            onPressed: _cartController.isLoading.value ? null : () => _confirmOrder(total),
+            onPressed: _cartController.isLoading.value
+                ? null
+                : () => _confirmOrder(finalTotal, appliedWalletAmount),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryColor,
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 54),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+              ),
               elevation: 3,
               shadowColor: AppColors.primaryColor.withOpacity(0.35),
             ),
-            child: _cartController.isLoading.value 
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
+            child: _cartController.isLoading.value
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  )
                 : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Confirm Order • ₹${total.toStringAsFixed(0)}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_ios, size: 16),
-                  ],
-                ),
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Confirm Order • ₹${finalTotal.toStringAsFixed(0)}",
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_ios, size: 16),
+                    ],
+                  ),
           ),
         );
       }),
@@ -410,53 +651,93 @@ class _CheckoutViewState extends State<CheckoutView> {
   Widget _buildSectionHeader(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(title.toUpperCase(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppColors.grey, letterSpacing: 1.5)),
+      child: Text(
+        title.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          color: AppColors.grey,
+          letterSpacing: 1.5,
+        ),
+      ),
     );
   }
 
-  Widget _buildBillRow(String label, String value, {bool isBold = false, bool isFree = false}) {
+  Widget _buildBillRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    bool isFree = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: isBold ? Colors.black : AppColors.grey, fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: isBold ? 15 : 14)),
-          Text(value, style: TextStyle(color: isFree ? Colors.green : Colors.black, fontWeight: isBold ? FontWeight.bold : FontWeight.w600, fontSize: isBold ? 17 : 14)),
+          Text(
+            label,
+            style: TextStyle(
+              color: isBold ? Colors.black : AppColors.grey,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              fontSize: isBold ? 15 : 14,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color: isFree ? Colors.green : Colors.black,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+              fontSize: isBold ? 17 : 14,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  void _confirmOrder(double total) {
-     if (_nameController.text.isEmpty || _phoneController.text.isEmpty) {
-        Get.snackbar("Details Missing", "Please provide recipient contact information.",
-            backgroundColor: Colors.orange, colorText: Colors.white);
-        return;
-     }
+  void _confirmOrder(double finalTotal, double walletAmountUsed) {
+    if (_nameController.text.isEmpty || _phoneController.text.isEmpty) {
+      Get.snackbar(
+        "Details Missing",
+        "Please provide recipient contact information.",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
 
-     String phoneVal = _phoneController.text.replaceAll(RegExp(r'\D'), '');
-     if (phoneVal.length > 10) {
-       phoneVal = phoneVal.substring(phoneVal.length - 10);
-     }
-     if (phoneVal.length != 10) {
-       Get.snackbar("Invalid Mobile Number", "Mobile number must be exactly 10 digits.",
-           backgroundColor: Colors.orange, colorText: Colors.white);
-       return;
-     }
+    String phoneVal = _phoneController.text.replaceAll(RegExp(r'\D'), '');
+    if (phoneVal.length > 10) {
+      phoneVal = phoneVal.substring(phoneVal.length - 10);
+    }
+    if (phoneVal.length != 10) {
+      Get.snackbar(
+        "Invalid Mobile Number",
+        "Mobile number must be exactly 10 digits.",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
 
-     if (_deliveryType == "Scheduled" && _scheduledDateTime == null) {
-       Get.snackbar("Select Slot", "A delivery time slot is required for scheduled orders.",
-           backgroundColor: Colors.orange, colorText: Colors.white);
-       _showSlotPicker();
-       return;
-     }
+    if (_deliveryType == "Scheduled" && _scheduledDateTime == null) {
+      Get.snackbar(
+        "Select Slot",
+        "A delivery time slot is required for scheduled orders.",
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      _showSlotPicker();
+      return;
+    }
 
-     _cartController.placeOrder(
-       total, 
-       _nameController.text, 
-       phoneVal,
-       deliveryType: _deliveryType,
-       scheduledAt: _scheduledDateTime?.toIso8601String(),
-     );
+    _cartController.placeOrder(
+      finalTotal,
+      _nameController.text,
+      phoneVal,
+      deliveryType: _deliveryType,
+      scheduledAt: _scheduledDateTime?.toIso8601String(),
+      walletAmountUsed: walletAmountUsed,
+    );
   }
 }

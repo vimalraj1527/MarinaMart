@@ -14,10 +14,34 @@ class WalletController extends GetxController {
   final TextEditingController amountController = TextEditingController();
   final TextEditingController couponController = TextEditingController();
 
+  bool get hasPendingRequest => requests.any((req) => req['status']?.toString() == 'Pending');
+
   @override
   void onInit() {
     super.onInit();
     fetchWalletRequests();
+  }
+
+  Future<void> cancelRequest(String requestId) async {
+    try {
+      isLoading.value = true;
+      final response = await _apiService.postData('/wallet/request/$requestId/reject', {'rejectedBy': 'User'});
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Get.snackbar('Request Cancelled', 'Your wallet load request has been cancelled.',
+            backgroundColor: Colors.orange, colorText: Colors.white);
+        await fetchWalletRequests();
+      } else {
+        final err = jsonDecode(response.body);
+        Get.snackbar('Cancellation Failed', err['message'] ?? 'Failed to cancel request.',
+            backgroundColor: Colors.red, colorText: Colors.white);
+      }
+    } catch (e) {
+      Get.snackbar('Connection Error', 'Failed to connect to wallet server.',
+          backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> fetchWalletRequests() async {

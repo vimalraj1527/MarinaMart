@@ -3,6 +3,7 @@ import '../models/product_model.dart';
 import '../services/api_service.dart';
 import '../utils/app_constants.dart';
 import '../controllers/location_controller.dart';
+import 'auth_controller.dart';
 
 class CartItem {
   final Product product;
@@ -47,7 +48,7 @@ class CartController extends GetxController {
     }
   }
 
-  Future<void> placeOrder(double targetTotal, String customerName, String customerPhone, {String deliveryType = 'Instant', String? scheduledAt}) async {
+  Future<void> placeOrder(double targetTotal, String customerName, String customerPhone, {String deliveryType = 'Instant', String? scheduledAt, double walletAmountUsed = 0.0}) async {
     if (cartItems.isEmpty) return;
 
     try {
@@ -61,10 +62,11 @@ class CartController extends GetxController {
           'price': item.product.price,
         }).toList(),
         'totalAmount': targetTotal,
+        'walletAmountUsed': walletAmountUsed,
         'customerName': customerName,
         'customerPhone': customerPhone,
         'deliveryAddress': _locationController.currentAddress.value,
-        'paymentMethod': 'Cash on Delivery',
+        'paymentMethod': walletAmountUsed > 0 && targetTotal == 0 ? 'Wallet' : 'Cash on Delivery',
         'status': 'Pending',
         'deliveryType': deliveryType,
         'scheduledAt': scheduledAt,
@@ -74,11 +76,23 @@ class CartController extends GetxController {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         clearCart();
+        try {
+          final AuthController authController = Get.find<AuthController>();
+          await authController.refreshUserProfile();
+        } catch (e) {
+          print("Error refreshing user profile after order placement: $e");
+        }
         Get.offNamed('/order-success');
       } else {
         // Even if server fails, we'll simulate success for today's demo if it's a 4xx error (offline/dev mode)
         if (response.statusCode >= 400 && response.statusCode < 500) {
            clearCart();
+           try {
+             final AuthController authController = Get.find<AuthController>();
+             await authController.refreshUserProfile();
+           } catch (e) {
+             print("Error refreshing user profile after order placement: $e");
+           }
            Get.offNamed('/order-success');
         } else {
            Get.snackbar("Error", "Unable to place order. Try again later.", snackPosition: SnackPosition.BOTTOM);

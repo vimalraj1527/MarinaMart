@@ -29,6 +29,9 @@ export class WalletRequest {
   })
   status: WalletRequestStatus;
 
+  @Column({ nullable: true })
+  rejectedBy: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

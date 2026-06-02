@@ -43,6 +43,9 @@ export class Order {
   @Column('decimal', { precision: 10, scale: 2 })
   totalAmount: number;
 
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  walletAmountUsed: number;
+
   @Column({
     type: 'enum',
     enum: OrderStatus,

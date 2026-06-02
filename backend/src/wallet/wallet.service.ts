@@ -31,6 +31,17 @@ export class WalletService {
       throw new BadRequestException('Amount must be greater than zero');
     }
 
+    const pendingRequest = await this.walletRequestRepo.findOne({
+      where: {
+        customerId,
+        status: WalletRequestStatus.PENDING,
+      },
+    });
+
+    if (pendingRequest) {
+      throw new BadRequestException('You already have a pending wallet money add request.');
+    }
+
     const request = this.walletRequestRepo.create({
       customerId,
       amount,
@@ -89,7 +100,7 @@ export class WalletService {
     return await this.walletRequestRepo.save(request);
   }
 
-  async rejectRequest(id: string): Promise<WalletRequest> {
+  async rejectRequest(id: string, rejectedBy?: string): Promise<WalletRequest> {
     const request = await this.walletRequestRepo.findOne({ where: { id } });
     if (!request) {
       throw new NotFoundException('Wallet request not found');
@@ -100,6 +111,9 @@ export class WalletService {
     }
 
     request.status = WalletRequestStatus.REJECTED;
+    if (rejectedBy) {
+      request.rejectedBy = rejectedBy;
+    }
     return await this.walletRequestRepo.save(request);
   }
 
