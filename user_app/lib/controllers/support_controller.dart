@@ -77,13 +77,13 @@ class SupportController extends GetxController {
   Future<void> launchWhatsApp() async {
     final whatsappUrl = Uri.parse("https://wa.me/91$supportPhoneNumber?text=Hello,%20I%20need%20help%20with%20my%20order.");
     try {
-      if (await canLaunchUrl(whatsappUrl)) {
-        await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
-      } else {
-        Get.snackbar("WhatsApp Error", "Could not launch WhatsApp. Support Phone: +91 $supportPhoneNumber");
-      }
+      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
     } catch (e) {
-      Get.snackbar("Error", "Could not open WhatsApp: $e");
+      Get.snackbar(
+        "WhatsApp Info",
+        "Could not open WhatsApp automatically. Support Phone: +91 $supportPhoneNumber",
+        duration: const Duration(seconds: 5),
+      );
     }
   }
 
