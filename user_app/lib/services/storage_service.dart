@@ -80,4 +80,13 @@ class StorageService {
   List<String> getFavorites() {
     return _prefs.getStringList('favorite_products') ?? [];
   }
+
+  // Birthday Greeting Tracker
+  int? getLastBirthdayGreetingTime() {
+    return _prefs.getInt('last_birthday_greeting_time');
+  }
+
+  Future<void> setLastBirthdayGreetingTime(int time) async {
+    await _prefs.setInt('last_birthday_greeting_time', time);
+  }
 }

@@ -87,12 +87,19 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       }
     });
 
-    // Check birthday and show greeting after a short delay
+    // Check birthday and show greeting after a short delay (limit to once per hour)
     Future.delayed(const Duration(milliseconds: 800), () {
       if (!mounted) return;
       final authController = Get.find<AuthController>();
       if (authController.isBirthdayToday) {
-        setState(() => _showBirthdayOverlay = true);
+        final storage = Get.find<StorageService>();
+        final lastShown = storage.getLastBirthdayGreetingTime();
+        final now = DateTime.now().millisecondsSinceEpoch;
+        
+        if (lastShown == null || (now - lastShown) >= 3600000) {
+          setState(() => _showBirthdayOverlay = true);
+          storage.setLastBirthdayGreetingTime(now);
+        }
       }
     });
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../utils/app_colors.dart';
 
 // ─── Confetti Particle Model ───────────────────────────────────────────────────
 class _Particle {
@@ -359,18 +360,24 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
       padding: const EdgeInsets.all(0),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: const Color(0xFFFFD700), width: 2.5),
         boxShadow: [
-          BoxShadow(color: const Color(0xFFFF6B6B).withOpacity(0.3), blurRadius: 40, spreadRadius: 5, offset: const Offset(0, 15)),
+          BoxShadow(
+            color: const Color(0xFFFFD700).withOpacity(0.3),
+            blurRadius: 40,
+            spreadRadius: 4,
+            offset: const Offset(0, 15),
+          ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(30),
         child: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1A1A2E), Color(0xFF16213E), Color(0xFF0F3460)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              colors: [Color(0xFFFFFDF2), Color(0xFFFFF9E6)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
           child: Stack(
@@ -384,7 +391,7 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
                   height: 180,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFFF6B6B).withOpacity(0.15),
+                    color: const Color(0xFFFFD700).withOpacity(0.12),
                   ),
                 ),
               ),
@@ -396,7 +403,7 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
                   height: 130,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFFFE66D).withOpacity(0.12),
+                    color: const Color(0xFFFFA500).withOpacity(0.08),
                   ),
                 ),
               ),
@@ -414,12 +421,16 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: const LinearGradient(
-                          colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                          colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         boxShadow: [
-                          BoxShadow(color: const Color(0xFFFF6B6B).withOpacity(0.5), blurRadius: 20, spreadRadius: 2),
+                          BoxShadow(
+                            color: const Color(0xFFFFA500).withOpacity(0.4),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
                         ],
                       ),
                       child: const Center(
@@ -436,7 +447,7 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
                         children: [
                           ShaderMask(
                             shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xFFFFE66D), Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                              colors: [Color(0xFF8B6508), Color(0xFFB8860B), Color(0xFFCD9B1D)],
                             ).createShader(bounds),
                             child: const Text(
                               '🎉 Happy Birthday!',
@@ -456,7 +467,7 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
                             style: const TextStyle(
                               fontSize: 34,
                               fontWeight: FontWeight.w900,
-                              color: Colors.white,
+                              color: Colors.black87,
                               letterSpacing: -0.5,
                               fontFamily: 'Outfit',
                             ),
@@ -467,17 +478,17 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
                             height: 1.5,
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [Colors.transparent, Color(0xFFFF6B6B), Colors.transparent],
+                                colors: [Colors.transparent, Color(0xFFFFD700), Colors.transparent],
                               ),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
+                          Text(
                             'Wishing you a day filled with\nfreshness, happiness & amazing deals! 🛒✨',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade800,
+                              fontWeight: FontWeight.w600,
                               height: 1.6,
                             ),
                             textAlign: TextAlign.center,
@@ -506,11 +517,11 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
                       child: ElevatedButton(
                         onPressed: widget.onClose,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF6B6B),
+                          backgroundColor: AppColors.primaryColor,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                           elevation: 6,
-                          shadowColor: const Color(0xFFFF6B6B).withOpacity(0.5),
+                          shadowColor: AppColors.primaryColor.withOpacity(0.4),
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
