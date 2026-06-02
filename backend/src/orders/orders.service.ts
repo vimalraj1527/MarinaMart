@@ -49,7 +49,7 @@ export class OrdersService {
     const orderData = {
       customerName: 'Bloomarina Customer',
       customerPhone: '+91 9999999999',
-      paymentStatus: (walletAmountUsed > 0 && Number(createOrderDto.totalAmount) === 0) ? 'Paid' : 'Pending',
+      paymentStatus: (walletAmountUsed > 0 && walletAmountUsed >= Number(createOrderDto.totalAmount)) ? 'Paid' : 'Pending',
       ...createOrderDto,
       orderNumber: orderNum,
     };

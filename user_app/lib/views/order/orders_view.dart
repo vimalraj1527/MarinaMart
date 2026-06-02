@@ -68,6 +68,16 @@ class OrdersView extends StatelessWidget {
   Widget _buildOrderCard(dynamic order) {
     // FIX: Convert to Local Time for accurate display
     final dateStr = DateFormat('dd MMM yyyy, hh:mm a').format(order.createdAt.toLocal());
+
+    // FIX: If totalAmount is 0 (old orders with wallet deduction), compute from items
+    double displayTotal = order.totalAmount;
+    if (displayTotal <= 0 && order.items.isNotEmpty) {
+      double itemsTotal = 0;
+      for (var item in order.items) {
+        itemsTotal += (item.price * item.quantity);
+      }
+      displayTotal = itemsTotal;
+    }
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -153,7 +163,7 @@ class OrdersView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text("${order.items.length} Items", style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text("₹${order.totalAmount}", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppColors.primaryColor)),
+              Text("₹${displayTotal.toStringAsFixed(0)}", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: AppColors.primaryColor)),
             ],
           ),
           const SizedBox(height: 8),

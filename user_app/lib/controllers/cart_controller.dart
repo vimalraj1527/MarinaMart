@@ -66,7 +66,7 @@ class CartController extends GetxController {
         'customerName': customerName,
         'customerPhone': customerPhone,
         'deliveryAddress': _locationController.currentAddress.value,
-        'paymentMethod': walletAmountUsed > 0 && targetTotal == 0 ? 'Wallet' : 'Cash on Delivery',
+        'paymentMethod': walletAmountUsed > 0 && walletAmountUsed >= targetTotal ? 'Wallet' : 'Cash on Delivery',
         'status': 'Pending',
         'deliveryType': deliveryType,
         'scheduledAt': scheduledAt,

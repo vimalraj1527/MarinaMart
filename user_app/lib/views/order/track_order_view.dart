@@ -459,6 +459,14 @@ class _TrackOrderViewState extends State<TrackOrderView>
 
   // ── Order Summary ──────────────────────────────────────────────────────
   Widget _buildOrderSummary(OrderModel order) {
+    // FIX: If totalAmount is 0 (old orders with wallet deduction), compute from items
+    double displayTotal = order.totalAmount;
+    if (displayTotal <= 0 && order.items.isNotEmpty) {
+      for (var item in order.items) {
+        displayTotal += (item.price * item.quantity);
+      }
+    }
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -492,7 +500,7 @@ class _TrackOrderViewState extends State<TrackOrderView>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Total', style: TextStyle(color: Color(0xFF8E8E93), fontSize: 14, fontWeight: FontWeight.w700)),
-              Text('₹${order.totalAmount}', style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 20, fontWeight: FontWeight.w900)),
+              Text('₹${displayTotal.toStringAsFixed(0)}', style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 20, fontWeight: FontWeight.w900)),
             ],
           ),
           const SizedBox(height: 12),

@@ -613,7 +613,7 @@ class _CheckoutViewState extends State<CheckoutView> {
           child: ElevatedButton(
             onPressed: _cartController.isLoading.value
                 ? null
-                : () => _confirmOrder(finalTotal, appliedWalletAmount),
+                : () => _confirmOrder(orderTotal, appliedWalletAmount),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryColor,
               foregroundColor: Colors.white,
