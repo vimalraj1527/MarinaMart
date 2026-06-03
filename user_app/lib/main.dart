@@ -56,6 +56,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: AppColors.backgroundColor,
         primaryColor: AppColors.primaryColor,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primaryColor,
           primary: AppColors.primaryColor,

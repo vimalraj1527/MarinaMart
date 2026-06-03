@@ -9,11 +9,12 @@ class ProductListController extends GetxController {
   
   final RxList<Product> categoryProducts = <Product>[].obs;
   final RxBool isLoading = false.obs;
+  final RxString selectedCategory = "".obs;
 
   Future<void> fetchProductsByCategory(String category) async {
     try {
       isLoading.value = true;
-      categoryProducts.clear();
+      selectedCategory.value = category;
       
       // We pass the category name as a query param to the backend
       final query = category.toLowerCase().contains("dairy") || category.toLowerCase().contains("diary") ? "dairy" : category;
@@ -23,6 +24,8 @@ class ProductListController extends GetxController {
       if (response.statusCode == 200) {
         List data = jsonDecode(response.body);
         categoryProducts.assignAll(data.map((e) => Product.fromJson(e)).toList());
+      } else {
+        categoryProducts.clear();
       }
     } catch (e) {
       print("Error fetching category products: $e");
