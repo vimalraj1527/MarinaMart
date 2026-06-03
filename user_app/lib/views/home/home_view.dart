@@ -702,20 +702,14 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             return _buildCategoryGridShimmer();
           }
 
-          return SizedBox(
-            height: 200,
-            child: GridView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.85,
-              ),
-              itemCount: controller.categories.length,
-              itemBuilder: (context, index) {
-                final cat = controller.categories[index];
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
+              children: controller.categories.map((cat) {
                 final color = _getCategoryColor(cat.name);
 
                 return GestureDetector(
@@ -726,50 +720,66 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     );
                   },
                   child: Container(
+                    width: 78,
+                    height: 98,
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: color.withOpacity(0.15),
+                        color: Colors.grey.shade200.withOpacity(0.8),
                         width: 1,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
                     ),
+                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          height: 54,
-                          width: 54,
-                          padding: const EdgeInsets.all(4),
+                          height: 56,
+                          width: 56,
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          padding: cat.image.isNotEmpty
+                              ? EdgeInsets.zero
+                              : const EdgeInsets.all(8),
                           child: cat.image.isNotEmpty
                               ? Image.network(
                                   cat.image,
                                   fit: BoxFit.contain,
-                                  errorBuilder: (c, e, s) =>
-                                      _getCategoryIcon(cat.name),
+                                  errorBuilder: (c, e, s) => Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: _getCategoryIcon(cat.name),
+                                  ),
                                 )
                               : _getCategoryIcon(cat.name),
                         ),
-                        const SizedBox(height: 6),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Text(
-                            cat.name,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.black87,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        const SizedBox(height: 4),
+                        Text(
+                          cat.name,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
                           ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
                 );
-              },
+              }).toList(),
             ),
           );
         }),
@@ -793,7 +803,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     else if (n.contains("meat"))
       icon = Icons.kebab_dining_rounded;
 
-    return Icon(icon, size: 28, color: _getCategoryColor(name));
+    return Icon(icon, size: 32, color: _getCategoryColor(name));
   }
 
   Color _getCategoryColor(String name) {
@@ -819,24 +829,21 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     return Shimmer.fromColors(
       baseColor: Colors.grey[200]!,
       highlightColor: Colors.white,
-      child: SizedBox(
-        height: 200,
-        child: GridView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 2),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 0.85,
-          ),
-          itemCount: 8,
-          itemBuilder: (context, index) => Container(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 12,
+          children: List.generate(8, (index) => Container(
+            width: 78,
+            height: 98,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
             ),
-          ),
+          )),
         ),
       ),
     );
