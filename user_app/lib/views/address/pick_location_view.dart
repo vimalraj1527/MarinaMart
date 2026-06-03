@@ -92,7 +92,7 @@ class _PickLocationViewState extends State<PickLocationView> {
             children: [
               TileLayer(
                 urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-                userAgentPackageName: 'com.bloomarina.instamart.user_app',
+                userAgentPackageName: 'com.marinamart.user_app',
               ),
             ],
           ),

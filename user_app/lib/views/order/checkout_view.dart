@@ -26,7 +26,7 @@ class _CheckoutViewState extends State<CheckoutView> {
 
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
-  String _paymentMethod = "Cash on Delivery";
+  final String _paymentMethod = "Cash on Delivery";
   String _deliveryType = "Scheduled";
   DateTime? _scheduledDateTime;
   String? _selectedSlotLabel;
@@ -36,7 +36,7 @@ class _CheckoutViewState extends State<CheckoutView> {
   void initState() {
     super.initState();
     String? userStr = _storage.getUser();
-    String name = "Bloomarina Customer";
+    String name = "MaRinaMaRt Customer";
     String phone = "+91 9999999999";
 
     if (userStr != null) {

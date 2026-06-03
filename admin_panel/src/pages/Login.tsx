@@ -52,7 +52,7 @@ export default function LoginPage() {
           <div className="inline-flex p-4 bg-emerald-600 rounded-[2rem] shadow-xl shadow-emerald-200 mb-6 group hover:scale-110 transition-transform cursor-pointer">
             <ShieldCheck className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl font-black text-slate-900 font-outfit tracking-tight">Bloomarina</h1>
+          <h1 className="text-4xl font-black text-slate-900 font-outfit tracking-tight">MaRinaMaRt</h1>
           <p className="text-emerald-600 font-black uppercase text-[10px] tracking-[0.3em] mt-1 italic">Supreme Admin Console</p>
         </div>
 
@@ -65,7 +65,7 @@ export default function LoginPage() {
               </div>
               <input 
                 type="email" 
-                placeholder="tech@bloomarina.com"
+                placeholder="tech@marinamart.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full pl-16 pr-8 py-5 bg-white border-2 border-slate-100 rounded-[2rem] focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all font-bold text-slate-900"
@@ -109,7 +109,7 @@ export default function LoginPage() {
 
         <div className="mt-10 text-center">
           <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-loose">
-            Project Grocery Delivery • Bloomarina Instamart<br/>
+            Project Grocery Delivery • MaRinaMaRt<br/>
             © 2026 High Security Cloud Infrastructure
           </p>
         </div>

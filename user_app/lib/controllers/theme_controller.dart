@@ -262,7 +262,7 @@ class ThemeController extends GetxController {
                       : null,
                 ),
               );
-            }).toList(),
+            }),
             const SizedBox(height: 8),
           ],
         ),

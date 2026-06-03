@@ -1,5 +1,5 @@
 class AppConstants {
-  static const String appName = 'Bloomarina Instamart';
+  static const String appName = 'MaRinaMaRt';
   static const String appVersion = '1.0.0';
   
   // NOTE: If using Android Emulator, use http://10.0.2.2:5001

@@ -47,7 +47,7 @@ export class OrdersService {
     }
 
     const orderData = {
-      customerName: 'Bloomarina Customer',
+      customerName: 'MaRinaMaRt Customer',
       customerPhone: '+91 9999999999',
       paymentStatus: (walletAmountUsed > 0 && walletAmountUsed >= Number(createOrderDto.totalAmount)) ? 'Paid' : 'Pending',
       ...createOrderDto,

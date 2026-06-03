@@ -8,7 +8,7 @@ class AboutView extends StatelessWidget {
   static const String privacyPolicyContent = """
 Last Updated: June 2026
 
-At Bloomarina Instamart, your privacy is our top priority. This Privacy Policy outlines how we collect, use, and protect your information.
+At MaRinaMaRt, your privacy is our top priority. This Privacy Policy outlines how we collect, use, and protect your information.
 
 1. Information We Collect
 We collect personal information that you provide to us, including:
@@ -20,7 +20,7 @@ We collect personal information that you provide to us, including:
 We use your data to:
 • Process and fulfill your grocery orders.
 • Calculate accurate delivery charges using distance logic.
-• Manage your Bloomarina Wallet balance and transactions.
+• Manage your MaRinaMaRt Wallet balance and transactions.
 • Send order confirmation and real-time delivery status tracking updates.
 
 3. Sharing of Information
@@ -33,7 +33,7 @@ We implement industry-standard technical measures (API encryption, authorization
   static const String termsOfServiceContent = """
 Last Updated: June 2026
 
-Welcome to Bloomarina Instamart. By using our application, you agree to comply with and be bound by the following Terms of Service.
+Welcome to MaRinaMaRt. By using our application, you agree to comply with and be bound by the following Terms of Service.
 
 1. User Account
 • You must create a verified account to use our delivery services.
@@ -44,7 +44,7 @@ Welcome to Bloomarina Instamart. By using our application, you agree to comply w
 • Delivery charges are calculated dynamically based on the straight-line distance from our store to your confirmed GPS address.
 
 3. Wallet & Payments
-• We support payments via Cash on Delivery (COD) and the Bloomarina Wallet.
+• We support payments via Cash on Delivery (COD) and the MaRinaMaRt Wallet.
 • Users can load funds into their wallet subject to Admin approval.
 • Rejected or cancelled orders will be refunded back to your Wallet balance.
 
@@ -56,7 +56,7 @@ Welcome to Bloomarina Instamart. By using our application, you agree to comply w
   static const String dataProtectionContent = """
 Last Updated: June 2026
 
-Bloomarina Instamart is committed to maintaining high standards of data protection and protecting your digital rights.
+MaRinaMaRt is committed to maintaining high standards of data protection and protecting your digital rights.
 
 1. GPS Location Usage
 • The application requests location access to identify nearby delivery zones.
@@ -96,14 +96,14 @@ Bloomarina Instamart is committed to maintaining high standards of data protecti
             ),
             const SizedBox(height: 16),
             Text(
-              "Bloomarina Instamart",
+              "MaRinaMaRt",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primaryColor, fontFamily: "Outfit"),
             ),
             const Text("Version 1.0.0", style: TextStyle(color: AppColors.grey, fontWeight: FontWeight.w500)),
             
             const SizedBox(height: 32),
             const Text(
-              "At Bloomarina, we are committed to bringing the freshest groceries to your doorstep in minutes. Our mission is to simplify your life through technology, quality, and speed.",
+              "At MaRinaMaRt, we are committed to bringing the freshest groceries to your doorstep in minutes. Our mission is to simplify your life through technology, quality, and speed.",
               textAlign: TextAlign.center,
               style: TextStyle(height: 1.5, fontSize: 14, color: Colors.black87),
             ),
@@ -126,7 +126,7 @@ Bloomarina Instamart is committed to maintaining high standards of data protecti
             ),
             
             const SizedBox(height: 48),
-            const Text("© 2026 Bloomarina Inc.", style: TextStyle(color: AppColors.grey, fontSize: 12, fontWeight: FontWeight.w500)),
+            const Text("© 2026 MaRinaMaRt Inc.", style: TextStyle(color: AppColors.grey, fontSize: 12, fontWeight: FontWeight.w500)),
           ],
         ),
       ),

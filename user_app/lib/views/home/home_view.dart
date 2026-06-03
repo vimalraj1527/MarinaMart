@@ -336,7 +336,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                        mainAxisSize: MainAxisSize.min,
                        children: [
                          const Text(
-                           "Bloomarina ",
+                           "MaRina",
                            style: TextStyle(
                              fontWeight: FontWeight.w900,
                              fontSize: 18,
@@ -346,7 +346,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                            ),
                          ),
                          Text(
-                           "Instamart",
+                           "MaRt",
                            style: TextStyle(
                              fontWeight: FontWeight.w900,
                              fontSize: 18,
@@ -798,14 +798,18 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   Color _getCategoryColor(String name) {
     final n = name.toLowerCase();
-    if (n.contains("fruit") || n.contains("veg"))
+    if (n.contains("fruit") || n.contains("veg")) {
       return const Color(0xFF4CAF50);
-    if (n.contains("milk") || n.contains("dairy"))
+    }
+    if (n.contains("milk") || n.contains("dairy")) {
       return const Color(0xFF2196F3);
-    if (n.contains("drink") || n.contains("juice"))
+    }
+    if (n.contains("drink") || n.contains("juice")) {
       return const Color(0xFFFF9800);
-    if (n.contains("snack") || n.contains("munch"))
+    }
+    if (n.contains("snack") || n.contains("munch")) {
       return const Color(0xFFE91E63);
+    }
     if (n.contains("clean")) return const Color(0xFF00BCD4);
     if (n.contains("meat")) return const Color(0xFFF44336);
     return AppColors.primaryColor;
@@ -842,8 +846,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     return SizedBox(
       height: 215, // Compact height for horizontal list to match Swiggy style
       child: Obx(() {
-        if (controller.isLoading.value && controller.products.isEmpty)
+        if (controller.isLoading.value && controller.products.isEmpty) {
           return const SizedBox();
+        }
         return ListView.builder(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
@@ -866,8 +871,9 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
 
   Widget _buildProductGrid(HomeController controller) {
     return Obx(() {
-      if (controller.isLoading.value && controller.products.isEmpty)
+      if (controller.isLoading.value && controller.products.isEmpty) {
         return const SizedBox();
+      }
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),

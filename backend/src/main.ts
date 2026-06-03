@@ -23,7 +23,7 @@ async function bootstrap() {
 
   // API Documentation (OpenAPI/Swagger)
   const config = new DocumentBuilder()
-    .setTitle('Bloomarina Instamart API')
+    .setTitle('MaRinaMaRt API')
     .setDescription('The core grocery delivery API documentation')
     .setVersion('1.0')
     .addBearerAuth()

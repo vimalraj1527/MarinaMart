@@ -8,7 +8,7 @@
 PRODUCT_NAME = user_app
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.bloomarina.instamart.userApp
+PRODUCT_BUNDLE_IDENTIFIER = com.marinamart.userApp
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.bloomarina.instamart. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 com.marinamart. All rights reserved.

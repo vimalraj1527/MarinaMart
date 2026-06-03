@@ -447,7 +447,7 @@ class _TrackOrderViewState extends State<TrackOrderView>
             FlutterMap(
               options: MapOptions(initialCenter: dest, initialZoom: 15, interactionOptions: const InteractionOptions(flags: InteractiveFlag.none)),
               children: [
-                TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', userAgentPackageName: 'com.bloomarina.instamart.user_app'),
+                TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', userAgentPackageName: 'com.marinamart.user_app'),
                 MarkerLayer(markers: [
                   Marker(
                     point: dest, width: 50, height: 50,

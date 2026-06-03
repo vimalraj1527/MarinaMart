@@ -477,7 +477,7 @@ class _BirthdayGreetingOverlayState extends State<BirthdayGreetingOverlay>
                       child: Column(
                         children: [
                           const Text(
-                            "BLOOMARINA CELEBRATES YOU",
+                            "MARINAMART CELEBRATES YOU",
                             style: TextStyle(
                               color: Color(0xFF996515),
                               fontSize: 10,

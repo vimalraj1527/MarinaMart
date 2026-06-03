@@ -377,7 +377,7 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  "Welcome to Bloomarina Instamart",
+                                  "Welcome to MaRinaMaRt",
                                   style: TextStyle(
                                     fontSize: 26,
                                     fontWeight: FontWeight.w900,

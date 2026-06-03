@@ -31,7 +31,7 @@ export default function SettingsPage() {
 
   // Form States
   const [storeSettings, setStoreSettings] = useState<any>({
-    name: 'Bloomarina Instamart',
+    name: 'MaRinaMaRt',
     email: 'support@instamart.co',
     phone: '+91 9876543210',
     address: '123 Cloud St, Silicon Valley, CA',

@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import '../../utils/app_colors.dart';
 import '../../controllers/orders_controller.dart';
 import '../../controllers/wallet_controller.dart';
-import '../../models/order_model.dart';
 
 class NotificationItem {
   final String title;
@@ -185,7 +184,7 @@ class _NotificationsViewState extends State<NotificationsView> {
             }
             notifications.add(NotificationItem(
               title: "Wallet Credited",
-              message: "₹${reqAmount.toStringAsFixed(2)} has been added to your Bloomarina Wallet successfully.",
+              message: "₹${reqAmount.toStringAsFixed(2)} has been added to your MaRinaMaRt Wallet successfully.",
               time: approvedDate,
               icon: Icons.account_balance_wallet,
               iconColor: Colors.green.shade700,

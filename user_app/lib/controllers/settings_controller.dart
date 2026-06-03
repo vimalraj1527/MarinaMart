@@ -15,7 +15,7 @@ class SettingsController extends GetxController {
   final RxDouble storeLat = 12.9716.obs; // Bangalore default
   final RxDouble storeLong = 77.5946.obs; // Bangalore default
   
-  final RxString storeName = "Bloomarina Instamart".obs;
+  final RxString storeName = "MaRinaMaRt".obs;
   final RxBool isLoading = false.obs;
 
   @override
@@ -64,7 +64,7 @@ class SettingsController extends GetxController {
     }
     if (data['store'] != null) {
        final s = data['store'];
-       storeName.value = s['name'] ?? "Bloomarina Instamart";
+       storeName.value = s['name'] ?? "MaRinaMaRt";
        storeLat.value = (s['latitude'] ?? 12.9716).toDouble();
        storeLong.value = (s['longitude'] ?? 77.5946).toDouble();
     }

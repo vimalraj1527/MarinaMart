@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../models/product_model.dart';
@@ -7,7 +6,6 @@ import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import 'package:flutter/services.dart';
 import '../../widgets/sticky_cart_bar.dart';
-import '../../widgets/add_to_cart_button.dart';
 import '../../controllers/home_controller.dart';
 
 class ProductDetailsView extends StatelessWidget {

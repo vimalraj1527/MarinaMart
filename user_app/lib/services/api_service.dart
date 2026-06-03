@@ -16,6 +16,14 @@ class ApiService extends GetxService {
     };
   }
 
+  void _checkResponse(http.Response response, String uri) {
+    if (response.statusCode == 401 && uri != AppConstants.loginUrl) {
+      print("[API] Unauthorized (401) detected at $uri. Clearing session and redirecting to login...");
+      _storage.clearAll();
+      Get.offAllNamed('/login');
+    }
+  }
+
   // GET Request
   Future<http.Response> getData(String uri) async {
     try {
@@ -25,6 +33,7 @@ class ApiService extends GetxService {
         Uri.parse(fullUrl),
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
+      _checkResponse(response, uri);
       return response;
     } catch (e) {
       print("[CRITICAL] API_GET_ERROR: $e at $uri");
@@ -42,6 +51,7 @@ class ApiService extends GetxService {
         body: jsonEncode(body),
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
+      _checkResponse(response, uri);
       return response;
     } catch (e) {
       print("[CRITICAL] API_POST_ERROR: $e at $uri");
@@ -58,6 +68,7 @@ class ApiService extends GetxService {
         body: jsonEncode(body),
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
+      _checkResponse(response, uri);
       return response;
     } catch (e) {
       print("[CRITICAL] API_PUT_ERROR: $e at $uri");
@@ -75,6 +86,7 @@ class ApiService extends GetxService {
         body: jsonEncode(body),
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
+      _checkResponse(response, uri);
       return response;
     } catch (e) {
       print("[CRITICAL] API_PATCH_ERROR: $e at $uri");
@@ -90,6 +102,7 @@ class ApiService extends GetxService {
         Uri.parse(fullUrl),
         headers: _getHeaders(),
       ).timeout(const Duration(seconds: 15));
+      _checkResponse(response, uri);
       return response;
     } catch (e) {
       print("[CRITICAL] API_DELETE_ERROR: $e at $uri");

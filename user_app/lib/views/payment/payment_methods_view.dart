@@ -92,7 +92,7 @@ class PaymentMethodsView extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Bloomarina Wallet Card
+              // MaRinaMaRt Wallet Card
               GestureDetector(
                 onTap: () => Get.toNamed('/wallet'),
                 child: Container(
@@ -128,7 +128,7 @@ class PaymentMethodsView extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Bloomarina Wallet",
+                                  "MaRinaMaRt Wallet",
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,

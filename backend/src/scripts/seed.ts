@@ -5,8 +5,8 @@ import { UserRole } from '../users/entities/user.entity';
 
 const SUPER_ADMIN = {
   name: 'Super Admin Vimal',
-  email: 'tech@bloomarina.com',
-  password: 'WelcomeBM@2026',
+  email: 'tech@marinamart.com',
+  password: 'WelcomeMM@2026',
   role: UserRole.SUPER_ADMIN,
   isActive: true,
 };
