@@ -903,22 +903,18 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   Widget _buildProductCard(Product product) {
     final hasDiscount = product.originalPrice != null && product.originalPrice! > product.price;
     final discountPercent = hasDiscount
-        ? ((product.originalPrice! - product.price) / product.originalPrice! * 100).round()
-        : 20; // fallback to default vibrant discount
-    final displayOriginalPrice = hasDiscount ? product.originalPrice!.round() : (product.price * 1.25).round();
+        ? (((product.originalPrice! - product.price) / product.originalPrice!) * 100).round()
+        : 0;
+
     return GestureDetector(
       onTap: () => Get.toNamed('/product-details', arguments: product),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFF1F5F9), width: 1.0),
+          border: Border.all(color: Colors.grey.shade100, width: 1.2),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.025),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
+            BoxShadow(color: Colors.black.withOpacity(0.015), blurRadius: 6, offset: const Offset(0, 3)),
           ],
         ),
         child: Column(
@@ -928,52 +924,62 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             Container(
               height: 115,
               width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(11),
-                ),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
               ),
               child: Stack(
                 children: [
                   Center(
-                    child: Image.network(
-                      product.image,
-                      fit: BoxFit.contain,
-                      errorBuilder: (c, e, s) => const Icon(
-                        Icons.shopping_bag_rounded,
-                        color: Colors.grey,
-                        size: 36,
+                    child: Hero(
+                      tag: 'product_${product.id}',
+                      child: Image.network(
+                        product.image,
+                        fit: BoxFit.contain,
+                        errorBuilder: (c, e, s) => const Icon(Icons.shopping_bag_rounded, color: Colors.grey, size: 36),
                       ),
                     ),
                   ),
-                  // Swiggy discount badge top-left
                   Positioned(
-                    top: 0,
-                    left: 0,
+                    top: 0, left: 0,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 3,
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFF8C00)]),
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF6E28E9), // Authentic Swiggy Instamart Violet
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(11),
-                          bottomRight: Radius.circular(8),
-                        ),
-                      ),
-                      child: Text(
-                        "$discountPercent% OFF",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w900,
-                        ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.bolt_rounded, color: Colors.white, size: 8),
+                          Text("STANDARD", style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.w900)),
+                        ],
                       ),
                     ),
                   ),
+                  if (hasDiscount)
+                    Positioned(
+                      top: 0, right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2.5),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE02020),
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(6),
+                            topRight: Radius.circular(11),
+                          ),
+                        ),
+                        child: Text(
+                          "$discountPercent% OFF",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
                   // Swiggy delivery speed badge bottom-left
                   Positioned(
                     bottom: 0,
@@ -989,7 +995,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         border: Border.all(color: const Color(0xFFF1F5F9), width: 0.5),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
+                            color: Colors.black.withOpacity(0.04),
                             blurRadius: 2,
                             offset: const Offset(0, 1),
                           ),
@@ -1022,7 +1028,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             // Details Section
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1032,23 +1038,14 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       children: [
                         Text(
                           product.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 12,
-                            height: 1.25,
-                            color: Colors.black87,
-                          ),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5, height: 1.2, color: Colors.black87),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 3),
+                        const SizedBox(height: 1),
                         Text(
                           product.unit,
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                          ),
+                          style: TextStyle(color: Colors.grey.shade500, fontSize: 9.5, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -1059,24 +1056,22 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 "₹${product.price.toStringAsFixed(0)}",
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 13,
-                                  color: Colors.black,
-                                ),
+                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12.5, color: Colors.black87),
                               ),
-                              Text(
-                                "₹$displayOriginalPrice",
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.grey.shade400,
-                                  decoration: TextDecoration.lineThrough,
-                                  fontWeight: FontWeight.w700,
+                              if (hasDiscount)
+                                Text(
+                                  "₹${product.originalPrice!.toStringAsFixed(0)}",
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    color: Colors.grey.shade400,
+                                    decoration: TextDecoration.lineThrough,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ),

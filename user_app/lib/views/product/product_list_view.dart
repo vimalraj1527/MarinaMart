@@ -221,7 +221,7 @@ class _ProductListViewState extends State<ProductListView> with TickerProviderSt
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.52,
+                          childAspectRatio: 0.65,
                           crossAxisSpacing: 10,
                           mainAxisSpacing: 10,
                         ),
@@ -254,15 +254,20 @@ class _ProductListViewState extends State<ProductListView> with TickerProviderSt
   }
 
   Widget _buildProductCard(Product product) {
+    final hasDiscount = product.originalPrice != null && product.originalPrice! > product.price;
+    final discountPercent = hasDiscount
+        ? (((product.originalPrice! - product.price) / product.originalPrice!) * 100).round()
+        : 0;
+
     return GestureDetector(
       onTap: () => Get.toNamed('/product-details', arguments: product),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade100, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade100, width: 1.2),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 8, offset: const Offset(0, 4)),
+            BoxShadow(color: Colors.black.withOpacity(0.015), blurRadius: 6, offset: const Offset(0, 3)),
           ],
         ),
         child: Column(
@@ -270,12 +275,12 @@ class _ProductListViewState extends State<ProductListView> with TickerProviderSt
           children: [
             // Image Section
             Container(
-              height: 90,
+              height: 100,
               width: double.infinity,
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
               ),
               child: Stack(
                 children: [
@@ -306,13 +311,35 @@ class _ProductListViewState extends State<ProductListView> with TickerProviderSt
                       ),
                     ),
                   ),
+                  if (hasDiscount)
+                    Positioned(
+                      top: 0, right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2.5),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFE02020),
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(6),
+                            topRight: Radius.circular(11),
+                          ),
+                        ),
+                        child: Text(
+                          "$discountPercent% OFF",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
             // Details Section
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -322,32 +349,45 @@ class _ProductListViewState extends State<ProductListView> with TickerProviderSt
                       children: [
                         Text(
                           product.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, height: 1.2, color: Colors.black87),
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5, height: 1.2, color: Colors.black87),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 1),
                         Text(
                           product.unit,
-                          style: TextStyle(color: Colors.grey.shade500, fontSize: 9, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: Colors.grey.shade500, fontSize: 9.5, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          "₹${product.price}",
-                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Colors.black87),
-                        ),
-                        const SizedBox(height: 4),
-                        SizedBox(
-                          width: double.infinity,
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: AddToCartButton(product: product),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                "₹${product.price}",
+                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12.5, color: Colors.black87),
+                              ),
+                              if (hasDiscount)
+                                Text(
+                                  "₹${product.originalPrice}",
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    color: Colors.grey.shade400,
+                                    decoration: TextDecoration.lineThrough,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
+                        const SizedBox(width: 4),
+                        AddToCartButton(product: product),
                       ],
                     ),
                   ],

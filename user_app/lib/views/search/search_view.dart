@@ -389,7 +389,7 @@ class _SearchViewState extends State<SearchView> {
           padding: const EdgeInsets.all(AppConstants.defaultPadding),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.62,
+            childAspectRatio: 0.65,
             crossAxisSpacing: 15,
             mainAxisSpacing: 15,
           ),
@@ -513,95 +513,145 @@ class _SearchViewState extends State<SearchView> {
   }
 
   Widget _buildResultCard(Product product, bool heroEnabled) {
+    final hasDiscount = product.originalPrice != null && product.originalPrice! > product.price;
+    final discountPercent = hasDiscount
+        ? (((product.originalPrice! - product.price) / product.originalPrice!) * 100).round()
+        : 0;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade100, width: 1.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade100, width: 1.2),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
+          BoxShadow(color: Colors.black.withOpacity(0.015), blurRadius: 6, offset: const Offset(0, 3)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: HeroMode(
-                      enabled: heroEnabled,
-                      child: Hero(
-                        tag: "search_prod_${product.id}",
-                        child: Image.network(
-                          product.image, 
-                          fit: BoxFit.contain, 
-                          errorBuilder: (c, e, s) => const Icon(Icons.shopping_bag_rounded, size: 40, color: Colors.grey)
+          // Image Section
+          Container(
+            height: 100,
+            width: double.infinity,
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
+            ),
+            child: Stack(
+              children: [
+                Center(
+                  child: HeroMode(
+                    enabled: heroEnabled,
+                    child: Hero(
+                      tag: "search_prod_${product.id}",
+                      child: Image.network(
+                        product.image,
+                        fit: BoxFit.contain,
+                        errorBuilder: (c, e, s) => const Icon(Icons.shopping_bag_rounded, color: Colors.grey, size: 32),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 0, left: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFF8C00)]),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.bolt_rounded, color: Colors.white, size: 8),
+                        Text("STANDARD", style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.w900)),
+                      ],
+                    ),
+                  ),
+                ),
+                if (hasDiscount)
+                  Positioned(
+                    top: 0, right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2.5),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE02020),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(6),
+                          topRight: Radius.circular(11),
+                        ),
+                      ),
+                      child: Text(
+                        "$discountPercent% OFF",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 7.5,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
                   ),
-                  Positioned(
-                    top: 0, left: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black87,
-                        borderRadius: BorderRadius.circular(6),
+              ],
+            ),
+          ),
+          // Details Section
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5, height: 1.2, color: Colors.black87),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.bolt_rounded, color: Colors.amber, size: 9),
-                          Text("INSTANT", style: TextStyle(color: Colors.white, fontSize: 7, fontWeight: FontWeight.w900)),
-                        ],
+                      const SizedBox(height: 1),
+                      Text(
+                        product.unit,
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 9.5, fontWeight: FontWeight.bold),
                       ),
-                    ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "₹${product.price}",
+                              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12.5, color: Colors.black87),
+                            ),
+                            if (hasDiscount)
+                              Text(
+                                "₹${product.originalPrice}",
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  color: Colors.grey.shade400,
+                                  decoration: TextDecoration.lineThrough,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      AddToCartButton(product: product),
+                    ],
                   ),
                 ],
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name, 
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, height: 1.2),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  product.unit, 
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.w700)
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "₹${product.price}", 
-                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Colors.black)
-                    ),
-                    AddToCartButton(product: product),
-                  ],
-                ),
-              ],
             ),
           ),
         ],
