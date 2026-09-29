@@ -28,16 +28,25 @@ import { SupportModule } from './support/support.module';
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5433'),
-      username: process.env.DB_USER || 'grocery_user',
-      password: process.env.DB_PASSWORD || 'grocery_password',
-      database: process.env.DB_NAME || 'grocery_delivery',
-      entities: [Product, Category, Setting, Banner],
-      synchronize: true, // Auto-create tables (Dev only)
-      autoLoadEntities: true,
+    TypeOrmModule.forRootAsync({
+      useFactory: () => {
+        const dbUrl = process.env.DATABASE_URL;
+        const useSsl = process.env.DB_SSL === 'true' || !!process.env.DATABASE_URL;
+        return {
+          type: 'postgres',
+          ...(dbUrl ? { url: dbUrl } : {
+            host: process.env.DB_HOST || 'localhost',
+            port: parseInt(process.env.DB_PORT || '5433'),
+            username: process.env.DB_USER || 'grocery_user',
+            password: process.env.DB_PASSWORD || 'grocery_password',
+            database: process.env.DB_NAME || 'grocery_delivery',
+          }),
+          entities: [Product, Category, Setting, Banner],
+          synchronize: true, // Auto-create tables
+          autoLoadEntities: true,
+          ssl: useSsl ? { rejectUnauthorized: false } : false,
+        };
+      },
     }),
     CategoriesModule,
     ProductsModule,
