@@ -31,7 +31,7 @@ import { SupportModule } from './support/support.module';
     TypeOrmModule.forRootAsync({
       useFactory: () => {
         const dbUrl = process.env.DATABASE_URL;
-        const useSsl = process.env.DB_SSL === 'true' || !!process.env.DATABASE_URL;
+        const isExternalSsl = dbUrl?.includes('sslmode=require') || dbUrl?.includes('.render.com') || process.env.DB_SSL === 'true';
         return {
           type: 'postgres',
           ...(dbUrl ? { url: dbUrl } : {
@@ -44,7 +44,8 @@ import { SupportModule } from './support/support.module';
           entities: [Product, Category, Setting, Banner],
           synchronize: true, // Auto-create tables
           autoLoadEntities: true,
-          ssl: useSsl ? { rejectUnauthorized: false } : false,
+          connectTimeoutMS: 10000,
+          ssl: isExternalSsl ? { rejectUnauthorized: false } : false,
         };
       },
     }),
