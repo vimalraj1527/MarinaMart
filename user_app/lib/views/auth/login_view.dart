@@ -782,29 +782,7 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                       
                       const SizedBox(height: 14),
 
-                      // Google Login
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: OutlinedButton.icon(
-                          onPressed: () { HapticFeedback.selectionClick(); },
-                          icon: Image.network('https://cdn-icons-png.flaticon.com/512/2991/2991148.png', height: 18),
-                          label: const Text(
-                            "Continue with Google",
-                            style: TextStyle(
-                              color: AppColors.black,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppColors.greyLight, width: 1.5),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                        ),
-                      ),
+
 
                       const SizedBox(height: 16),
                       
