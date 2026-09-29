@@ -1,17 +1,38 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './entities/user.entity';
 import { Order } from '../orders/entities/order.entity';
 
 @Injectable()
-export class UsersService {
+export class UsersService implements OnModuleInit {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
   ) {}
+
+  async onModuleInit() {
+    try {
+      const adminEmail = 'tech@marinamart.com';
+      const existingAdmin = await this.userRepository.findOne({ where: { email: adminEmail } });
+      if (!existingAdmin) {
+        console.log('[SEED] Auto-creating default Super Admin account...');
+        const adminUser = this.userRepository.create({
+          name: 'Super Admin Vimal',
+          email: adminEmail,
+          password: 'WelcomeMM@2026',
+          role: UserRole.SUPER_ADMIN,
+          isActive: true,
+        });
+        await this.userRepository.save(adminUser);
+        console.log('[SEED] Super Admin created: tech@marinamart.com');
+      }
+    } catch (e: any) {
+      console.error('[SEED] Auto-seed error:', e.message);
+    }
+  }
 
   async findByEmail(email: string): Promise<User | null> {
     if (!email) return null;
