@@ -4,8 +4,10 @@ class AppConstants {
   
   // NOTE: If using Android Emulator, use http://10.0.2.2:5001
   // If using Real Device, use your Computer's Local IP (e.g. http://192.168.1.5:5001)
-  // Ensure you run 'adb reverse tcp:5001 tcp:5001' for USB-connected real devices.
-  static const String baseUrl = 'http://localhost:5001'; 
+  static const String baseUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'https://marinamart.onrender.com',
+  ); 
 
   // Store Location for Distance-based delivery calculation
   static const double storeLat = 12.9716; 
