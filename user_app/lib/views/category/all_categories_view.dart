@@ -89,12 +89,18 @@ class _AllCategoriesViewState extends State<AllCategoriesView> with TickerProvid
                 return Center(child: CircularProgressIndicator(color: AppColors.primaryColor));
               }
               
+              final double screenWidth = MediaQuery.of(context).size.width;
+              final int crossAxisCount = screenWidth > 600 ? 5 : (screenWidth > 450 ? 4 : 3);
+              final double childAspectRatio = screenWidth < 350
+                  ? 0.68
+                  : (screenWidth < 380 ? 0.72 : 0.78);
+
               return GridView.builder(
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.all(AppConstants.defaultPadding),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 0.75,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  childAspectRatio: childAspectRatio,
                   crossAxisSpacing: 15,
                   mainAxisSpacing: 20,
                 ),

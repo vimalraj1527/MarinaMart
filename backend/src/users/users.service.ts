@@ -14,7 +14,47 @@ export class UsersService {
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOne({ where: { email } });
+    if (!email) return null;
+    return this.userRepository.findOne({ where: { email: email.trim() } });
+  }
+
+  async findByPhone(phone: string): Promise<User | null> {
+    if (!phone) return null;
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    return this.userRepository.findOne({ where: { phone: cleanPhone } });
+  }
+
+  async findByIdentifier(identifier: string): Promise<User | null> {
+    if (!identifier) return null;
+    const cleanStr = identifier.trim();
+    // Try email lookup
+    const userByEmail = await this.userRepository.findOne({ where: { email: cleanStr } });
+    if (userByEmail) return userByEmail;
+
+    // Try phone lookup
+    const cleanPhone = cleanStr.replace(/\D/g, '').slice(-10);
+    if (cleanPhone.length === 10) {
+      const userByPhone = await this.userRepository.findOne({ where: { phone: cleanPhone } });
+      if (userByPhone) return userByPhone;
+    }
+
+    return null;
+  }
+
+  async saveOtp(phone: string, otp: string, expiresAt: Date): Promise<User | null> {
+    let user = await this.findByPhone(phone);
+    if (!user) {
+      // Auto-register guest / placeholder user for this phone number if needed
+      user = this.userRepository.create({
+        phone,
+        name: `User ${phone.slice(-4)}`,
+        email: `user_${phone}@marinamart.com`,
+        password: `Otp@${otp}`,
+      });
+    }
+    user.otpCode = otp;
+    user.otpExpiresAt = expiresAt;
+    return await this.userRepository.save(user);
   }
 
   async create(createUserDto: any) {
@@ -96,5 +136,12 @@ export class UsersService {
     const savedUser = await this.userRepository.save(user);
     const { password, ...result } = savedUser;
     return result;
+  }
+
+  async remove(id: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User account not found');
+    await this.userRepository.remove(user);
+    return { success: true, message: 'User account permanently deleted' };
   }
 }

@@ -8,11 +8,12 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @ApiOperation({ summary: 'Login for Admins & Employees' })
+  @ApiOperation({ summary: 'Login for Users & Admins' })
   async login(@Body() loginDto: any) {
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
+    const identifier = loginDto.email || loginDto.username || loginDto.phone;
+    const user = await this.authService.validateUser(identifier, loginDto.password);
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid Email/Phone or Password');
     }
     return this.authService.login(user);
   }
@@ -21,6 +22,18 @@ export class AuthController {
   @ApiOperation({ summary: 'Register a new customer' })
   async register(@Body() registerDto: any) {
     return this.authService.register(registerDto);
+  }
+
+  @Post('send-otp')
+  @ApiOperation({ summary: 'Send SMS OTP for Login / Signup' })
+  async sendOtp(@Body() body: { phone: string; appName?: string }) {
+    return this.authService.sendOtp(body.phone, body.appName);
+  }
+
+  @Post('verify-otp')
+  @ApiOperation({ summary: 'Verify SMS OTP for Login / Signup' })
+  async verifyOtp(@Body() body: { phone: string; otp: string; userData?: any }) {
+    return this.authService.verifyOtp(body.phone, body.otp, body.userData);
   }
 
   @Get('profile')

@@ -15,6 +15,8 @@ class AuthController extends GetxController {
   final RxBool isLoading = false.obs;
   final TextEditingController emailController = TextEditingController(text: 'rvimalrajravi@gmail.com');
   final TextEditingController passwordController = TextEditingController(text: 'User@2026');
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController otpController = TextEditingController();
 
   final RxMap<String, dynamic> currentUser = <String, dynamic>{}.obs;
 
@@ -69,6 +71,8 @@ class AuthController extends GetxController {
       // ApiService already has a 15s timeout, removing the redundant .timeout(10) here
       final response = await _apiService.postData(AppConstants.loginUrl, {
         'email': email,
+        'username': email,
+        'phone': email,
         'password': password,
       });
 
@@ -238,10 +242,108 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<bool> sendOtp(String phone) async {
+    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+    if (cleanPhone.length < 10) {
+      Get.snackbar('Invalid Mobile', 'Enter a valid 10-digit phone number',
+          backgroundColor: Colors.orange, colorText: Colors.white);
+      return false;
+    }
+
+    try {
+      isLoading.value = true;
+      final response = await _apiService.postData('/auth/send-otp', {
+        'phone': cleanPhone,
+        'appName': AppConstants.appName,
+      });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        Get.snackbar(
+          'OTP Sent Successfully',
+          data['message'] ?? 'OTP code sent via SMS to +91 $cleanPhone',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+          icon: const Icon(Icons.mark_email_read_rounded, color: Colors.white),
+        );
+        return true;
+      } else {
+        final err = jsonDecode(response.body);
+        Get.snackbar('OTP Failed', err['message'] ?? 'Failed to send OTP.',
+            backgroundColor: Colors.red, colorText: Colors.white);
+        return false;
+      }
+    } catch (e) {
+      Get.snackbar('Network Failure', 'Could not connect to SMS server.',
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> verifyOtpAndLogin(String phone, String otp, {Map<String, dynamic>? signupData}) async {
+    if (otp.trim().length < 4) {
+      Get.snackbar('OTP Required', 'Enter the OTP received on your mobile.',
+          backgroundColor: Colors.orange, colorText: Colors.white);
+      return;
+    }
+
+    try {
+      isLoading.value = true;
+      final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+      final response = await _apiService.postData('/auth/verify-otp', {
+        'phone': cleanPhone,
+        'otp': otp.trim(),
+        'userData': signupData,
+      });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        if (data.containsKey('access_token')) {
+          await _storage.setToken(data['access_token']);
+          await _storage.setUser(jsonEncode(data['user']));
+          currentUser.value = data['user'] ?? {};
+
+          final bool isNew = data['isNewUser'] == true || 
+                             (data['user']?['name']?.toString().startsWith('User ') ?? false) ||
+                             (data['user']?['email']?.toString().contains('@marinamart.com') ?? false);
+
+          if (isNew && signupData == null) {
+            // Redirect to Signup setup screen for profile completion
+            Get.offNamed('/signup', arguments: {'isSetup': true, 'phone': cleanPhone});
+            Get.snackbar(
+              'Mobile Verified!',
+              'Please complete your name & basic details to finish setup.',
+              backgroundColor: Colors.green,
+              colorText: Colors.white,
+              duration: const Duration(seconds: 4),
+              icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
+            );
+          } else {
+            Get.offAllNamed('/login_success', arguments: data['user']?['name'] ?? 'Authorized User');
+          }
+        }
+      } else {
+        final errData = jsonDecode(response.body);
+        Get.snackbar('Verification Failed', errData['message'] ?? 'Invalid OTP code.',
+            backgroundColor: Colors.red, colorText: Colors.white);
+      }
+    } catch (e) {
+      Get.snackbar('Verification Error', 'Network error. Try again.',
+          backgroundColor: Colors.red, colorText: Colors.white);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   @override
   void onClose() {
     emailController.dispose();
     passwordController.dispose();
+    phoneController.dispose();
+    otpController.dispose();
     super.onClose();
   }
 }

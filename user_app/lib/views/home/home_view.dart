@@ -332,30 +332,34 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                 children: [
                    Obx(() {
                      final activeTheme = ThemeController.to.currentTheme;
-                     return Row(
-                       mainAxisSize: MainAxisSize.min,
-                       children: [
-                         const Text(
-                           "MaRina",
-                           style: TextStyle(
-                             fontWeight: FontWeight.w900,
-                             fontSize: 18,
-                             color: Colors.black87,
-                             letterSpacing: -0.5,
-                             fontFamily: 'Outfit',
+                     return FittedBox(
+                       fit: BoxFit.scaleDown,
+                       alignment: Alignment.centerLeft,
+                       child: Row(
+                         mainAxisSize: MainAxisSize.min,
+                         children: [
+                           const Text(
+                             "MaRina",
+                             style: TextStyle(
+                               fontWeight: FontWeight.w900,
+                               fontSize: 18,
+                               color: Colors.black87,
+                               letterSpacing: -0.5,
+                               fontFamily: 'Outfit',
+                             ),
                            ),
-                         ),
-                         Text(
-                           "MaRt",
-                           style: TextStyle(
-                             fontWeight: FontWeight.w900,
-                             fontSize: 18,
-                             color: activeTheme.primaryColor,
-                             letterSpacing: -0.5,
-                             fontFamily: 'Outfit',
+                           Text(
+                             "MaRt",
+                             style: TextStyle(
+                               fontWeight: FontWeight.w900,
+                               fontSize: 18,
+                               color: activeTheme.primaryColor,
+                               letterSpacing: -0.5,
+                               fontFamily: 'Outfit',
+                             ),
                            ),
-                         ),
-                       ],
+                         ],
+                       ),
                      );
                    }),
                   const SizedBox(height: 2),
@@ -583,24 +587,24 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                     ),
                     b['title'] ?? '',
                     b['lottieUrl'] ??
-                        'https://assets9.lottiefiles.com/packages/lf20_76m8m1.json',
+                        'https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json',
                   );
                 }).toList()
               : [
                   _buildSingleBanner(
                     const Color(0xFF0C831F),
                     "Fresh Delivery\nEVERYDAY",
-                    "https://assets9.lottiefiles.com/packages/lf20_76m8m1.json",
+                    "https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json",
                   ),
                   _buildSingleBanner(
                     const Color(0xFF5F25D9),
                     "MEGA SAVINGS\non Snacking",
-                    "https://assets4.lottiefiles.com/packages/lf20_m6cuL6.json",
+                    "https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json",
                   ),
                   _buildSingleBanner(
                     const Color(0xFFFC8019),
                     "Summer Fruits\nUp to 30% OFF",
-                    "https://assets10.lottiefiles.com/packages/lf20_rc63p8u1.json",
+                    "https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json",
                   ),
                 ],
         ),
@@ -881,15 +885,21 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       if (controller.isLoading.value && controller.products.isEmpty) {
         return const SizedBox();
       }
+      final double screenWidth = MediaQuery.of(context).size.width;
+      final int crossAxisCount = screenWidth > 600 ? 4 : (screenWidth > 450 ? 3 : 2);
+      final double childAspectRatio = screenWidth < 350
+          ? 0.72
+          : (screenWidth < 380 ? 0.76 : 0.83);
+
       return GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(
           horizontal: AppConstants.defaultPadding,
         ),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.83, // Optimized aspect ratio to remove empty white space
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          childAspectRatio: childAspectRatio,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
         ),

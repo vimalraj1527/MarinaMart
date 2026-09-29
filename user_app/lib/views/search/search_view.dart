@@ -385,11 +385,17 @@ class _SearchViewState extends State<SearchView> {
         }
 
         // Results Grid
+        final double screenWidth = MediaQuery.of(context).size.width;
+        final int crossAxisCount = screenWidth > 600 ? 4 : (screenWidth > 450 ? 3 : 2);
+        final double childAspectRatio = screenWidth < 350
+            ? 0.60
+            : (screenWidth < 380 ? 0.64 : 0.68);
+
         return GridView.builder(
           padding: const EdgeInsets.all(AppConstants.defaultPadding),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.65,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: childAspectRatio,
             crossAxisSpacing: 15,
             mainAxisSpacing: 15,
           ),

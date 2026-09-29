@@ -50,7 +50,7 @@ class _SplashViewState extends State<SplashView> {
               height: 250,
               width: 250,
               child: Lottie.network(
-                'https://assets4.lottiefiles.com/packages/lf20_m6cuL6.json',
+                'https://lottie.host/8123286f-c6b2-4d56-9e8c-859a8508a8f1/9pYV7c4v4C.json',
                 repeat: true,
                 errorBuilder: (c, e, s) => const Icon(Icons.shopping_cart, size: 100, color: Colors.white),
               ),

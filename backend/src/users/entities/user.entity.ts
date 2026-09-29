@@ -45,6 +45,12 @@ export class User {
   @Column({ nullable: true })
   birthday: string;
 
+  @Column({ nullable: true })
+  otpCode: string;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  otpExpiresAt: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 

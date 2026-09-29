@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: grocery-backend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: PORT
+        value: 5001
+      - key: NODE_ENV
+        value: production

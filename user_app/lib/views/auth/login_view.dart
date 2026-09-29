@@ -22,6 +22,9 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
+  bool _isOtpLogin = true;
+  bool _otpSent = false;
+
   @override
   void initState() {
     super.initState();
@@ -107,7 +110,7 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
               top: 0,
               left: 0,
               right: 0,
-              height: size.height * 0.48, // Reduced height so form has more space
+              height: size.height * 0.44,
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: (int page) {
@@ -140,13 +143,12 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                         ),
                       ),
                       Positioned(
-                        bottom: size.height * 0.1, // Adjusted offset
+                        bottom: size.height * 0.08,
                         left: 24,
                         right: 24,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Eye-catching Delivery Badge
                             ScaleTransition(
                               scale: _pulseAnimation,
                               child: Container(
@@ -159,19 +161,11 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                                   ),
                                   borderRadius: BorderRadius.circular(30),
                                   boxShadow: [
-                                    // Intense glow effect
                                     BoxShadow(
                                       color: activeTheme.primaryColor.withOpacity(0.6),
                                       blurRadius: 25,
                                       spreadRadius: 8,
                                       offset: const Offset(0, 5),
-                                    ),
-                                    // Inner highlight
-                                    BoxShadow(
-                                      color: Colors.white.withOpacity(0.5),
-                                      blurRadius: 4,
-                                      spreadRadius: 1,
-                                      offset: const Offset(0, -1),
                                     ),
                                   ],
                                   border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.5),
@@ -209,20 +203,20 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                               onboardingData[index]["title"]!,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 32, // Slightly smaller
+                                fontSize: 30,
                                 fontWeight: FontWeight.w900,
                                 height: 1.0,
                                 letterSpacing: -1,
                               ),
                             ),
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 6),
                             Text(
                               onboardingData[index]["subtitle"]!,
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.85),
-                                fontSize: 14,
+                                fontSize: 13,
                                 fontWeight: FontWeight.w500,
-                                height: 1.4,
+                                height: 1.3,
                               ),
                             ),
                           ],
@@ -236,7 +230,7 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
 
             // Custom Dots Indicator
             Positioned(
-              top: size.height * 0.41,
+              top: size.height * 0.37,
               left: 24,
               child: Row(
                 children: List.generate(
@@ -343,7 +337,7 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
 
             // Permanent Bottom Sheet (Login Card)
             Positioned(
-              top: size.height * 0.44, // Increased space for the form
+              top: size.height * 0.40,
               left: 0,
               right: 0,
               bottom: 0,
@@ -364,7 +358,7 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                 ),
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -379,16 +373,18 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                                 const Text(
                                   "Welcome to MaRinaMaRt",
                                   style: TextStyle(
-                                    fontSize: 26,
+                                    fontSize: 24,
                                     fontWeight: FontWeight.w900,
                                     color: AppColors.black,
                                     letterSpacing: -0.5,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                const Text(
-                                  "Login to access your orders & exclusive offers",
-                                  style: TextStyle(
+                                const SizedBox(height: 2),
+                                Text(
+                                  _isOtpLogin
+                                      ? "Sign in instantly via OTP code"
+                                      : "Login using your account credentials",
+                                  style: const TextStyle(
                                     fontSize: 13,
                                     color: AppColors.grey,
                                     fontWeight: FontWeight.w600,
@@ -397,114 +393,420 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                               ],
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 12),
                           Image.network(
                             activeTheme.logoUrl,
-                            height: 48,
-                            width: 48,
+                            height: 42,
+                            width: 42,
                             errorBuilder: (context, error, stackTrace) => const Icon(Icons.shopping_bag_outlined),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
-
-                      // Inputs (Grey Filled Boxes)
-                      _buildInputField(
-                        controller: controller.emailController,
-                        hint: "Email Address",
-                        icon: Icons.alternate_email_rounded,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildInputField(
-                        controller: controller.passwordController,
-                        hint: "Password",
-                        icon: Icons.lock_outline_rounded,
-                        isPassword: true,
-                      ),
-                      
-                      const SizedBox(height: 4),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () {},
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primaryColor,
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: const Text(
-                            "Forgot Password?",
-                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-                          ),
-                        ),
-                      ),
-                      
                       const SizedBox(height: 16),
 
-                      // Login Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: ElevatedButton(
-                          onPressed: controller.isLoading.value ? null : () {
-                            HapticFeedback.selectionClick();
-                            controller.login();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,
-                            foregroundColor: Colors.white,
-                            shadowColor: AppColors.primaryColor.withOpacity(0.35),
-                            elevation: 3,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                          ),
-                          child: controller.isLoading.value
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
-                                )
-                              : Text(
-                                  "Login Securely",
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w800,
-                                    color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
-                                    letterSpacing: 0.5,
+                      // Login Mode Toggle Tabs (OTP vs Password)
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isOtpLogin = true;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: _isOtpLogin ? activeTheme.primaryColor : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: _isOtpLogin
+                                        ? [
+                                            BoxShadow(
+                                              color: activeTheme.primaryColor.withOpacity(0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            )
+                                          ]
+                                        : [],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.sms_rounded,
+                                        size: 16,
+                                        color: _isOtpLogin
+                                            ? (activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white)
+                                            : AppColors.grey,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        "Mobile OTP",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: _isOtpLogin
+                                              ? (activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white)
+                                              : AppColors.grey,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isOtpLogin = false;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: !_isOtpLogin ? activeTheme.primaryColor : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: !_isOtpLogin
+                                        ? [
+                                            BoxShadow(
+                                              color: activeTheme.primaryColor.withOpacity(0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            )
+                                          ]
+                                        : [],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.lock_rounded,
+                                        size: 16,
+                                        color: !_isOtpLogin
+                                            ? (activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white)
+                                            : AppColors.grey,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        "Email / Phone",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: !_isOtpLogin
+                                              ? (activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white)
+                                              : AppColors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      
                       const SizedBox(height: 16),
+
+                      if (_isOtpLogin) ...[
+                        // Mobile OTP Form
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.backgroundColor,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: TextField(
+                            controller: controller.phoneController,
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.black,
+                              fontSize: 16,
+                              letterSpacing: 1.0,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: "10-digit Mobile Number",
+                              hintStyle: const TextStyle(color: AppColors.grey, fontWeight: FontWeight.w600, letterSpacing: 0),
+                              prefixIcon: Container(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.phone_android_rounded, color: activeTheme.primaryColor, size: 20),
+                                    const SizedBox(width: 6),
+                                    const Text("+91", style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.black, fontSize: 15)),
+                                    const SizedBox(width: 4),
+                                    Container(width: 1, height: 16, color: Colors.grey.shade400),
+                                  ],
+                                ),
+                              ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                            ),
+                          ),
+                        ),
+                        
+                        if (_otpSent) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.backgroundColor,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: TextField(
+                              controller: controller.otpController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.black,
+                                fontSize: 18,
+                                letterSpacing: 6.0,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: "Enter 6-digit OTP",
+                                hintStyle: const TextStyle(color: AppColors.grey, fontWeight: FontWeight.w600, letterSpacing: 0, fontSize: 14),
+                                prefixIcon: Icon(Icons.shield_outlined, color: activeTheme.primaryColor, size: 22),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(vertical: 18),
+                              ),
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 16),
+
+                        if (!_otpSent)
+                          SizedBox(
+                            width: double.infinity,
+                            height: 52,
+                            child: ElevatedButton.icon(
+                              onPressed: controller.isLoading.value
+                                  ? null
+                                  : () async {
+                                      HapticFeedback.selectionClick();
+                                      final success = await controller.sendOtp(controller.phoneController.text);
+                                      if (success) {
+                                        setState(() {
+                                          _otpSent = true;
+                                        });
+                                      }
+                                    },
+                              icon: const Icon(Icons.send_rounded, size: 18),
+                              label: controller.isLoading.value
+                                  ? const SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                                    )
+                                  : Text(
+                                      "Send Verification OTP",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                        color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
+                                      ),
+                                    ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: activeTheme.primaryColor,
+                                foregroundColor: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
+                                textStyle: TextStyle(
+                                  inherit: true,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
+                                ),
+                                elevation: 3,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                            ),
+                          )
+                        else
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 2,
+                                child: SizedBox(
+                                  height: 52,
+                                  child: OutlinedButton(
+                                    onPressed: controller.isLoading.value
+                                        ? null
+                                        : () async {
+                                            HapticFeedback.selectionClick();
+                                            await controller.sendOtp(controller.phoneController.text);
+                                          },
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(color: activeTheme.primaryColor, width: 1.5),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    ),
+                                    child: Text(
+                                      "Resend OTP",
+                                      style: TextStyle(
+                                        color: activeTheme.primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                flex: 3,
+                                child: SizedBox(
+                                  height: 52,
+                                  child: ElevatedButton(
+                                    onPressed: controller.isLoading.value
+                                        ? null
+                                        : () {
+                                            HapticFeedback.selectionClick();
+                                            controller.verifyOtpAndLogin(
+                                              controller.phoneController.text,
+                                              controller.otpController.text,
+                                            );
+                                          },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: activeTheme.primaryColor,
+                                      foregroundColor: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
+                                      textStyle: TextStyle(
+                                        inherit: true,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
+                                      ),
+                                      elevation: 3,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                    ),
+                                    child: controller.isLoading.value
+                                        ? const SizedBox(
+                                            height: 22,
+                                            width: 22,
+                                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                                          )
+                                        : Text(
+                                            "Verify & Login",
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w800,
+                                              color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                      ] else ...[
+                        // Email / Phone & Password Form
+                        _buildInputField(
+                          controller: controller.emailController,
+                          hint: "Email Address or Mobile Number",
+                          icon: Icons.person_pin_rounded,
+                        ),
+                        const SizedBox(height: 12),
+                        _buildInputField(
+                          controller: controller.passwordController,
+                          hint: "Password",
+                          icon: Icons.lock_outline_rounded,
+                          isPassword: true,
+                        ),
+                        
+                        const SizedBox(height: 4),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {},
+                            style: TextButton.styleFrom(
+                              foregroundColor: activeTheme.primaryColor,
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text(
+                              "Forgot Password?",
+                              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 14),
+
+                        // Login Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: controller.isLoading.value ? null : () {
+                              HapticFeedback.selectionClick();
+                              controller.login();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: activeTheme.primaryColor,
+                              foregroundColor: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
+                              textStyle: TextStyle(
+                                inherit: true,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
+                              ),
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: controller.isLoading.value
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                                  )
+                                : Text(
+                                    "Login Securely",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w800,
+                                      color: activeTheme.name == 'Emerald' ? Colors.black87 : Colors.white,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ],
+                      
+                      const SizedBox(height: 14),
 
                       // Google Login
                       SizedBox(
                         width: double.infinity,
-                        height: 54,
+                        height: 50,
                         child: OutlinedButton.icon(
                           onPressed: () { HapticFeedback.selectionClick(); },
-                          icon: Image.network('https://cdn-icons-png.flaticon.com/512/2991/2991148.png', height: 20),
+                          icon: Image.network('https://cdn-icons-png.flaticon.com/512/2991/2991148.png', height: 18),
                           label: const Text(
                             "Continue with Google",
                             style: TextStyle(
                               color: AppColors.black,
-                              fontSize: 15,
+                              fontSize: 14,
                               fontWeight: FontWeight.w800,
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: AppColors.greyLight, width: 2),
+                            side: const BorderSide(color: AppColors.greyLight, width: 1.5),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
                       
                       // Register Row
                       Row(
@@ -522,7 +824,7 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
                             child: Text(
                               "Sign Up",
                               style: TextStyle(
-                                color: AppColors.primaryColor,
+                                color: activeTheme.primaryColor,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 15,
                               ),
@@ -549,9 +851,9 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.backgroundColor, // Light grey background
+        color: AppColors.backgroundColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.transparent), // No border, pure filled look
+        border: Border.all(color: Colors.transparent),
       ),
       child: TextField(
         controller: controller,
@@ -566,9 +868,10 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
           hintStyle: const TextStyle(color: AppColors.grey, fontWeight: FontWeight.w600),
           prefixIcon: Icon(icon, color: AppColors.primaryColor, size: 22),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 20),
+          contentPadding: const EdgeInsets.symmetric(vertical: 18),
         ),
       ),
     );
   }
 }
+

@@ -216,19 +216,29 @@ class _ProductListViewState extends State<ProductListView> with TickerProviderSt
                   Expanded(
                     child: Opacity(
                       opacity: _controller.isLoading.value ? 0.6 : 1.0,
-                      child: GridView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.65,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                        ),
-                        itemCount: _controller.categoryProducts.length,
-                        itemBuilder: (context, index) {
-                          final product = _controller.categoryProducts[index];
-                          return _buildProductCard(product);
+                      child: Builder(
+                        builder: (context) {
+                          final double rightWidth = MediaQuery.of(context).size.width - 85;
+                          final int crossAxisCount = rightWidth > 450 ? 3 : 2;
+                          final double childAspectRatio = rightWidth < 250
+                              ? 0.58
+                              : (rightWidth < 280 ? 0.61 : 0.65);
+
+                          return GridView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              childAspectRatio: childAspectRatio,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                            ),
+                            itemCount: _controller.categoryProducts.length,
+                            itemBuilder: (context, index) {
+                              final product = _controller.categoryProducts[index];
+                              return _buildProductCard(product);
+                            },
+                          );
                         },
                       ),
                     ),

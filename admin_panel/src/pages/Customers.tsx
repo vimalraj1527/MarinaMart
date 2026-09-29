@@ -43,6 +43,19 @@ export default function CustomersPage() {
     (c.phone && c.phone.includes(searchTerm))
   );
 
+  const handleDeleteCustomer = async (id: string, name: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm(`Are you sure you want to permanently delete customer "${name}"? This action cannot be undone.`)) {
+      try {
+        await api.delete(`/users/${id}`);
+        setCustomers(prev => prev.filter(c => c.id !== id));
+      } catch (err) {
+        console.error('Failed to delete customer:', err);
+        alert('Failed to delete customer. Please try again.');
+      }
+    }
+  };
+
   return (
     <div className="space-y-8 text-slate-900">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
@@ -130,9 +143,17 @@ export default function CustomersPage() {
                     <div className="flex justify-center gap-3">
                        <button 
                          onClick={() => navigate(`/customers/${user.id}`)}
+                         title="View Profile Details"
                          className="p-3 bg-white border border-slate-100 hover:bg-emerald-600 hover:text-white text-slate-400 rounded-2xl transition-all shadow-sm group-hover:shadow-lg group-hover:shadow-emerald-100"
                        >
                           <Eye className="w-4 h-4" />
+                       </button>
+                       <button 
+                         onClick={(e) => handleDeleteCustomer(user.id, user.name, e)}
+                         title="Delete Customer Account"
+                         className="p-3 bg-white border border-slate-100 hover:bg-rose-600 hover:text-white text-slate-400 rounded-2xl transition-all shadow-sm group-hover:shadow-lg group-hover:shadow-rose-100"
+                       >
+                          <Trash2 className="w-4 h-4" />
                        </button>
                     </div>
                   </td>

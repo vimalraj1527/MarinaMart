@@ -145,11 +145,14 @@ class _MainShellViewState extends State<MainShellView>
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     bool isSelected = _shellController.selectedIndex.value == index;
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double horizontalPadding = screenWidth < 360 ? 4.0 : 10.0;
+
     return GestureDetector(
       onTap: () => _shellController.changeTab(index),
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

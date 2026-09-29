@@ -10,6 +10,7 @@ import {
   CreditCard,
   ShieldCheck,
   Ban,
+  Trash2,
   MessageSquare,
   Loader2,
   Package,
@@ -44,6 +45,20 @@ export default function CustomerDetailsPage() {
   useEffect(() => {
     fetchCustomer();
   }, [id]);
+
+  const handleDeleteAccount = async () => {
+    if (!customer) return;
+    if (window.confirm(`Are you sure you want to permanently delete user account "${customer.name}"? This action cannot be undone.`)) {
+      try {
+        await api.delete(`/users/${id}`);
+        alert('User account permanently deleted successfully.');
+        navigate('/customers');
+      } catch (err) {
+        console.error('Failed to delete user account:', err);
+        alert('Failed to delete user account. Please try again.');
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -97,8 +112,11 @@ export default function CustomerDetailsPage() {
            <button className="flex items-center gap-2 px-6 py-4 bg-white border border-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-50 transition-all shadow-sm">
               <MessageSquare className="w-4 h-4 text-emerald-500" /> Chat Support
            </button>
-           <button className="flex items-center gap-2 px-6 py-4 bg-red-50 text-red-600 font-bold rounded-2xl hover:bg-red-600 hover:text-white transition-all shadow-sm shadow-red-50">
-              <Ban className="w-4 h-4" /> Terminate Access
+           <button 
+             onClick={handleDeleteAccount}
+             className="flex items-center gap-2 px-6 py-4 bg-rose-50 text-rose-600 font-bold rounded-2xl hover:bg-rose-600 hover:text-white transition-all shadow-sm shadow-rose-50"
+           >
+              <Trash2 className="w-4 h-4" /> Delete Account
            </button>
         </div>
       </div>
