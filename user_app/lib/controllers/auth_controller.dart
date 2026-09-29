@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
 import '../services/storage_service.dart';
 import 'orders_controller.dart';
 import 'cart_controller.dart';
@@ -259,6 +260,22 @@ class AuthController extends GetxController {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
+        final String? otpCode = data['otp']?.toString();
+
+        // Direct call to My Dreams Technology SMS Provider Gateway
+        if (otpCode != null && otpCode.isNotEmpty) {
+          try {
+            final apiKey = 'pdtPO9aL4m8RSQTV';
+            final senderId = 'MDTDMO';
+            final msg = Uri.encodeComponent("Dear $otpCode, Your OTP for login to ${AppConstants.appName}. Valid for 30 minutes. Please do not share this OTP. Regards, My Dreams Technology Team");
+            final smsProviderUrl = "http://app.mydreamstechnology.in/vb/apikey.php?apikey=$apiKey&senderid=$senderId&number=$cleanPhone&message=$msg";
+            print("[SMS-PROVIDER] Dispatching directly to: $smsProviderUrl");
+            http.get(Uri.parse(smsProviderUrl));
+          } catch (err) {
+            print("[SMS-PROVIDER] Direct call exception: $err");
+          }
+        }
+
         Get.snackbar(
           'OTP Sent Successfully',
           data['message'] ?? 'OTP code sent via SMS to +91 $cleanPhone',
