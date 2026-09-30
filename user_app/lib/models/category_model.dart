@@ -1,3 +1,5 @@
+import '../utils/image_utils.dart';
+
 class Category {
   final String id;
   final String name;
@@ -13,7 +15,7 @@ class Category {
     return Category(
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? 'Unnamed',
-      image: json['image'] ?? '',
+      image: ImageUtils.formatImageUrl(json['image']),
     );
   }
 }

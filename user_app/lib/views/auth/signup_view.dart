@@ -64,7 +64,7 @@ class _SignupViewState extends State<SignupView> {
           title: Text(
             _isSetupMode 
                 ? "Complete Setup" 
-                : (brandName == 'Emerald' ? "Join Emerald" : "Create Account"), 
+                : "Join MaRinaMaRt", 
             style: const TextStyle(fontWeight: FontWeight.bold)
           ),
           backgroundColor: Colors.transparent,
@@ -77,16 +77,14 @@ class _SignupViewState extends State<SignupView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isSetupMode ? "Complete Your Profile" : "Join $brandName",
+                  _isSetupMode ? "Complete Your Profile" : "Join MaRinaMaRt",
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: activeTheme.primaryColor),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   _isSetupMode
                       ? "Mobile +91 $_phoneFromArgs verified. Enter your details to setup your account."
-                      : (brandName == "Ruby" 
-                          ? "Order delicious food & groceries instantly." 
-                          : "Fresh groceries at your doorstep."),
+                      : "Fresh groceries & daily essentials delivered directly to your doorstep.",
                   style: const TextStyle(fontSize: 15, color: AppColors.grey, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 28),
@@ -301,40 +299,6 @@ class _SignupViewState extends State<SignupView> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                             elevation: 3,
                             shadowColor: activeTheme.primaryColor.withOpacity(0.35),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: OutlinedButton(
-                          onPressed: controller.isLoading.value
-                            ? null
-                            : () {
-                                String phoneVal = phoneController.text.replaceAll(RegExp(r'\D'), '');
-                                if (phoneVal.length > 10) {
-                                  phoneVal = phoneVal.substring(phoneVal.length - 10);
-                                }
-                                controller.register(
-                                  nameController.text,
-                                  emailController.text,
-                                  passwordController.text,
-                                  phoneVal,
-                                  birthdayController.text,
-                                );
-                              },
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: activeTheme.primaryColor, width: 1.5),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          ),
-                          child: Text(
-                            "Register without OTP",
-                            style: TextStyle(
-                              color: activeTheme.primaryColor,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 15,
-                            ),
                           ),
                         ),
                       ),

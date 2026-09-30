@@ -21,7 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '../components/ui/LayoutComponents';
 import api from '../services/api';
 
-type TabType = 'store' | 'delivery' | 'security' | 'notifications' | 'admins';
+type TabType = 'store' | 'delivery' | 'payment' | 'security' | 'notifications' | 'admins';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>('store');
@@ -29,24 +29,32 @@ export default function SettingsPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [user, setUser] = useState<any>(null);
 
-  // Form States
+  // Form States - Defaulted to Kadapakkam, Cheyyur godown hub
   const [storeSettings, setStoreSettings] = useState<any>({
     name: 'MaRinaMaRt',
-    email: 'support@instamart.co',
-    phone: '+91 9876543210',
-    address: '123 Cloud St, Silicon Valley, CA',
-    latitude: 12.9716,
-    longitude: 77.5946
+    email: 'support@marinamart.in',
+    phone: '+91 9629272964',
+    address: 'Godown Hub, Kadapakkam, Cheyyur, Chengalpattu, Tamil Nadu',
+    latitude: 12.2818,
+    longitude: 79.9905
   });
 
   const [deliverySettings, setDeliverySettings] = useState({
-    baseCharge: 25, // Scheduled Flat Fee
-    instantBase: 50, // Instant Base Fee
-    perKmCharge: 5,  // Instant Per KM
+    baseCharge: 25,
+    instantBase: 50,
+    perKmCharge: 5,
     freeThreshold: 499,
     openingTime: '06:00',
     closingTime: '23:30',
     isActive: true
+  });
+
+  const [paymentSettings, setPaymentSettings] = useState({
+    upiId: '9629272964@upi',
+    upiPhone: '9629272964',
+    upiName: 'MaRinaMaRt',
+    customQrUrl: '',
+    customGpayUrl: '',
   });
 
   const [securitySettings, setSecuritySettings] = useState({
@@ -74,8 +82,8 @@ export default function SettingsPage() {
         const response = await api.get('/settings');
         const data = response.data;
         if (data.store) setStoreSettings(data.store);
-        // Merge with defaults to handle new fields gracefully
         if (data.delivery) setDeliverySettings({ ...deliverySettings, ...data.delivery });
+        if (data.payment) setPaymentSettings({ ...paymentSettings, ...data.payment });
         if (data.security) setSecuritySettings(data.security);
         if (data.notifications) setNotificationSettings(data.notifications);
       } catch (err) {
@@ -89,20 +97,22 @@ export default function SettingsPage() {
   const saveSettings = async () => {
     try {
       setIsSaving(true);
-      await api.post('/settings/bulk', {
+      const payload = {
         store: storeSettings,
         delivery: deliverySettings,
+        payment: paymentSettings,
         security: securitySettings,
         notifications: notificationSettings
-      });
+      };
       
+      await api.post('/settings/bulk', payload);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err) {
-      console.error('Failed to save settings:', err);
-      alert("Failed to sync platform rules to server.");
+       console.error('Failed to save settings:', err);
+       alert('Failed to update system settings.');
     } finally {
-      setIsSaving(false);
+       setIsSaving(false);
     }
   };
 
@@ -126,17 +136,17 @@ export default function SettingsPage() {
     <button 
       onClick={() => setActiveTab(id)}
       className={`
-        flex items-center gap-3 px-6 py-4 rounded-2xl transition-all duration-300 font-bold text-sm cursor-pointer
+        flex items-center gap-2.5 px-4 sm:px-6 py-3 sm:py-3.5 rounded-2xl transition-all duration-300 font-bold text-xs sm:text-sm cursor-pointer whitespace-nowrap
         ${activeTab === id ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}
       `}
     >
-      <Icon className="w-4 h-4" />
-      {label}
+      <Icon className="w-4 h-4 flex-shrink-0" />
+      <span>{label}</span>
     </button>
   );
 
   return (
-    <div className="space-y-8 text-slate-900 relative">
+    <div className="space-y-6 sm:space-y-8 text-slate-900 relative">
       {/* Floating Success Message */}
       <AnimatePresence>
         {showSuccess && (
@@ -144,26 +154,27 @@ export default function SettingsPage() {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            className="fixed top-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 px-6 py-4 bg-emerald-600 text-white rounded-2xl shadow-2xl shadow-emerald-200 font-bold"
+            className="fixed top-6 sm:top-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 px-5 py-3.5 bg-emerald-600 text-white rounded-2xl shadow-2xl shadow-emerald-200 font-bold text-xs sm:text-sm max-w-[90vw]"
           >
-            <CheckCircle2 className="w-5 h-5" />
+            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
             <span>Changes Saved Successfully!</span>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 font-outfit">Platform Settings</h1>
-          <p className="text-slate-500 mt-2">Manage store configuration and administrative access.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 font-outfit">Platform Settings</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Manage store configuration, godown hub location & admin access.</p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-4 bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm">
+      {/* Tabs - Horizontal Scroll on Mobile */}
+      <div className="flex items-center gap-2 sm:gap-3 bg-white p-3 sm:p-4 rounded-[2rem] border border-slate-100 shadow-sm overflow-x-auto scrollbar-none">
         <TabButton id="store" icon={Store} label="Store Registry" />
         <TabButton id="delivery" icon={Truck} label="Logistics Config" />
+        <TabButton id="payment" icon={DollarSign} label="Payment Methods" />
         {user?.role === 'SuperAdmin' && (
            <TabButton id="admins" icon={ShieldAlert} label="Admin Management" />
         )}
@@ -171,168 +182,181 @@ export default function SettingsPage() {
         <TabButton id="security" icon={ShieldCheck} label="Account Stability" />
       </div>
 
-      <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6 bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm">
+      <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="lg:col-span-2 space-y-6 bg-white p-5 sm:p-8 md:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-slate-100 shadow-sm">
           <AnimatePresence mode="wait">
             {activeTab === 'store' && (
-              <motion.div key="store" className="space-y-8">
-                 <div className="flex items-center gap-4 mb-4">
-                    <div className="p-3 bg-indigo-50 rounded-2xl">
+              <motion.div key="store" className="space-y-6 sm:space-y-8">
+                 <div className="flex items-center gap-4 mb-2">
+                    <div className="p-3 bg-indigo-50 rounded-2xl flex-shrink-0">
                        <Store className="w-6 h-6 text-indigo-600" />
                     </div>
-                    <h2 className="text-xl font-bold text-slate-900 font-outfit">Store Identity</h2>
+                    <div>
+                       <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-outfit">Store & Godown Identity</h2>
+                       <p className="text-xs text-slate-400">Kadapakkam, Cheyyur Fulfillment Hub</p>
+                    </div>
                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <Input label="Store Name" icon={Store} value={storeSettings.name} onChange={(e: any) => setStoreSettings({...storeSettings, name: e.target.value})} />
                     <Input label="Support Email" icon={Mail} value={storeSettings.email} onChange={(e: any) => setStoreSettings({...storeSettings, email: e.target.value})} />
-                    <Input label="Business Address" icon={Store} value={storeSettings.address} onChange={(e: any) => setStoreSettings({...storeSettings, address: e.target.value})} />
+                    <Input label="Godown Business Address" icon={Store} value={storeSettings.address} onChange={(e: any) => setStoreSettings({...storeSettings, address: e.target.value})} />
                     <Input label="Contact Phone" icon={Store} value={storeSettings.phone} onChange={(e: any) => setStoreSettings({...storeSettings, phone: e.target.value})} />
-                    <Input label="Store Latitude" icon={Map} type="number" step="any" value={storeSettings.latitude} onChange={(e: any) => setStoreSettings({...storeSettings, latitude: Number(e.target.value)})} />
-                    <Input label="Store Longitude" icon={Map} type="number" step="any" value={storeSettings.longitude} onChange={(e: any) => setStoreSettings({...storeSettings, longitude: Number(e.target.value)})} />
+                    <Input label="Godown Latitude" icon={Map} type="number" step="any" value={storeSettings.latitude} onChange={(e: any) => setStoreSettings({...storeSettings, latitude: Number(e.target.value)})} />
+                    <Input label="Godown Longitude" icon={Map} type="number" step="any" value={storeSettings.longitude} onChange={(e: any) => setStoreSettings({...storeSettings, longitude: Number(e.target.value)})} />
                  </div>
-                 <div className="flex gap-4">
-                  <button onClick={saveSettings} disabled={isSaving} className="mt-4 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-3 cursor-pointer">
+                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <button onClick={saveSettings} disabled={isSaving} className="px-6 py-3.5 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2.5 cursor-pointer text-xs sm:text-sm">
                       {isSaving ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                       Save Identity
                   </button>
                   <button 
                     onClick={() => {
-                      if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition((pos) => {
-                          setStoreSettings({...storeSettings, latitude: pos.coords.latitude, longitude: pos.coords.longitude});
-                        });
-                      }
+                      setStoreSettings({
+                        ...storeSettings,
+                        address: 'Godown Hub, Kadapakkam, Cheyyur, Chengalpattu, Tamil Nadu',
+                        latitude: 12.2818,
+                        longitude: 79.9905
+                      });
                     }} 
-                    className="mt-4 px-8 py-4 bg-emerald-50 text-emerald-600 font-bold rounded-2xl hover:bg-emerald-100 transition-all flex items-center gap-3 cursor-pointer border border-emerald-100"
+                    className="px-6 py-3.5 bg-emerald-50 text-emerald-600 font-bold rounded-2xl hover:bg-emerald-100 transition-all flex items-center justify-center gap-2.5 cursor-pointer border border-emerald-100 text-xs sm:text-sm"
                   >
                       <Map className="w-4 h-4" />
-                      Set to Current Location
+                      Set Kadapakkam, Cheyyur Spot
                   </button>
                  </div>
               </motion.div>
             )}
 
             {activeTab === 'delivery' && (
-              <motion.div key="delivery" className="space-y-8">
-                 <div className="flex items-center gap-4 mb-4">
-                    <div className="p-3 bg-blue-50 rounded-2xl">
-                       <Truck className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <h2 className="text-xl font-bold text-slate-900 font-outfit">Logistics Configuration</h2>
-                 </div>
-                 
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-6">
-                       <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">General Billing</h3>
-                       <Input label="Scheduled Delivery Fee (₹)" icon={DollarSign} type="number" value={deliverySettings.baseCharge} onChange={(e: any) => setDeliverySettings({...deliverySettings, baseCharge: Number(e.target.value)})} />
-                       <Input label="Free Delivery Above (₹)" icon={TrendingUp} type="number" value={deliverySettings.freeThreshold} onChange={(e: any) => setDeliverySettings({...deliverySettings, freeThreshold: Number(e.target.value)})} />
-                    </div>
-
-                    <div className="space-y-6">
-                       <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Instant Delivery Logic</h3>
-                       <Input label="Instant Base Fee (₹)" icon={Zap} type="number" value={deliverySettings.instantBase} onChange={(e: any) => setDeliverySettings({...deliverySettings, instantBase: Number(e.target.value)})} />
-                       <Input label="Charge per Kilometer (₹)" icon={Map} type="number" value={deliverySettings.perKmCharge} onChange={(e: any) => setDeliverySettings({...deliverySettings, perKmCharge: Number(e.target.value)})} />
-                    </div>
-                 </div>
-
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-50">
-                    <Input label="Opening Hours" icon={Clock} type="time" value={deliverySettings.openingTime} onChange={(e: any) => setDeliverySettings({...deliverySettings, openingTime: e.target.value})} />
-                    <Input label="Closing Hours" icon={Clock} type="time" value={deliverySettings.closingTime} onChange={(e: any) => setDeliverySettings({...deliverySettings, closingTime: e.target.value})} />
-                 </div>
-
-                 <button onClick={saveSettings} disabled={isSaving} className="mt-4 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-3 cursor-pointer">
-                    {isSaving ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                    Save Logistics Engine
-                 </button>
-              </motion.div>
+               <motion.div key="delivery" className="space-y-6 sm:space-y-8">
+                  <div className="flex items-center gap-4 mb-2">
+                     <div className="p-3 bg-emerald-50 rounded-2xl flex-shrink-0">
+                        <Truck className="w-6 h-6 text-emerald-600" />
+                     </div>
+                     <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-outfit">Logistics & Distance Rules</h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                     <Input label="Scheduled Base Delivery (₹)" icon={DollarSign} type="number" value={deliverySettings.baseCharge} onChange={(e: any) => setDeliverySettings({...deliverySettings, baseCharge: Number(e.target.value)})} />
+                     <Input label="Instant Delivery Base Fee (₹)" icon={Zap} type="number" value={deliverySettings.instantBase} onChange={(e: any) => setDeliverySettings({...deliverySettings, instantBase: Number(e.target.value)})} />
+                     <Input label="Instant Fee Per KM (₹)" icon={TrendingUp} type="number" value={deliverySettings.perKmCharge} onChange={(e: any) => setDeliverySettings({...deliverySettings, perKmCharge: Number(e.target.value)})} />
+                     <Input label="Free Scheduled Delivery Threshold (₹)" icon={DollarSign} type="number" value={deliverySettings.freeThreshold} onChange={(e: any) => setDeliverySettings({...deliverySettings, freeThreshold: Number(e.target.value)})} />
+                     <Input label="Operating Hours (Opening)" icon={Clock} type="time" value={deliverySettings.openingTime} onChange={(e: any) => setDeliverySettings({...deliverySettings, openingTime: e.target.value})} />
+                     <Input label="Operating Hours (Closing)" icon={Clock} type="time" value={deliverySettings.closingTime} onChange={(e: any) => setDeliverySettings({...deliverySettings, closingTime: e.target.value})} />
+                  </div>
+                  <button onClick={saveSettings} disabled={isSaving} className="px-6 py-3.5 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2.5 cursor-pointer text-xs sm:text-sm w-full sm:w-auto">
+                      {isSaving ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      Save Logistics Rules
+                  </button>
+               </motion.div>
             )}
 
-            {activeTab === 'notifications' && (
-              <motion.div key="notifications" className="space-y-8">
-                 <div className="flex items-center gap-4 mb-4">
-                    <div className="p-3 bg-amber-50 rounded-2xl">
-                       <Bell className="w-6 h-6 text-amber-600" />
-                    </div>
-                    <h2 className="text-xl font-bold text-slate-900 font-outfit">Notification Preferences</h2>
-                 </div>
-                 <div className="space-y-4">
-                    {Object.entries(notificationSettings).map(([key, val]) => (
-                      <div key={key} className="flex items-center justify-between p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                         <div>
-                            <p className="font-bold text-slate-900 capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
-                            <p className="text-xs text-slate-400">Receive system alerts for {key}.</p>
-                         </div>
-                         <button 
-                           onClick={() => setNotificationSettings({...notificationSettings, [key]: !val})}
-                           className={`w-12 h-6 rounded-full transition-all relative cursor-pointer ${val ? 'bg-emerald-500' : 'bg-slate-300'}`}
-                         >
-                            <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${val ? 'right-1' : 'left-1'}`} />
-                         </button>
-                      </div>
-                    ))}
-                 </div>
-                 <button onClick={saveSettings} disabled={isSaving} className="px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-3 cursor-pointer">
-                    Save Alerts
-                 </button>
-              </motion.div>
-            )}
-
-            {activeTab === 'security' && (
-              <motion.div key="security" className="space-y-8">
-                 <div className="flex items-center gap-4 mb-4">
-                    <div className="p-3 bg-rose-50 rounded-2xl">
-                       <ShieldCheck className="w-6 h-6 text-rose-600" />
-                    </div>
-                    <h2 className="text-xl font-bold text-slate-900 font-outfit">Account Stability</h2>
-                 </div>
-                 <div className="space-y-6">
-                    <div className="p-8 bg-slate-900 rounded-[2rem]">
-                       <h3 className="text-white font-bold mb-4">Update Access Key</h3>
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <Input label="New Password" type="password" icon={Key} placeholder="Enter new password" />
-                          <Input label="Confirm Password" type="password" icon={Key} placeholder="Confirm password" />
-                       </div>
-                       <button onClick={saveSettings} className="mt-6 px-6 py-3 bg-rose-500 text-white font-bold rounded-xl text-sm hover:bg-rose-600 transition-all cursor-pointer">
-                          Update Password
-                       </button>
-                    </div>
-                 </div>
-              </motion.div>
+            {activeTab === 'payment' && (
+               <motion.div key="payment" className="space-y-6 sm:space-y-8">
+                  <div className="flex items-center gap-4 mb-2">
+                     <div className="p-3 bg-blue-50 rounded-2xl flex-shrink-0">
+                        <DollarSign className="w-6 h-6 text-blue-600" />
+                     </div>
+                     <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-outfit">UPI & Direct Merchant QR</h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                     <Input label="Merchant VPA / UPI ID" icon={DollarSign} value={paymentSettings.upiId} onChange={(e: any) => setPaymentSettings({...paymentSettings, upiId: e.target.value})} />
+                     <Input label="Merchant Phone Number" icon={DollarSign} value={paymentSettings.upiPhone} onChange={(e: any) => setPaymentSettings({...paymentSettings, upiPhone: e.target.value})} />
+                     <Input label="Payee Display Name" icon={DollarSign} value={paymentSettings.upiName} onChange={(e: any) => setPaymentSettings({...paymentSettings, upiName: e.target.value})} />
+                     <Input label="Custom QR Code Image URL" icon={DollarSign} placeholder="https://..." value={paymentSettings.customQrUrl} onChange={(e: any) => setPaymentSettings({...paymentSettings, customQrUrl: e.target.value})} />
+                  </div>
+                  <button onClick={saveSettings} disabled={isSaving} className="px-6 py-3.5 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2.5 cursor-pointer text-xs sm:text-sm w-full sm:w-auto">
+                      {isSaving ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      Save Merchant Handles
+                  </button>
+               </motion.div>
             )}
 
             {activeTab === 'admins' && user?.role === 'SuperAdmin' && (
-              <motion.div key="admins" className="space-y-8">
-                <div className="flex items-center gap-4 mb-4">
-                    <div className="p-3 bg-emerald-50 rounded-2xl">
-                       <UserPlus className="w-6 h-6 text-emerald-600" />
-                    </div>
-                    <div>
-                       <h2 className="text-xl font-bold text-slate-900 font-outfit">New Administrative Staff</h2>
-                       <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">SuperAdmin Privilege</p>
-                    </div>
-                 </div>
-                 <div className="grid grid-cols-1 gap-6 bg-slate-50 p-8 rounded-3xl border border-slate-100">
-                    <Input label="Full Name" icon={Users} value={newAdmin.name} onChange={(e: any) => setNewAdmin({...newAdmin, name: e.target.value})} />
-                    <Input label="Email Address" icon={Mail} value={newAdmin.email} onChange={(e: any) => setNewAdmin({...newAdmin, email: e.target.value})} />
-                    <Input label="Access Password" icon={Key} type="password" value={newAdmin.password} onChange={(e: any) => setNewAdmin({...newAdmin, password: e.target.value})} />
-                    <button onClick={handleCreateAdmin} disabled={isSaving} className="w-full py-5 bg-emerald-600 text-white font-bold rounded-2xl shadow-xl shadow-emerald-100 hover:bg-emerald-700 transition-all font-outfit mt-4 cursor-pointer">
-                       Create Admin Account
-                    </button>
-                 </div>
-              </motion.div>
+               <motion.div key="admins" className="space-y-6 sm:space-y-8">
+                  <div className="flex items-center gap-4 mb-2">
+                     <div className="p-3 bg-purple-50 rounded-2xl flex-shrink-0">
+                        <UserPlus className="w-6 h-6 text-purple-600" />
+                     </div>
+                     <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-outfit">Create Administrator</h2>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                     <Input label="Full Name" icon={Users} value={newAdmin.name} onChange={(e: any) => setNewAdmin({...newAdmin, name: e.target.value})} />
+                     <Input label="Email Address" icon={Mail} value={newAdmin.email} onChange={(e: any) => setNewAdmin({...newAdmin, email: e.target.value})} />
+                     <Input label="Secure Password" icon={Key} type="password" value={newAdmin.password} onChange={(e: any) => setNewAdmin({...newAdmin, password: e.target.value})} />
+                  </div>
+                  <button onClick={handleCreateAdmin} disabled={isSaving} className="px-6 py-3.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2.5 cursor-pointer text-xs sm:text-sm w-full sm:w-auto">
+                      {isSaving ? <Clock className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                      Create Admin User
+                  </button>
+               </motion.div>
+            )}
+
+            {activeTab === 'notifications' && (
+               <motion.div key="notifications" className="space-y-6">
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-outfit mb-4">Notification Preferences</h2>
+                  <div className="space-y-4">
+                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <div>
+                           <p className="font-bold text-xs sm:text-sm text-slate-900">New Order Alerts</p>
+                           <p className="text-[10px] sm:text-xs text-slate-400">Receive real-time push for new customer orders</p>
+                        </div>
+                        <input type="checkbox" checked={notificationSettings.orderAlerts} onChange={(e) => setNotificationSettings({...notificationSettings, orderAlerts: e.target.checked})} className="w-5 h-5 accent-emerald-600 rounded cursor-pointer" />
+                     </div>
+                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <div>
+                           <p className="font-bold text-xs sm:text-sm text-slate-900">Logistics Fleet Alerts</p>
+                           <p className="text-[10px] sm:text-xs text-slate-400">Rider assignment & pickup status notifications</p>
+                        </div>
+                        <input type="checkbox" checked={notificationSettings.riderAlerts} onChange={(e) => setNotificationSettings({...notificationSettings, riderAlerts: e.target.checked})} className="w-5 h-5 accent-emerald-600 rounded cursor-pointer" />
+                     </div>
+                  </div>
+                  <button onClick={saveSettings} disabled={isSaving} className="mt-4 px-6 py-3.5 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2.5 cursor-pointer text-xs sm:text-sm w-full sm:w-auto">
+                      {isSaving ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      Save Preferences
+                  </button>
+               </motion.div>
+            )}
+
+            {activeTab === 'security' && (
+               <motion.div key="security" className="space-y-6">
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 font-outfit mb-4">Account Security</h2>
+                  <div className="space-y-4">
+                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                        <div>
+                           <p className="font-bold text-xs sm:text-sm text-slate-900">Two-Factor Authentication</p>
+                           <p className="text-[10px] sm:text-xs text-slate-400">Require OTP code for administrative logins</p>
+                        </div>
+                        <input type="checkbox" checked={securitySettings.twoFactor} onChange={(e) => setSecuritySettings({...securitySettings, twoFactor: e.target.checked})} className="w-5 h-5 accent-emerald-600 rounded cursor-pointer" />
+                     </div>
+                  </div>
+                  <button onClick={saveSettings} disabled={isSaving} className="mt-4 px-6 py-3.5 bg-slate-900 text-white font-bold rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2.5 cursor-pointer text-xs sm:text-sm w-full sm:w-auto">
+                      {isSaving ? <Clock className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      Save Security Options
+                  </button>
+               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Sidebar Info */}
-        <div className="space-y-8">
-           <div className="bg-slate-900 p-8 rounded-[2.5rem] text-white shadow-2xl">
-              <h3 className="text-lg font-bold font-outfit">Session Context</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Status: Active Registry</p>
-              <div className="mt-8 p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
-                 <p className="text-xs font-bold text-emerald-400 mb-1">Authenticated as:</p>
-                 <p className="text-xl font-black text-white">{user?.name}</p>
-                 <p className="text-[10px] text-slate-500 mt-2">Role: {user?.role}</p>
+        {/* System Summary Widget */}
+        <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl flex flex-col justify-between h-fit">
+           <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                 <div className="w-10 h-10 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5" />
+                 </div>
+                 <div>
+                    <h3 className="font-bold text-sm sm:text-base font-outfit">Godown Hub Sync</h3>
+                    <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Active & Operational</p>
+                 </div>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-2 text-xs">
+                 <p className="text-slate-400 font-bold uppercase text-[10px]">Location Spot</p>
+                 <p className="font-bold text-white leading-relaxed">Kadapakkam, Cheyyur, Chengalpattu (12.2818, 79.9905)</p>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-2 text-xs">
+                 <p className="text-slate-400 font-bold uppercase text-[10px]">Active Server Node</p>
+                 <p className="font-bold text-emerald-400 truncate">https://marinamart.onrender.com</p>
               </div>
            </div>
         </div>

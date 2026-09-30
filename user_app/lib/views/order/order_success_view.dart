@@ -7,6 +7,30 @@ class OrderSuccessView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic>? args = Get.arguments as Map<String, dynamic>?;
+    final String rawMethod = (args?['paymentMethod'] ?? 'Online').toString();
+    final String pMethod = rawMethod.toLowerCase();
+    final bool isUpi = pMethod.contains('upi') || pMethod.contains('gpay') || pMethod.contains('google pay') || pMethod.contains('phonepe') || pMethod.contains('paytm');
+    final bool isWallet = pMethod.contains('wallet');
+    final bool isCod = pMethod.contains('cash') || pMethod.contains('cod');
+
+    String titleText;
+    String subtitleText;
+
+    if (isUpi) {
+      titleText = "Order Placed • Payment Approval Pending";
+      subtitleText = "Your order has been placed via Google Pay / UPI! Your payment is under admin verification and will be confirmed shortly.";
+    } else if (isWallet) {
+      titleText = "Order Placed • Paid via Wallet";
+      subtitleText = "Your order has been placed successfully and paid via your MaRinaMaRt Wallet balance. Store is preparing your items.";
+    } else if (isCod) {
+      titleText = "Order Placed • Cash on Delivery";
+      subtitleText = "Your order has been placed successfully. Please pay with cash or UPI when your items are delivered to your doorstep.";
+    } else {
+      titleText = "Order Placed • $rawMethod";
+      subtitleText = "Your order has been placed successfully via $rawMethod and will be prepared and delivered shortly.";
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -19,25 +43,26 @@ class OrderSuccessView extends StatelessWidget {
               const SuccessTick(size: 200),
               
               const SizedBox(height: 35),
-              const Text(
-                "Order Placed!",
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                "Your order has been placed successfully and will be delivered shortly via Cash on Delivery.",
+              Text(
+                titleText,
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: AppColors.grey),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                subtitleText,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 15, color: AppColors.grey, height: 1.4),
               ),
               
               const SizedBox(height: 40),
               
-              // Back to Home Button
+              // View My Orders Button
               SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () => Get.offAllNamed('/home'),
+                  onPressed: () => Get.offNamed('/orders'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     foregroundColor: Colors.white,
@@ -45,14 +70,14 @@ class OrderSuccessView extends StatelessWidget {
                     elevation: 3,
                     shadowColor: AppColors.primaryColor.withValues(alpha: 0.35),
                   ),
-                  child: const Text("Keep Shopping", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text("Track Order Status", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
               
               const SizedBox(height: 15),
               TextButton(
-                onPressed: () => Get.offNamed('/orders'),
-                child: Text("View My Orders", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold)),
+                onPressed: () => Get.offAllNamed('/home'),
+                child: Text("Keep Shopping", style: TextStyle(color: AppColors.primaryColor, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

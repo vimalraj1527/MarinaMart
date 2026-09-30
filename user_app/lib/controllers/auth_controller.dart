@@ -14,8 +14,8 @@ class AuthController extends GetxController {
   final ApiService _apiService = Get.find<ApiService>();
 
   final RxBool isLoading = false.obs;
-  final TextEditingController emailController = TextEditingController(text: 'rvimalrajravi@gmail.com');
-  final TextEditingController passwordController = TextEditingController(text: 'User@2026');
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController otpController = TextEditingController();
 

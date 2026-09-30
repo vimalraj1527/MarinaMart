@@ -6,8 +6,9 @@ import '../controllers/theme_controller.dart';
 import '../models/order_model.dart';
 
 // ─── Per-status config ────────────────────────────────────────────────────────
-String _statusEmoji(String s) {
-  switch (s) {
+String _statusEmoji(OrderModel order) {
+  if (order.paymentStatus == 'Payment In Progress') return '⏳';
+  switch (order.status) {
     case 'Pending':          return '🧾';
     case 'Processing':       return '🍳';
     case 'Out for Delivery': return '🛵';
@@ -16,8 +17,9 @@ String _statusEmoji(String s) {
   }
 }
 
-String _statusHint(String s) {
-  switch (s) {
+String _statusHint(OrderModel order) {
+  if (order.paymentStatus == 'Payment In Progress') return 'Awaiting Admin UPI verification…';
+  switch (order.status) {
     case 'Pending':          return 'Confirming your order…';
     case 'Processing':       return 'Being freshly prepared for you';
     case 'Out for Delivery': return 'Partner is heading your way!';
@@ -26,8 +28,9 @@ String _statusHint(String s) {
   }
 }
 
-Color _statusColor(String s) {
-  switch (s) {
+Color _statusColor(OrderModel order) {
+  if (order.paymentStatus == 'Payment In Progress') return const Color(0xFFFFA000);
+  switch (order.status) {
     case 'Pending':          return const Color(0xFFFF9800);
     case 'Processing':       return const Color(0xFF2196F3);
     case 'Out for Delivery': return const Color(0xFFFF9800);
@@ -36,8 +39,9 @@ Color _statusColor(String s) {
   }
 }
 
-int _statusStep(String s) {
-  switch (s) {
+int _statusStep(OrderModel order) {
+  if (order.paymentStatus == 'Payment In Progress') return 1;
+  switch (order.status) {
     case 'Pending':          return 1;
     case 'Processing':       return 2;
     case 'Out for Delivery': return 3;
@@ -92,10 +96,10 @@ class _LiveOrderTrackerBarState extends State<LiveOrderTrackerBar>
 
   Widget _buildBar(OrderModel order) {
     final primary = ThemeController.to.primaryColor;
-    final statusClr = _statusColor(order.status);
-    final emoji = _statusEmoji(order.status);
-    final hint = _statusHint(order.status);
-    final step = _statusStep(order.status);
+    final statusClr = _statusColor(order);
+    final emoji = _statusEmoji(order);
+    final hint = _statusHint(order);
+    final step = _statusStep(order);
     final progress = step / 4;
 
     return GestureDetector(
@@ -204,7 +208,7 @@ class _LiveOrderTrackerBarState extends State<LiveOrderTrackerBar>
                             ),
                             Flexible(
                               child: Text(
-                                order.status,
+                                order.paymentStatus == 'Payment In Progress' ? 'Payment Approval Pending' : order.status,
                                 style: const TextStyle(
                                   color: Color(0xFF1A1A1A),
                                   fontSize: 14,

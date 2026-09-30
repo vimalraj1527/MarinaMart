@@ -1,3 +1,5 @@
+import '../utils/image_utils.dart';
+
 class Product {
   final String id;
   final String name;
@@ -48,9 +50,6 @@ class Product {
     } else if (json['image'] != null && json['image'] is String) {
       imageUrl = json['image'];
     }
-    
-    // We maintain 'localhost' URLs as-is to support physical devices with 'adb reverse'
-    // as requested for the user's Motorola device environment.
 
     return Product(
       id: json['id']?.toString() ?? '',
@@ -59,7 +58,7 @@ class Product {
       price: parsedPrice,
       originalPrice: parsedOriginalPrice,
       unit: json['unit'] ?? 'pcs',
-      image: imageUrl,
+      image: ImageUtils.formatImageUrl(imageUrl),
       description: json['description'],
       isAvailable: json['isAvailable'] ?? true,
     );

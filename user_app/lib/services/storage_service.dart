@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../utils/app_constants.dart';
 
@@ -88,5 +89,51 @@ class StorageService {
 
   Future<void> setLastBirthdayGreetingTime(int time) async {
     await _prefs.setInt('last_birthday_greeting_time', time);
+  }
+
+  // Location Preference Persistence
+  Future<void> saveUserLocation(String shortAddr, String fullAddr, double lat, double lon) async {
+    await _prefs.setString('user_short_addr', shortAddr);
+    await _prefs.setString('user_full_addr', fullAddr);
+    await _prefs.setDouble('user_lat', lat);
+    await _prefs.setDouble('user_lon', lon);
+  }
+
+  Map<String, dynamic>? getUserLocation() {
+    String? shortAddr = _prefs.getString('user_short_addr');
+    String? fullAddr = _prefs.getString('user_full_addr');
+    double? lat = _prefs.getDouble('user_lat');
+    double? lon = _prefs.getDouble('user_lon');
+
+    if (shortAddr != null && fullAddr != null) {
+      return {
+        'short': shortAddr,
+        'full': fullAddr,
+        'lat': lat ?? 0.0,
+        'lon': lon ?? 0.0,
+      };
+    }
+    return null;
+  }
+
+  // Saved Addresses Persistence
+  Future<void> saveSavedAddresses(List<Map<String, String>> addresses) async {
+    List<String> encoded = addresses.map((a) => jsonEncode(a)).toList();
+    await _prefs.setStringList('user_saved_addresses_list', encoded);
+  }
+
+  List<Map<String, String>> getSavedAddresses() {
+    List<String>? encoded = _prefs.getStringList('user_saved_addresses_list');
+    if (encoded != null && encoded.isNotEmpty) {
+      try {
+        return encoded.map<Map<String, String>>((item) {
+          final Map<String, dynamic> decoded = jsonDecode(item);
+          return decoded.map((k, v) => MapEntry(k, v.toString()));
+        }).toList();
+      } catch (e) {
+        print("Error parsing saved addresses: $e");
+      }
+    }
+    return [];
   }
 }

@@ -48,13 +48,18 @@ class _TrackOrderViewState extends State<TrackOrderView>
   Timer? _refreshTimer;
 
   List<_StepData> get steps {
+    final isPaymentInProgress = order.paymentStatus == 'Payment In Progress';
     final isPending = order.status == 'Pending';
     return [
       _StepData(
-        isPending ? 'Order Pending' : 'Order Confirmed',
-        isPending ? 'Waiting for admin approval' : 'Your order has been placed & verified',
-        isPending ? Icons.hourglass_empty_rounded : Icons.check_circle_rounded,
-        isPending ? Colors.orange : const Color(0xFF4CAF50),
+        isPaymentInProgress
+            ? 'Payment Approval Pending'
+            : (isPending ? 'Order Pending' : 'Payment Successful & Confirmed'),
+        isPaymentInProgress
+            ? 'Your UPI payment is under admin verification. Will be approved shortly!'
+            : (isPending ? 'Waiting for store confirmation' : 'Your order has been verified & confirmed'),
+        isPaymentInProgress ? Icons.hourglass_empty_rounded : Icons.check_circle_rounded,
+        isPaymentInProgress ? Colors.amber.shade800 : const Color(0xFF4CAF50),
       ),
       const _StepData('Preparing', 'Store is packing your items with care', Icons.inventory_2_rounded, Color(0xFF2196F3)),
       const _StepData('On the Way', 'Rider is heading to your location', Icons.delivery_dining_rounded, Color(0xFFFF9800)),
@@ -85,7 +90,7 @@ class _TrackOrderViewState extends State<TrackOrderView>
       final response = await apiService.getData('/orders/${order.id}');
       if (response.statusCode == 200) {
         final updatedOrder = OrderModel.fromJson(jsonDecode(response.body));
-        if (mounted && updatedOrder.status != order.status) {
+        if (mounted && (updatedOrder.status != order.status || updatedOrder.paymentStatus != order.paymentStatus)) {
           setState(() {
             order = updatedOrder;
           });
@@ -200,7 +205,7 @@ class _TrackOrderViewState extends State<TrackOrderView>
               children: [
                 Text(order.orderNumber, style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 17, fontWeight: FontWeight.w900, letterSpacing: 0.3)),
                 const SizedBox(height: 2),
-                Text('Live Tracking', style: TextStyle(color: stepColor, fontSize: 12, fontWeight: FontWeight.w700)),
+                Text(order.paymentStatus == 'Payment In Progress' ? 'Payment Approval Pending' : 'Live Tracking', style: TextStyle(color: stepColor, fontSize: 12, fontWeight: FontWeight.w700)),
               ],
             ),
           ),
@@ -590,6 +595,18 @@ class _TrackOrderViewState extends State<TrackOrderView>
             children: [
               const Text('Total Paid', style: TextStyle(color: Color(0xFF1A1A1A), fontSize: 14, fontWeight: FontWeight.w800)),
               Text('₹${displayTotal.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 20, fontWeight: FontWeight.w900)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Payment Method', style: TextStyle(color: Color(0xFF8E8E93), fontSize: 12, fontWeight: FontWeight.w600)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: AppColors.primaryColor.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+                child: Text(order.paymentMethod, style: TextStyle(color: AppColors.primaryColor, fontSize: 11, fontWeight: FontWeight.w800)),
+              ),
             ],
           ),
           const SizedBox(height: 16),

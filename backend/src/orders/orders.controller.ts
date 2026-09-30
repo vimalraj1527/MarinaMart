@@ -41,6 +41,18 @@ export class OrdersController {
     return this.ordersService.updateStatus(id, status);
   }
 
+  @Patch(':id/approve-payment')
+  @ApiOperation({ summary: 'Approve UPI payment for an order' })
+  approvePayment(@Param('id') id: string) {
+    return this.ordersService.approvePayment(id);
+  }
+
+  @Patch(':id/reject-payment')
+  @ApiOperation({ summary: 'Reject payment for an order' })
+  rejectPayment(@Param('id') id: string) {
+    return this.ordersService.rejectPayment(id);
+  }
+
   @Patch(':id/assign/:riderId')
   @ApiOperation({ summary: 'Assign a rider to an order' })
   async assignRider(@Param('id') id: string, @Param('riderId') riderId: string) {

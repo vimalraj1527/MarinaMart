@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
+import '../utils/app_constants.dart';
 
 class SettingsController extends GetxController {
   final ApiService _api = Get.find<ApiService>();
@@ -12,10 +13,17 @@ class SettingsController extends GetxController {
   final RxDouble instantBaseFee = 50.0.obs;    // Instant Base
   final RxDouble perKmCharge = 5.0.obs;       // Instant Per KM
   
-  final RxDouble storeLat = 12.9716.obs; // Bangalore default
-  final RxDouble storeLong = 77.5946.obs; // Bangalore default
+  final RxDouble storeLat = AppConstants.storeLat.obs; // MarinaMart Hub default
+  final RxDouble storeLong = AppConstants.storeLong.obs; // MarinaMart Hub default
   
   final RxString storeName = "MaRinaMaRt".obs;
+  
+  final RxString upiId = "9629272964@paytm".obs;
+  final RxString upiPhone = "9629272964".obs;
+  final RxString upiName = "MaRinaMaRt".obs;
+  final RxString customQrUrl = "".obs;
+  final RxString customGpayUrl = "".obs;
+
   final RxBool isLoading = false.obs;
 
   @override
@@ -65,8 +73,16 @@ class SettingsController extends GetxController {
     if (data['store'] != null) {
        final s = data['store'];
        storeName.value = s['name'] ?? "MaRinaMaRt";
-       storeLat.value = (s['latitude'] ?? 12.9716).toDouble();
-       storeLong.value = (s['longitude'] ?? 77.5946).toDouble();
+       storeLat.value = (s['latitude'] ?? AppConstants.storeLat).toDouble();
+       storeLong.value = (s['longitude'] ?? AppConstants.storeLong).toDouble();
+    }
+    if (data['payment'] != null) {
+       final p = data['payment'];
+       upiId.value = p['upiId'] ?? "9629272964@upi";
+       upiPhone.value = p['upiPhone'] ?? "9629272964";
+       upiName.value = p['upiName'] ?? "MaRinaMaRt";
+       customQrUrl.value = p['customQrUrl'] ?? "";
+       customGpayUrl.value = p['customGpayUrl'] ?? "";
     }
   }
 

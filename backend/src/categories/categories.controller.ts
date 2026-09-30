@@ -36,7 +36,6 @@ export class CategoriesController {
     }),
   )
   async uploadFile(@UploadedFile() file: any) {
-    // Determine Port for development (default 5001 based on current setup)
     const baseUrl = process.env.URL || process.env.RENDER_EXTERNAL_URL || 'https://marinamart.onrender.com';
     return {
       url: `${baseUrl}/uploads/${file.filename}`,

@@ -73,20 +73,8 @@ class _LoginViewState extends State<LoginView> with SingleTickerProviderStateMix
 
       final List<Map<String, String>> onboardingData = [
         {
-          "title": activeTheme.name == "Amethyst"
-              ? "Amethyst Premium"
-              : activeTheme.name == "Amber"
-                  ? "Amber Express"
-                  : activeTheme.name == "Ruby"
-                      ? "Ruby Gourmet"
-                      : "Emerald Fresh",
-          "subtitle": activeTheme.name == "Amethyst"
-              ? "Your favorite snacks & essentials delivered in 10 minutes."
-              : activeTheme.name == "Amber"
-                  ? "From fresh milk to party essentials, delivered in minutes."
-                  : activeTheme.name == "Ruby"
-                      ? "Craving food or needing groceries? We deliver both instantly."
-                      : "Freshness delivered directly to your doorstep.",
+          "title": "MaRinaMaRt Express",
+          "subtitle": "Fresh groceries & daily essentials delivered to your doorstep in minutes.",
           "image": activeTheme.loginBannerUrl,
         },
         {

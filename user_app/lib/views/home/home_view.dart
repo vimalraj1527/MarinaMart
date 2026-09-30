@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shimmer/shimmer.dart';
@@ -368,7 +370,7 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
                       Flexible(
                         child: Obx(
                           () => Text(
-                            locationController.shortAddress.value,
+                            locationController.displayShortAddress,
                             style: TextStyle(
                               fontSize: 13,
                               color: Colors.grey.shade600,
@@ -1182,85 +1184,66 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Delivery Location",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-                ),
-                IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      shape: BoxShape.circle,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Select Delivery Location",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                  ),
+                  IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close_rounded, size: 20),
                     ),
-                    child: const Icon(Icons.close_rounded, size: 20),
+                    onPressed: () => Get.back(),
                   ),
-                  onPressed: () => Get.back(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _buildBottomSheetItem(
-              Icons.my_location_rounded,
-              "Current Location",
-              controller.currentAddress.value,
-              () {
-                controller.setActiveAddress(
-                  "current",
-                  controller.currentAddress.value,
-                );
-                Get.back();
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Divider(color: Colors.grey.shade200, thickness: 1.5),
-            ),
-            ...controller.savedAddresses.map(
-              (addr) => _buildBottomSheetItem(
-                Icons.home_work_rounded,
-                addr['title']!,
-                addr['address']!,
+                ],
+              ),
+              const SizedBox(height: 16),
+              _buildBottomSheetItem(
+                Icons.my_location_rounded,
+                "Use Current Location",
+                controller.displayFullAddress,
                 () {
-                  controller.setActiveAddress(addr['id']!, addr['address']!);
+                  controller.getCurrentLocation(forceRefresh: true);
+                  controller.setActiveAddress(
+                    "current",
+                    controller.currentAddress.value,
+                  );
                   Get.back();
                 },
               ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton.icon(
-                onPressed: () {
+              _buildBottomSheetItem(
+                Icons.phonelink_ring_rounded,
+                "Sync Mobile GPS",
+                "Send 1-tap link to your mobile phone to lock 100% exact GPS",
+                () {
                   Get.back();
-                  Get.toNamed('/addresses');
+                  _showMobileGpsSyncDialog(context);
                 },
-                icon: const Icon(Icons.add_location_alt_rounded),
-                label: const Text(
-                  "Manage Addresses",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  elevation: 3,
-                  shadowColor: AppColors.primaryColor.withOpacity(0.35),
-                ),
               ),
-            ),
-            const SizedBox(height: 10),
-          ],
+              _buildBottomSheetItem(
+                Icons.map_rounded,
+                "Pin Exact Location",
+                "Move pin on map to your building or doorstep",
+                () {
+                  Get.back();
+                  Get.toNamed('/pick-location');
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
       isScrollControlled: true,
@@ -1301,6 +1284,115 @@ class _HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         ),
       ),
       onTap: onTap,
+    );
+  }
+
+  void _showMobileGpsSyncDialog(BuildContext context) {
+    final authController = Get.find<AuthController>();
+    TextEditingController phoneCtrl = TextEditingController(
+      text: authController.currentUser['phone']?.toString() ?? "",
+    );
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Row(
+          children: const [
+            Icon(Icons.phonelink_ring_rounded, color: Color(0xFF25D366), size: 28),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                "Sync Mobile GPS Link",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Get 100% exact doorstep location by sending a 1-tap location link to your mobile phone's GPS:",
+              style: TextStyle(fontSize: 13, color: Colors.black87),
+            ),
+            const SizedBox(height: 14),
+            TextField(
+              controller: phoneCtrl,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: "Mobile Phone Number",
+                hintText: "Enter 10-digit number",
+                prefixText: "+91 ",
+                prefixStyle: const TextStyle(fontWeight: FontWeight.bold),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.check_circle_rounded, color: Color(0xFF25D366), size: 20),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "Tap link on mobile phone → Locks exact doorstep GPS coordinates instantly.",
+                      style: TextStyle(fontSize: 11, color: Colors.black87, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton.icon(
+            onPressed: () async {
+              String phone = phoneCtrl.text.trim();
+              if (phone.length < 10) {
+                Get.snackbar("Phone Required", "Please enter a valid mobile number", backgroundColor: Colors.orangeAccent, colorText: Colors.white);
+                return;
+              }
+              String syncUrl = "https://marinamart.onrender.com/pick-location";
+              String message = "MaRinaMaRt 100% Exact GPS Sync: Tap this link on your smartphone to lock your doorstep location for your order: $syncUrl";
+              String whatsappUrl = "https://wa.me/91$phone?text=${Uri.encodeComponent(message)}";
+              
+              Navigator.pop(ctx);
+              try {
+                final uri = Uri.parse(whatsappUrl);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                } else {
+                  await launchUrl(uri);
+                }
+                Get.snackbar("Sync Link Sent", "WhatsApp link opened! Tap link on your phone to sync GPS.", backgroundColor: const Color(0xFF25D366), colorText: Colors.white);
+              } catch (e) {
+                Clipboard.setData(ClipboardData(text: syncUrl));
+                Get.snackbar("Link Copied", "Sync link copied to clipboard! Paste and open on your mobile browser.", backgroundColor: AppColors.primaryColor, colorText: Colors.white);
+              }
+            },
+            icon: const Icon(Icons.send_rounded, size: 18),
+            label: const Text("Send WhatsApp Sync Link"),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF25D366),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

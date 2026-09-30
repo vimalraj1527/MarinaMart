@@ -2,16 +2,21 @@ class AppConstants {
   static const String appName = 'MaRinaMaRt';
   static const String appVersion = '1.0.0';
   
-  // NOTE: If using Android Emulator, use http://10.0.2.2:5001
-  // If using Real Device, use your Computer's Local IP (e.g. http://192.168.1.5:5001)
-  static const String baseUrl = String.fromEnvironment(
-    'API_URL',
-    defaultValue: 'https://marinamart.onrender.com',
-  ); 
+  // ── SERVER ENVIRONMENT TOGGLE ──────────────────────────────────────────────
+  // Set `useLiveServer = true` to connect to Live Production Server.
+  // Set `useLiveServer = false` to connect to Localhost Server.
+  static const bool useLiveServer = true;
 
-  // Store Location for Distance-based delivery calculation
-  static const double storeLat = 12.9716; 
-  static const double storeLong = 77.5946;
+  static const String liveServerUrl = 'https://marinamart.onrender.com';
+  static const String localServerUrl = 'http://localhost:5001'; 
+  // NOTE: For Android Emulator use 'http://10.0.2.2:5001', for Real Mobile Device use 'http://192.168.1.X:5001'
+
+  static const String baseUrl = useLiveServer ? liveServerUrl : localServerUrl; 
+
+  // Store Location Hub for Distance-based delivery calculation (MarinaMart Hub - Chennai)
+  // Dynamic store location is fetched from Backend Admin Settings; these serve as default store coordinates.
+  static const double storeLat = 13.0473; 
+  static const double storeLong = 80.2824;
 
   // API Endpoints
   static const String loginUrl = '/auth/login';

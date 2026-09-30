@@ -78,6 +78,10 @@ class OrdersView extends StatelessWidget {
       }
       displayTotal = itemsTotal;
     }
+
+    final bool isPaymentPending = order.paymentStatus == 'Payment In Progress';
+    final String displayStatus = isPaymentPending ? 'Payment Approval Pending' : order.status;
+    final Color statusColor = isPaymentPending ? Colors.amber.shade800 : _getStatusColor(order.status);
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -95,9 +99,13 @@ class OrdersView extends StatelessWidget {
             children: [
               Text(order.orderNumber, style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.black)),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: _getStatusColor(order.status).withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                child: Text(order.status, style: TextStyle(color: _getStatusColor(order.status), fontWeight: FontWeight.bold, fontSize: 11)),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: statusColor.withOpacity(0.3)),
+                ),
+                child: Text(displayStatus, style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 11)),
               ),
             ],
           ),
@@ -172,6 +180,8 @@ class OrdersView extends StatelessWidget {
           
           if (order.status == "Delivered")
              _buildActionBtn("REPORT PROBLEM", Colors.red, () => Get.toNamed('/direct-chat', arguments: order.orderNumber) )
+          else if (isPaymentPending)
+             _buildActionBtn("TRACK PAYMENT APPROVAL", Colors.amber.shade900, () => Get.toNamed('/track-order', arguments: order))
           else
              _buildActionBtn("TRACK ORDER", AppColors.primaryColor, () => Get.toNamed('/track-order', arguments: order)),
         ],

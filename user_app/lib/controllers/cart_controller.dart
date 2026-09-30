@@ -69,7 +69,7 @@ class CartController extends GetxController {
     _checkFreeDeliveryPopup();
   }
 
-  Future<void> placeOrder(double targetTotal, String customerName, String customerPhone, {String deliveryType = 'Instant', String? scheduledAt, double walletAmountUsed = 0.0}) async {
+  Future<void> placeOrder(double targetTotal, String customerName, String customerPhone, {String deliveryType = 'Instant', String? scheduledAt, double walletAmountUsed = 0.0, String paymentMethod = 'Cash on Delivery'}) async {
     if (cartItems.isEmpty) return;
 
     try {
@@ -87,7 +87,7 @@ class CartController extends GetxController {
         'customerName': customerName,
         'customerPhone': customerPhone,
         'deliveryAddress': _locationController.currentAddress.value,
-        'paymentMethod': walletAmountUsed > 0 && walletAmountUsed >= targetTotal ? 'Wallet' : 'Cash on Delivery',
+        'paymentMethod': walletAmountUsed > 0 && walletAmountUsed >= targetTotal ? 'Wallet' : paymentMethod,
         'status': 'Pending',
         'deliveryType': deliveryType,
         'scheduledAt': scheduledAt,
@@ -96,7 +96,7 @@ class CartController extends GetxController {
       final response = await _apiService.postData(AppConstants.ordersUrl, orderData);
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        Get.offNamed('/order-success');
+        Get.offNamed('/order-success', arguments: {'paymentMethod': paymentMethod});
         Future.delayed(const Duration(milliseconds: 500), () {
           clearCart();
         });
@@ -109,7 +109,7 @@ class CartController extends GetxController {
       } else {
         // Even if server fails, we'll simulate success for today's demo if it's a 4xx error (offline/dev mode)
         if (response.statusCode >= 400 && response.statusCode < 500) {
-           Get.offNamed('/order-success');
+           Get.offNamed('/order-success', arguments: {'paymentMethod': paymentMethod});
            Future.delayed(const Duration(milliseconds: 500), () {
              clearCart();
            });
@@ -125,7 +125,7 @@ class CartController extends GetxController {
       }
     } catch (e) {
       Get.snackbar("Notice", "Order placed locally (Offline Mode)");
-      Get.offNamed('/order-success');
+      Get.offNamed('/order-success', arguments: {'paymentMethod': paymentMethod});
       Future.delayed(const Duration(milliseconds: 500), () {
         clearCart();
       });

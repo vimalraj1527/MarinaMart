@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../controllers/cart_controller.dart';
@@ -26,11 +28,12 @@ class _CheckoutViewState extends State<CheckoutView> {
 
   late TextEditingController _nameController;
   late TextEditingController _phoneController;
-  final String _paymentMethod = "Cash on Delivery";
+  String _paymentMethod = "Google Pay / UPI";
   String _deliveryType = "Scheduled";
   DateTime? _scheduledDateTime;
   String? _selectedSlotLabel;
   bool _useWallet = false;
+  int _selectedAddressIndex = 0;
 
   @override
   void initState() {
@@ -265,17 +268,28 @@ class _CheckoutViewState extends State<CheckoutView> {
   }
 
   double _calculateDeliveryFee(double subtotal) {
+    double? selLat;
+    double? selLon;
+    if (_locationController.savedAddresses.isNotEmpty &&
+        _selectedAddressIndex >= 0 &&
+        _selectedAddressIndex < _locationController.savedAddresses.length) {
+      final addr = _locationController.savedAddresses[_selectedAddressIndex];
+      selLat = double.tryParse(addr['lat']?.toString() ?? '0');
+      selLon = double.tryParse(addr['lon']?.toString() ?? '0');
+      if (selLat == 0.0) selLat = null;
+      if (selLon == 0.0) selLon = null;
+    }
+
     if (_deliveryType == "Instant") {
-      double distance = _locationController.getDistanceFromStore();
-      return 50.0 + (distance * 5.0);
+      double distance = _locationController.getDistanceFromStore(targetLat: selLat, targetLon: selLon);
+      double baseFee = _settings.instantBaseFee.value > 0 ? _settings.instantBaseFee.value : 50.0;
+      double perKm = _settings.perKmCharge.value > 0 ? _settings.perKmCharge.value : 5.0;
+      double fee = baseFee + (distance * perKm);
+      return double.parse(fee.toStringAsFixed(2));
     }
 
-    // Free delivery for Scheduled delivery if subtotal reaches ₹501 or more
-    if (subtotal >= 501.0) {
-      return 0.0;
-    }
-
-    if (subtotal >= _settings.freeDeliveryThreshold.value) {
+    // Free delivery for Scheduled delivery if subtotal reaches threshold
+    if (subtotal >= 501.0 || subtotal >= _settings.freeDeliveryThreshold.value) {
       return 0.0;
     }
 
@@ -295,11 +309,23 @@ class _CheckoutViewState extends State<CheckoutView> {
         centerTitle: true,
       ),
       body: Obx(() {
+        double? selLat;
+        double? selLon;
+        if (_locationController.savedAddresses.isNotEmpty &&
+            _selectedAddressIndex >= 0 &&
+            _selectedAddressIndex < _locationController.savedAddresses.length) {
+          final addr = _locationController.savedAddresses[_selectedAddressIndex];
+          selLat = double.tryParse(addr['lat']?.toString() ?? '0');
+          selLon = double.tryParse(addr['lon']?.toString() ?? '0');
+          if (selLat == 0.0) selLat = null;
+          if (selLon == 0.0) selLon = null;
+        }
+
         double subtotal = _cartController.totalAmount;
         double gst = subtotal * 0.05;
         double deliveryFee = _calculateDeliveryFee(subtotal);
         double orderTotal = subtotal + gst + deliveryFee;
-        double distance = _locationController.getDistanceFromStore();
+        double distance = _locationController.getDistanceFromStore(targetLat: selLat, targetLon: selLon);
 
         double walletBalance =
             double.tryParse(
@@ -336,7 +362,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _locationController.shortAddress.value,
+                            _locationController.displayShortAddress,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -344,7 +370,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            _locationController.currentAddress.value,
+                            _locationController.displayFullAddress,
                             style: const TextStyle(
                               color: AppColors.grey,
                               fontSize: 13,
@@ -426,7 +452,7 @@ class _CheckoutViewState extends State<CheckoutView> {
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                        "₹${_settings.instantBaseFee.value.toInt()} + ₹${_settings.perKmCharge.value.toInt()}/km • Nearby: ${distance.toStringAsFixed(1)} KM",
+                        "Base ₹${_settings.instantBaseFee.value.toInt()} + ₹${_settings.perKmCharge.value.toInt()}/km • Distance: ${distance.toStringAsFixed(1)} KM (Fee: ₹${_calculateDeliveryFee(subtotal).toInt()})",
                       ),
                       secondary: const Icon(
                         Icons.bolt,
@@ -481,39 +507,91 @@ class _CheckoutViewState extends State<CheckoutView> {
 
               _buildSectionHeader("Payment Mode"),
               Container(
-                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.handshake_outlined, color: AppColors.primaryColor, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    RadioListTile<String>(
+                      value: "Google Pay / UPI",
+                      groupValue: _paymentMethod,
+                      activeColor: const Color(0xFF4285F4),
+                      title: Row(
                         children: [
-                          Text(
-                            "Cash on Delivery (COD)",
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4285F4).withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              "GPay / UPI",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 12,
+                                color: Color(0xFF4285F4),
+                              ),
+                            ),
                           ),
-                          SizedBox(height: 2),
-                          Text(
-                            "Pay with cash/UPI at delivery doorstep",
-                            style: TextStyle(color: AppColors.grey, fontSize: 12),
+                          const SizedBox(width: 8),
+                          const Text(
+                            "Google Pay / Any UPI",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                           ),
                         ],
                       ),
+                      subtitle: const Padding(
+                        padding: EdgeInsets.only(top: 4),
+                        child: Text(
+                          "Direct UPI to 9629272964 via GPay / PhonePe / Paytm / QR Code",
+                          style: TextStyle(color: AppColors.grey, fontSize: 12),
+                        ),
+                      ),
+                      secondary: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4285F4).withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF4285F4), size: 22),
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          _paymentMethod = val!;
+                        });
+                      },
                     ),
-                    Icon(Icons.check_circle, color: AppColors.primaryColor, size: 22),
+                    const Divider(indent: 72, height: 1),
+                    RadioListTile<String>(
+                      value: "Cash on Delivery",
+                      groupValue: _paymentMethod,
+                      activeColor: AppColors.primaryColor,
+                      title: const Text(
+                        "Cash on Delivery (COD)",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      ),
+                      subtitle: const Padding(
+                        padding: EdgeInsets.only(top: 4),
+                        child: Text(
+                          "Pay with cash/UPI at delivery doorstep",
+                          style: TextStyle(color: AppColors.grey, fontSize: 12),
+                        ),
+                      ),
+                      secondary: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryColor.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.handshake_outlined, color: AppColors.primaryColor, size: 22),
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          _paymentMethod = val!;
+                        });
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -779,6 +857,266 @@ class _CheckoutViewState extends State<CheckoutView> {
       return;
     }
 
+    if (_paymentMethod == "Google Pay / UPI" && finalTotal > 0) {
+      _showGPayPaymentDialog(finalTotal, walletAmountUsed, phoneVal);
+    } else {
+      _proceedPlaceOrder(finalTotal, phoneVal, walletAmountUsed);
+    }
+  }
+
+  void _showGPayPaymentDialog(double amount, double walletAmountUsed, String phoneVal) {
+    String upiId = _settings.upiId.value.isNotEmpty ? _settings.upiId.value : "9629272964@paytm";
+    if (!upiId.contains('@')) {
+      upiId = "$upiId@paytm";
+    }
+    String upiPhone = _settings.upiPhone.value.isNotEmpty ? _settings.upiPhone.value : "9629272964";
+    String upiName = _settings.upiName.value.isNotEmpty ? _settings.upiName.value : "MaRinaMaRt";
+
+    // App-Specific and Standard NPCI Payload Schemas
+    String gpayPayload = "tez://upi/pay?pa=$upiId&pn=${Uri.encodeComponent(upiName)}&am=${amount.toStringAsFixed(2)}&cu=INR";
+    String phonePePayload = "phonepe://pay?pa=$upiId&pn=${Uri.encodeComponent(upiName)}&am=${amount.toStringAsFixed(2)}&cu=INR";
+    String npciPayload = "upi://pay?pa=$upiId&pn=${Uri.encodeComponent(upiName)}&am=${amount.toStringAsFixed(2)}&cu=INR&mode=02&purpose=00";
+
+    String activeQrMode = "gpay"; // "gpay", "phonepe", "all"
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          String currentQrPayload;
+          if (activeQrMode == "gpay") {
+            currentQrPayload = gpayPayload;
+          } else if (activeQrMode == "phonepe") {
+            currentQrPayload = phonePePayload;
+          } else {
+            currentQrPayload = npciPayload;
+          }
+
+          String qrUrl = _settings.customQrUrl.value.isNotEmpty
+              ? _settings.customQrUrl.value
+              : "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${Uri.encodeComponent(currentQrPayload)}";
+
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4285F4).withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF4285F4), size: 24),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    "GPay / PhonePe UPI",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Payable Amount:", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        Text("₹${amount.toStringAsFixed(2)}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Colors.black)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text("Pay UPI: $upiPhone ($upiId)", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF4285F4))),
+                  const SizedBox(height: 12),
+                  // QR Mode Switcher Tabs
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ChoiceChip(
+                        label: const Text("GPay QR", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        selected: activeQrMode == "gpay",
+                        selectedColor: const Color(0xFF4285F4).withOpacity(0.2),
+                        labelStyle: TextStyle(color: activeQrMode == "gpay" ? const Color(0xFF4285F4) : Colors.black87),
+                        onSelected: (_) => setDialogState(() => activeQrMode = "gpay"),
+                      ),
+                      const SizedBox(width: 6),
+                      ChoiceChip(
+                        label: const Text("PhonePe QR", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        selected: activeQrMode == "phonepe",
+                        selectedColor: const Color(0xFF5F259F).withOpacity(0.2),
+                        labelStyle: TextStyle(color: activeQrMode == "phonepe" ? const Color(0xFF5F259F) : Colors.black87),
+                        onSelected: (_) => setDialogState(() => activeQrMode = "phonepe"),
+                      ),
+                      const SizedBox(width: 6),
+                      ChoiceChip(
+                        label: const Text("All UPI", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        selected: activeQrMode == "all",
+                        selectedColor: Colors.black12,
+                        labelStyle: TextStyle(color: activeQrMode == "all" ? Colors.black : Colors.black87),
+                        onSelected: (_) => setDialogState(() => activeQrMode = "all"),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // QR Code Image
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    child: Image.network(
+                      qrUrl,
+                      height: 190,
+                      width: 190,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.qr_code_2_rounded, size: 100, color: Colors.grey),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    activeQrMode == "gpay"
+                        ? "Scan with Google Pay or Camera to open GPay"
+                        : activeQrMode == "phonepe"
+                            ? "Scan with PhonePe or Camera to open PhonePe"
+                            : "Scan QR with Google Pay, PhonePe, or Paytm",
+                    style: const TextStyle(fontSize: 11, color: Colors.black87, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 14),
+                  // Direct App Redirection Buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            Clipboard.setData(ClipboardData(text: upiId));
+                            bool launched = false;
+                            try {
+                              final tezUri = Uri.parse("tez://upi/pay?pa=$upiId&pn=${Uri.encodeComponent(upiName)}&am=${amount.toStringAsFixed(2)}&cu=INR");
+                              launched = await launchUrl(tezUri, mode: LaunchMode.externalApplication);
+                            } catch (_) {}
+
+                            if (!launched) {
+                              try {
+                                final intentUri = Uri.parse("intent://pay?pa=$upiId&pn=${Uri.encodeComponent(upiName)}&am=${amount.toStringAsFixed(2)}&cu=INR#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end");
+                                launched = await launchUrl(intentUri, mode: LaunchMode.externalApplication);
+                              } catch (_) {}
+                            }
+
+                            Get.snackbar(
+                              launched ? "Redirecting to Google Pay" : "UPI ID Copied",
+                              launched
+                                  ? "Opening Google Pay app..."
+                                  : "UPI ID ($upiId) copied! Open Google Pay to paste & pay.",
+                              backgroundColor: const Color(0xFF4285F4),
+                              colorText: Colors.white,
+                              duration: const Duration(seconds: 4),
+                            );
+                          },
+                          icon: const Icon(Icons.open_in_new_rounded, size: 15),
+                          label: const Text("Google Pay", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4285F4),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () async {
+                            Clipboard.setData(ClipboardData(text: upiId));
+                            bool launched = false;
+                            try {
+                              final phonepeUri = Uri.parse("phonepe://pay?pa=$upiId&pn=${Uri.encodeComponent(upiName)}&am=${amount.toStringAsFixed(2)}&cu=INR");
+                              launched = await launchUrl(phonepeUri, mode: LaunchMode.externalApplication);
+                            } catch (_) {}
+
+                            if (!launched) {
+                              try {
+                                final intentUri = Uri.parse("intent://pay?pa=$upiId&pn=${Uri.encodeComponent(upiName)}&am=${amount.toStringAsFixed(2)}&cu=INR#Intent;scheme=upi;package=com.phonepe.app;end");
+                                launched = await launchUrl(intentUri, mode: LaunchMode.externalApplication);
+                              } catch (_) {}
+                            }
+
+                            Get.snackbar(
+                              launched ? "Redirecting to PhonePe" : "UPI ID Copied",
+                              launched
+                                  ? "Opening PhonePe app..."
+                                  : "UPI ID ($upiId) copied! Open PhonePe to paste & pay.",
+                              backgroundColor: const Color(0xFF5F259F),
+                              colorText: Colors.white,
+                              duration: const Duration(seconds: 4),
+                            );
+                          },
+                          icon: const Icon(Icons.payment_rounded, size: 15),
+                          label: const Text("PhonePe", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF5F259F),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: upiId));
+                      Get.snackbar("UPI ID Copied", "UPI ID ($upiId) copied to clipboard!", backgroundColor: Colors.black87, colorText: Colors.white);
+                    },
+                    icon: const Icon(Icons.copy_rounded, size: 14),
+                    label: Text("Copy UPI ID ($upiId)", style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 38),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _proceedPlaceOrder(amount, phoneVal, walletAmountUsed);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                child: const Text("I Have Paid • Complete Order", style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _proceedPlaceOrder(double finalTotal, String phoneVal, double walletAmountUsed) {
     _cartController.placeOrder(
       finalTotal,
       _nameController.text,
@@ -786,6 +1124,7 @@ class _CheckoutViewState extends State<CheckoutView> {
       deliveryType: _deliveryType,
       scheduledAt: _scheduledDateTime?.toIso8601String(),
       walletAmountUsed: walletAmountUsed,
+      paymentMethod: _paymentMethod,
     );
   }
 }

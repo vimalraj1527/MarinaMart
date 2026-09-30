@@ -5,6 +5,8 @@ class OrderModel {
   final String customerPhone;
   final double totalAmount;
   final String status;
+  final String paymentStatus;
+  final String paymentMethod;
   final String deliveryAddress;
   final List<OrderItem> items;
   final DateTime createdAt;
@@ -17,6 +19,8 @@ class OrderModel {
     required this.customerPhone,
     required this.totalAmount,
     required this.status,
+    required this.paymentStatus,
+    required this.paymentMethod,
     required this.deliveryAddress,
     required this.items,
     required this.createdAt,
@@ -48,6 +52,8 @@ class OrderModel {
       customerPhone: (json['customerPhone'] ?? '').toString(),
       totalAmount: double.tryParse(json['totalAmount']?.toString() ?? '0') ?? 0.0,
       status: (json['status'] ?? 'Pending').toString(),
+      paymentStatus: (json['paymentStatus'] ?? json['payment_status'] ?? 'Paid').toString(),
+      paymentMethod: (json['paymentMethod'] ?? json['payment_method'] ?? 'Online').toString(),
       deliveryAddress: (json['deliveryAddress'] ?? '').toString(),
       items: (json['items'] as List?)?.map((i) {
         try {

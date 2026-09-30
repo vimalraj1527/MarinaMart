@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import '../../utils/app_colors.dart';
 import '../../controllers/location_controller.dart';
@@ -51,15 +53,40 @@ class _PickLocationViewState extends State<PickLocationView> {
   Future<void> _decodeAddress(LatLng pos) async {
     setState(() => _isFetching = true);
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(pos.latitude, pos.longitude);
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
+      final uri = Uri.parse('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${pos.latitude}&lon=${pos.longitude}&zoom=18&addressdetails=1');
+      final res = await http.get(uri, headers: {'User-Agent': 'MaRinaMaRtApp/1.0'}).timeout(const Duration(seconds: 4));
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        final addr = data['address'] ?? {};
+        String road = addr['road'] ?? addr['pedestrian'] ?? addr['street'] ?? "";
+        String sub = addr['suburb'] ?? addr['neighbourhood'] ?? addr['residential'] ?? addr['subdistrict'] ?? "";
+        String city = addr['city'] ?? addr['town'] ?? addr['county'] ?? addr['state'] ?? "";
+        String postcode = addr['postcode'] ?? "";
+
+        List<String> parts = [];
+        if (road.isNotEmpty) parts.add(road);
+        if (sub.isNotEmpty) parts.add(sub);
+        if (city.isNotEmpty) parts.add(city);
+        if (postcode.isNotEmpty) parts.add(postcode);
+
         setState(() {
-          _address = "${place.name ?? ""}, ${place.subLocality ?? ""}, ${place.locality ?? ""}, ${place.postalCode ?? ""}";
+          _address = parts.isNotEmpty ? parts.join(", ") : (data['display_name'] ?? "Selected Location");
         });
+      } else {
+        throw Exception("Reverse geocode failed");
       }
     } catch (e) {
-      setState(() => _address = "Address not found");
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(pos.latitude, pos.longitude);
+        if (placemarks.isNotEmpty) {
+          Placemark place = placemarks[0];
+          setState(() {
+            _address = [place.name, place.subLocality, place.locality, place.postalCode].where((s) => s != null && s.isNotEmpty).join(", ");
+          });
+        }
+      } catch (_) {
+        setState(() => _address = "Pinned Location");
+      }
     } finally {
       setState(() => _isFetching = false);
     }

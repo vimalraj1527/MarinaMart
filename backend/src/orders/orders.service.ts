@@ -46,10 +46,20 @@ export class OrdersService {
       }
     }
 
+    const pMethod = (createOrderDto.paymentMethod || '').toString().toLowerCase();
+    let initialPaymentStatus = 'Pending';
+    if (pMethod.includes('upi') || pMethod.includes('gpay') || pMethod.includes('google pay') || pMethod.includes('phonepe') || pMethod.includes('paytm')) {
+      initialPaymentStatus = 'Payment In Progress';
+    } else if (walletAmountUsed > 0 && walletAmountUsed >= Number(createOrderDto.totalAmount)) {
+      initialPaymentStatus = 'Paid';
+    } else {
+      initialPaymentStatus = 'Pending';
+    }
+
     const orderData = {
       customerName: 'MaRinaMaRt Customer',
       customerPhone: '+91 9999999999',
-      paymentStatus: (walletAmountUsed > 0 && walletAmountUsed >= Number(createOrderDto.totalAmount)) ? 'Paid' : 'Pending',
+      paymentStatus: initialPaymentStatus,
       ...createOrderDto,
       orderNumber: orderNum,
     };
@@ -123,6 +133,25 @@ export class OrdersService {
     const order = await this.orderRepository.findOne({ where: { id } });
     if (!order) throw new NotFoundException('Order not found');
     order.status = status;
+    if (status === OrderStatus.PROCESSING || status === OrderStatus.OUT_FOR_DELIVERY || status === OrderStatus.DELIVERED) {
+      order.paymentStatus = 'Paid';
+    }
+    return await this.orderRepository.save(order);
+  }
+
+  async approvePayment(id: string) {
+    const order = await this.orderRepository.findOne({ where: { id } });
+    if (!order) throw new NotFoundException('Order not found');
+    order.paymentStatus = 'Paid';
+    order.status = OrderStatus.PROCESSING; // Transition to Order Confirmed / Preparing
+    return await this.orderRepository.save(order);
+  }
+
+  async rejectPayment(id: string) {
+    const order = await this.orderRepository.findOne({ where: { id } });
+    if (!order) throw new NotFoundException('Order not found');
+    order.paymentStatus = 'Failed';
+    order.status = OrderStatus.CANCELLED;
     return await this.orderRepository.save(order);
   }
 }
